@@ -1,0 +1,23 @@
+spring:
+  security:
+    filter:
+      order: 2147483647
+  data:
+    redis:
+      lettuce:
+        pool:
+          min-idle: 2
+          enabled: true
+common-lib:
+  springdoc:
+    disabled: true
+  request_body_log:
+    max:
+      rest_template: "146800640"
+com:
+  github:
+    breninsul:
+      webfluxlogging:
+        logging:
+          max_body_size:
+            spring_cloud_gateway: "146800640"

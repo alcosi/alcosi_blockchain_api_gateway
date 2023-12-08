@@ -1,0 +1,7 @@
+node-*/data/*
+
+!node-*/data/*.gitkeep
+
+**/.DS_Store
+*/.DS_Store
+.DS_Store

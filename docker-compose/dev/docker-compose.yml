@@ -1,0 +1,94 @@
+#Example of config
+version: "3.9"
+networks:
+  external-network:
+    external: true
+services:
+  nft-api-back-cache:
+    image: redis:7.2.1-alpine3.18
+    container_name: nft-api-back-cache
+    hostname: nft-api-back-cache
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning  --requirepass test_pass
+    mem_swappiness: 0
+    memswap_limit: 0m
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+        reservations:
+          memory: 100M
+    volumes:
+      - ./redis_cache:/data
+    networks:
+      - external-network
+  nft-api-back:
+    image: dockerhub.esas.by/nft-api-gateway:9.0_dev
+    container_name: nft-api-back
+    hostname: nft-api-back
+    environment:
+      spring.cloud.gateway.httpclient.compression: "true"
+      logging.level.root: "INFO"
+      jwt.token.lifetime: "1h"
+      logging.level.org.springframework.cloud.gateway: "INFO"
+      captcha.google.enabled: "false"
+      spring.data.redis.host: "nft-api-back-cache"
+      spring.data.redis.port: "6379"
+      spring.data.redis.password: "test_pass"
+      spring.data.redis.timeout: "60000"
+      gateway.microservice.uri.profile: "http://nft-profile:8064"
+      gateway.microservice.uri.contract: "http://nft-contracts:8040/api"
+      gateway.microservice.uri.auction: "http://nft-auction:8032/api"
+      gateway.microservice.uri.search: "http://nft-search:8084"
+      gateway.microservice.uri.token: "http://nft-token:8099"
+      gateway.microservice.uri.listing: "http://nft-listing:8077"
+      filter.config.path.security.type.predicate: "REGEX"
+      filter.config.path.security.type.match: "MATCH_IF_NOT_CONTAINS_IN_LIST"
+      filter.config.path.security.path.openapi: '{"methods":["GET","HEAD","POST","PUT","PATCH","DELETE","OPTIONS","TRACE"],"path":"/openapi/.*"}'
+      filter.config.path.security.path.login: '{"methods":["GET","HEAD","POST","PUT","PATCH","DELETE","OPTIONS","TRACE"],"path":"/v1/auth/login/.*"}'
+      filter.config.path.security.path.search_profile: '{"methods":["GET"],"path":"/v1/profile/.*"}'
+      filter.config.path.security.path.search_collection: '{"methods":["GET"],"path":"/v1/collection.*"}'
+      filter.config.path.security.path.search_token: '{"methods":["GET"],"path":"/v1/token.*"}'
+      filter.config.path.security.path.search_event: '{"methods":["GET"],"path":"/v1/event/.*"}'
+      filter.config.path.security.path.dictionary: '{"methods":["GET"],"path":"/v1/dictionary/.*"}'
+      filter.config.path.captcha.type.predicate: 'REGEX'
+      filter.config.path.captcha.type.match: 'MATCH_IF_CONTAINS_IN_LIST'
+      filter.config.path.proxy.collection: '{"order":0,"addBasePath":true,"microserviceUri":"$${gateway.microservice.uri.contract}","matches":[{"methods":["POST"],"path":"/v1/collection/*"},{"methods":["GET"],"path":"/v1/dictionary/collection/*"}]}'
+      filter.config.path.proxy.auction: '{"order":10,"addBasePath":true,"microserviceUri":"$${gateway.microservice.uri.auction}","matches":[{"methods":["GET"],"path":"/v1/dictionary/auction/*"}]}'
+      filter.config.path.proxy.profile: '{"order":20,"addBasePath":true,"microserviceUri":"$${gateway.microservice.uri.profile}","matches":[{"methods":["GET","POST","PUT","PATCH","DELETE"],"path":"/v1/profile/**"}]}'
+      filter.config.path.proxy.token: '{"order":30,"addBasePath":true,"microserviceUri":"$${gateway.microservice.uri.token}","matches":[{"methods":["GET","POST"],"path":"/v1/token/*/*/*/mint"},{"methods":["POST"],"path":"/v1/token/*/{address}"}]}'
+      filter.config.path.proxy.listing: '{"order":40,"addBasePath":true,"microserviceUri":"$${gateway.microservice.uri.listing}","matches":[{"methods":["POST"],"path":"/v1/listing/*/*/*"},{"methods":["GET","PUT","DELETE"],"path":"/v1/listing/*/*/*/*"}]}'
+      filter.config.path.proxy.search: '[{"order":100,"addBasePath":true,"microserviceUri":"$${gateway.microservice.uri.search}","matches":[{"methods":["GET"],"path":"/v1/collection/**"},{"methods":["GET"],"path":"/v1/token/**"},{"methods":["GET"],"path":"/v1/collection*"},{"methods":["GET"],"path":"/v1/token*"},{"methods":["GET","POST"],"path":"/v1/event/**"}]}]'
+      gateway.microservice.uri.DefaultRequestLoginRequestProcess: "$${gateway.microservice.uri.profile}/v1/profile/"
+      gateway.defaultRequestLoginRequestProcess.rqTypes: 'POST'
+      gateway.defaultRequestLoginRequestProcess.types: 'AFTER'
+      gateway.defaultRequestLoginRequestProcess.method: 'POST'
+      JAVA_TOOL_OPTIONS: "
+            -Xrunjdwp:transport=dt_socket,address=*:5006,server=y,suspend=n
+            -XX:+UseContainerSupport
+          "
+    ports:
+      - "8080:8080"
+      - "5080:5006"
+    volumes:
+      - ./logs/api:/logs
+      - ./openapi:/opt/openapi/
+    mem_swappiness: 0
+    memswap_limit: 0m
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 600M
+        reservations:
+          memory: 600M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "6m"
+    depends_on:
+      - nft-api-back-cache
+    networks:
+      - external-network

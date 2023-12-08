@@ -1,0 +1,236 @@
+openapi: 3.0.0
+x-stoplight:
+  id: 977firexhnkbv
+info:
+  title: Api gateway
+  version: '1.0'
+servers:
+  - url: 'http://localhost:8080'
+    description: DEV
+  - url: '{scheme}://{domain}:{port}/api'
+    description: Dynamic
+paths:
+  '/v1/auth/login/{wallet}':
+    parameters:
+      - schema:
+          type: string
+        name: wallet
+        in: path
+        required: true
+    get:
+      summary: Login get msg for sign
+      tags:
+        - login
+      responses:
+        '200':
+          $ref: '#/components/responses/LoginGet'
+        '400':
+          $ref: '#/components/responses/ErrorRs'
+        '500':
+          $ref: '#/components/responses/ErrorRs'
+      operationId: get-v1-login-wallet
+      description: Login get msg for sign
+    post:
+      summary: Login validate sign
+      description: Login validate sign
+      operationId: post-v1-login-wallet
+      responses:
+        '200':
+          $ref: '#/components/responses/LoginJwtRs'
+        '400':
+          $ref: '#/components/responses/ErrorRs'
+        '500':
+          $ref: '#/components/responses/ErrorRs'
+      requestBody:
+        $ref: '#/components/requestBodies/Login'
+      tags:
+        - login
+      parameters: []
+    put:
+      summary: Login refresh
+      operationId: put-v1-login-wallet
+      description: Login refresh
+      responses:
+        '200':
+          $ref: '#/components/responses/LoginJwtRs'
+        '400':
+          $ref: '#/components/responses/ErrorRs'
+        '500':
+          $ref: '#/components/responses/ErrorRs'
+      requestBody:
+        $ref: '#/components/requestBodies/LoginRefresh'
+      tags:
+        - login
+      parameters: []
+  /v1/auth/authority:
+    parameters: []
+    get:
+      summary: CheckJWTAndGetAuthorities
+      tags:
+        - login
+      responses:
+        '200':
+          $ref: '#/components/responses/ClientAuthorities'
+        '400':
+          $ref: '#/components/responses/ErrorRs'
+        '401':
+          $ref: '#/components/responses/ErrorRs'
+        '500':
+          $ref: '#/components/responses/ErrorRs'
+      operationId: get-v1-login-wallet-roles
+      description: Check JWT and get profile authorities
+      requestBody:
+        $ref: '#/components/requestBodies/Login'
+  '/v1/auth/bound/{profileId}/{secondWallet}':
+    parameters:
+      - schema:
+          type: string
+        name: profileId
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: secondWallet
+        in: path
+        required: true
+    put:
+      summary: Bind new wallet to profile
+      operationId: put-v1-auth-bound-profileId-secondWallet
+      responses:
+        '200':
+          $ref: '#/components/responses/LoginJwtRs'
+        '403':
+          $ref: '#/components/responses/ErrorRs'
+        '500':
+          $ref: '#/components/responses/ErrorRs'
+      tags:
+        - login
+      security:
+        - JWT: []
+components:
+  schemas:
+    LoginGetRs:
+      title: LoginGetRs
+      x-stoplight:
+        id: 2abw1eukdofve
+      type: object
+      properties:
+        msg:
+          type: string
+        validUntil:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+      x-tags:
+        - login
+    LoginRq:
+      title: LoginRq
+      x-stoplight:
+        id: 7mulqsq67b7xd
+      type: object
+      properties:
+        sign:
+          type: string
+      x-tags:
+        - login
+    LoginRefresh:
+      title: LoginRefresh
+      x-stoplight:
+        id: obfduhb1sefvb
+      type: object
+      properties:
+        rt:
+          type: string
+          format: uuid
+        jwt:
+          type: string
+      x-tags:
+        - login
+    LoginRs:
+      title: LoginRs
+      x-stoplight:
+        id: 6p4ob27vz5113
+      type: object
+      properties:
+        jwt:
+          type: string
+        rt:
+          type: string
+          format: uuid
+      x-tags:
+        - login
+    ProfileAuthorities:
+      title: ProfileAuthorities
+      x-stoplight:
+        id: 6064718f6e78f
+      type: object
+      properties:
+        authorities:
+          type: array
+          items:
+            type: string
+            enum:
+              - ALL
+      x-tags:
+        - profile
+    Error:
+      title: Error
+      x-stoplight:
+        id: g23db9wagwp2p
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: integer
+          format: int64
+        errorClass:
+          type: string
+      description: Error responce
+  responses:
+    LoginGet:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginGetRs'
+    LoginJwtRs:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginRs'
+    ClientAuthorities:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ProfileAuthorities'
+    ErrorRs:
+      description: Error responce
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+  requestBodies:
+    LoginRefresh:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginRefresh'
+      description: Login refresh
+    Login:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginRq'
+tags:
+  - name: login
+security:
+  - JWT: []
