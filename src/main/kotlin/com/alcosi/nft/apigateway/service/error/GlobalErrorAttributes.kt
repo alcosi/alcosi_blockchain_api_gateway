@@ -33,23 +33,25 @@ import org.springframework.boot.web.error.ErrorAttributeOptions
 import org.springframework.boot.web.reactive.error.DefaultErrorAttributes
 import org.springframework.web.reactive.function.server.ServerRequest
 
-class GlobalErrorAttributes : DefaultErrorAttributes(),Logging {
-    override fun getErrorAttributes(request: ServerRequest, options: ErrorAttributeOptions): Map<String, Any> {
+class GlobalErrorAttributes : DefaultErrorAttributes(), Logging {
+    override fun getErrorAttributes(
+        request: ServerRequest,
+        options: ErrorAttributeOptions,
+    ): Map<String, Any> {
         val t = super.getError(request)
-        logger.error("Unhandled error ${request.exchange().request.id}",t)
+        logger.error("Unhandled error ${request.exchange().request.id}", t)
         val map = super.getErrorAttributes(request, options)
-        if (t is ApiException){
+        if (t is ApiException) {
             map["status"] = t.httpCode
             map["errorCode"] = t.code
         } else if (t is ExpiredJwtException) {
             map["status"] = 401
             map["errorCode"] = 4011
-        }else{
+        } else {
             map["errorCode"] = 5000
         }
         map["message"] = t.message
         map["errorClass"] = t.javaClass.name
         return map
     }
-
 }

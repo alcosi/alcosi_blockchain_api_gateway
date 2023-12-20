@@ -32,6 +32,6 @@ class WrongTokenTypeException() : ApiSecurityException(
     """
 Wrong token type. Only Bearer is supported
     """
-        .trimIndent(),401120
-) {
-}
+        .trimIndent(),
+    401120,
+)

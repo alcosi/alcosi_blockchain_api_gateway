@@ -30,13 +30,15 @@ import org.springframework.http.HttpMethod
 import reactor.core.publisher.Mono
 
 interface LoginRequestProcess {
-    fun rqTypes():List<REQUEST_TYPE>
-    fun types():List<TYPE>
+    fun rqTypes(): List<RequestType>
 
-    fun method():HttpMethod
-    enum class REQUEST_TYPE { GET, POST, PUT }
+    fun types(): List<TYPE>
+
+    fun method(): HttpMethod
+
+    enum class RequestType { GET, POST, PUT }
+
     enum class TYPE { BEFORE, AFTER }
 
     fun process(wallet: String): Mono<Void>
-
 }

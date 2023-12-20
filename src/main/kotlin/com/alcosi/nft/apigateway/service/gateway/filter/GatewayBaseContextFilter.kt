@@ -35,7 +35,7 @@ import reactor.core.publisher.Mono
 import java.net.URI
 
 open class GatewayBaseContextFilter(val orderInt: Int, microserviceUri: URI) : GatewayFilter, Ordered {
-    protected val delegate: GatewayFilter;
+    protected val delegate: GatewayFilter
 
     init {
         if (microserviceUri.path != null && microserviceUri.path.isNotBlank()) {
@@ -47,7 +47,10 @@ open class GatewayBaseContextFilter(val orderInt: Int, microserviceUri: URI) : G
         }
     }
 
-    override fun filter(exchange: ServerWebExchange?, chain: GatewayFilterChain?): Mono<Void> {
+    override fun filter(
+        exchange: ServerWebExchange?,
+        chain: GatewayFilterChain?,
+    ): Mono<Void> {
         return delegate.filter(exchange, chain)
     }
 

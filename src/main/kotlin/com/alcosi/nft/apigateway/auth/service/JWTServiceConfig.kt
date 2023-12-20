@@ -26,29 +26,39 @@
 
 package com.alcosi.nft.apigateway.auth.service
 
-import com.alcosi.nft.apigateway.service.multi_wallet.MultiWalletProvider
-import org.springframework.beans.factory.annotation.Value
+import com.alcosi.nft.apigateway.service.multiWallet.MultiWalletProvider
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.time.Duration
 
 @Configuration
-class JWTServiceConfig(
-    @Value("\${jwt.key.private:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}") val appPrivateKey: String,
-) {
+@EnableConfigurationProperties(EthJwtProperties::class)
+@ConditionalOnProperty(
+    prefix = "filter.config.path.security.type",
+    name = ["method"],
+    havingValue = "ETH_JWT",
+    matchIfMissing = true,
+)
+class JWTServiceConfig {
     @Bean
     @ConditionalOnMissingBean(CheckJWTService::class)
-    fun getCheckJWTService():CheckJWTService{
-        return CheckJWTService(appPrivateKey)
+    fun getCheckJWTService(properties: EthJwtProperties): CheckJWTService {
+        return CheckJWTService(properties.key.privateKey)
     }
+
     @Bean
     @ConditionalOnMissingBean(CreateJWTService::class)
     fun getCreateJWTService(
-        @Value("\${jwt.token.lifetime:1h}")  tokenLifetime: Duration,
-        @Value("\${jwt.token.issuer:Test}")  tokenIssuer: String,
-        multiWalletProvider: MultiWalletProvider
-    ):CreateJWTService{
-        return CreateJWTService(tokenLifetime,tokenIssuer,appPrivateKey,multiWalletProvider)
+        properties: EthJwtProperties,
+        multiWalletProvider: MultiWalletProvider,
+    ): CreateJWTService {
+        return CreateJWTService(
+            properties.token.lifetime,
+            properties.token.issuer,
+            properties.key.private,
+            multiWalletProvider,
+        )
     }
 }

@@ -4,6 +4,41 @@ networks:
   external-network:
     external: true
 services:
+  nft-api-back-postgres:
+    image: postgres:16.1-alpine3.19
+    container_name: nft-api-back-postgres
+    hostname: nft-api-back-postgres
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=100"
+      - "-c"
+      - "max_replication_slots=0"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.max=1000"
+      - "-c"
+      - "random_page_cost=1.0"
+      - "-c"
+      - "pg_stat_statements.track=all"
+    environment:
+      POSTGRES_DB: "api_gateway"
+      POSTGRES_USER: "api_gateway_user"
+      POSTGRES_PASSWORD: "api_gateway_pass"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    mem_swappiness: 0
+    memswap_limit: 0m
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+    networks:
+      - external-network
   nft-api-back-cache:
     image: redis:7.2.1-alpine3.18
     container_name: nft-api-back-cache
@@ -25,7 +60,7 @@ services:
     networks:
       - external-network
   nft-api-back:
-    image: dockerhub.esas.by/nft-api-gateway:9.0_dev
+    image: harbor.alcosi.com/nft/nft-api-gateway:9.0_dev
     container_name: nft-api-back
     hostname: nft-api-back
     environment:
@@ -33,11 +68,12 @@ services:
       logging.level.root: "INFO"
       jwt.token.lifetime: "1h"
       logging.level.org.springframework.cloud.gateway: "INFO"
-      captcha.google.enabled: "false"
+      validation.google.captcha.enabled: "false"
       spring.data.redis.host: "nft-api-back-cache"
       spring.data.redis.port: "6379"
       spring.data.redis.password: "test_pass"
       spring.data.redis.timeout: "60000"
+
       gateway.microservice.uri.profile: "http://nft-profile:8064"
       gateway.microservice.uri.contract: "http://nft-contracts:8040/api"
       gateway.microservice.uri.auction: "http://nft-auction:8032/api"
@@ -46,6 +82,15 @@ services:
       gateway.microservice.uri.listing: "http://nft-listing:8077"
       filter.config.path.security.type.predicate: "REGEX"
       filter.config.path.security.type.match: "MATCH_IF_NOT_CONTAINS_IN_LIST"
+      filter.config.path.security.type.method: "ETH_JWT"
+      filter.config.path.security.identity-server.uri: "https://ids.iii.test"
+      filter.config.path.security.identity-server.client-id: "test_client"
+      filter.config.path.security.identity-server.client-secret: "test_client_secret"
+      filter.config.path.security.identity-server.client-scopes: ""
+      filter.config.path.security.identity-server.grant-type: "client_credentials"
+      filter.config.path.security.identity-server.password: ""
+      filter.config.path.security.identity-server.username: ""
+      filter.config.path.security.base-authorities: '["list":{"ALL"},"checkMode":"ANY"]'
       filter.config.path.security.path.openapi: '{"methods":["GET","HEAD","POST","PUT","PATCH","DELETE","OPTIONS","TRACE"],"path":"/openapi/.*"}'
       filter.config.path.security.path.login: '{"methods":["GET","HEAD","POST","PUT","PATCH","DELETE","OPTIONS","TRACE"],"path":"/v1/auth/login/.*"}'
       filter.config.path.security.path.search_profile: '{"methods":["GET"],"path":"/v1/profile/.*"}'
@@ -61,10 +106,10 @@ services:
       filter.config.path.proxy.token: '{"order":30,"addBasePath":true,"microserviceUri":"$${gateway.microservice.uri.token}","matches":[{"methods":["GET","POST"],"path":"/v1/token/*/*/*/mint"},{"methods":["POST"],"path":"/v1/token/*/{address}"}]}'
       filter.config.path.proxy.listing: '{"order":40,"addBasePath":true,"microserviceUri":"$${gateway.microservice.uri.listing}","matches":[{"methods":["POST"],"path":"/v1/listing/*/*/*"},{"methods":["GET","PUT","DELETE"],"path":"/v1/listing/*/*/*/*"}]}'
       filter.config.path.proxy.search: '[{"order":100,"addBasePath":true,"microserviceUri":"$${gateway.microservice.uri.search}","matches":[{"methods":["GET"],"path":"/v1/collection/**"},{"methods":["GET"],"path":"/v1/token/**"},{"methods":["GET"],"path":"/v1/collection*"},{"methods":["GET"],"path":"/v1/token*"},{"methods":["GET","POST"],"path":"/v1/event/**"}]}]'
-      gateway.microservice.uri.DefaultRequestLoginRequestProcess: "$${gateway.microservice.uri.profile}/v1/profile/"
-      gateway.defaultRequestLoginRequestProcess.rqTypes: 'POST'
-      gateway.defaultRequestLoginRequestProcess.types: 'AFTER'
-      gateway.defaultRequestLoginRequestProcess.method: 'POST'
+      gateway.default-request-login-request-process.serviceUri: "$${gateway.microservice.uri.profile}/v1/profile/"
+      gateway.default-request-login-request-process.rqTypes: 'POST'
+      gateway.default-request-login-request-process.types: 'AFTER'
+      gateway.default-request-login-request-process.serviceMethod: 'POST'
       JAVA_TOOL_OPTIONS: "
             -Xrunjdwp:transport=dt_socket,address=*:5006,server=y,suspend=n
             -XX:+UseContainerSupport
@@ -90,5 +135,6 @@ services:
         max-size: "6m"
     depends_on:
       - nft-api-back-cache
+      - nft-api-back-postgres
     networks:
       - external-network

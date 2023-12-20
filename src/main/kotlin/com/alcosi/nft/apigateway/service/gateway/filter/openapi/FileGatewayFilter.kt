@@ -37,21 +37,25 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 abstract class FileGatewayFilter(
-    val filePath: String ,
+    val filePath: String,
     val writer: GatewayFilterResponseWriter,
-    urlPath: String ): ControllerGatewayFilter,
+    urlPath: String,
+) : ControllerGatewayFilter,
     Logging {
-    protected val error404 = """
+    protected val error404 =
+        """
         {"errorCode":4040,"message":"no such file"}
-    """.trimIndent().toByteArray()
-    protected val regex: Pattern = "(${urlPath})(.*)".replace("/", "\\/").toPattern()
-    fun getMatcher(uri:String): Matcher {
+        """.trimIndent().toByteArray()
+    protected val regex: Pattern = "($urlPath)(.*)".replace("/", "\\/").toPattern()
+
+    fun getMatcher(uri: String): Matcher {
         return regex.matcher(uri)
     }
 
     override fun matches(request: ServerHttpRequest): Boolean {
         return getMatcher(request.path.toString()).matches()
     }
+
     fun write404(response: ServerHttpResponse): Mono<Void> {
         response.setRawStatusCode(404)
         response.headers.contentType = MediaType.APPLICATION_JSON

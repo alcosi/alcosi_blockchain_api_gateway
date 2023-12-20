@@ -27,5 +27,6 @@
 package com.alcosi.nft.apigateway.service.predicate
 
 enum class PredicateMatcherType {
-    MATCH_IF_NOT_CONTAINS_IN_LIST, MATCH_IF_CONTAINS_IN_LIST
+    MATCH_IF_NOT_CONTAINS_IN_LIST,
+    MATCH_IF_CONTAINS_IN_LIST,
 }

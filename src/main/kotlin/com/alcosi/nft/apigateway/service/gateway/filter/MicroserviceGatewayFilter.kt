@@ -30,4 +30,4 @@ import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.cloud.gateway.filter.GatewayFilter
 import org.springframework.core.Ordered
 
-interface MicroserviceGatewayFilter:GatewayFilter,Ordered,Logging
+interface MicroserviceGatewayFilter : GatewayFilter, Ordered, Logging

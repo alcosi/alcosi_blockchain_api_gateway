@@ -34,9 +34,9 @@ import org.springframework.http.server.reactive.ServerHttpRequest
 const val CONTROLLER_ORDER = Int.MAX_VALUE
 
 interface ControllerGatewayFilter : GatewayFilter, Ordered, Logging {
-    fun matches(request:ServerHttpRequest): Boolean
+    fun matches(request: ServerHttpRequest): Boolean
+
     override fun getOrder(): Int {
         return CONTROLLER_ORDER
     }
-
 }

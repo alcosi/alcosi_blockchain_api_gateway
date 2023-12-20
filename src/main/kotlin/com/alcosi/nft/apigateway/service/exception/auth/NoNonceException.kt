@@ -28,10 +28,10 @@ package com.alcosi.nft.apigateway.service.exception.auth
 
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiSecurityException
 
-class NoNonceException(wallet:String) : ApiSecurityException(
+class NoNonceException(wallet: String) : ApiSecurityException(
     """
 No cached nonce for  $wallet
     """
-        .trimIndent(),401101
-) {
-}
+        .trimIndent(),
+    401101,
+)

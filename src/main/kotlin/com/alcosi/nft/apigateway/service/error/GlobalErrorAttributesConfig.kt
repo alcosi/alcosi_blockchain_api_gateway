@@ -34,11 +34,10 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class GlobalErrorAttributesConfig :Logging {
+class GlobalErrorAttributesConfig : Logging {
     @Bean
-    @ConditionalOnMissingBean(value = [GlobalErrorAttributes::class], search = SearchStrategy.CURRENT)
-    fun getGlobalErrorAttributes():DefaultErrorAttributes{
+    @ConditionalOnMissingBean(value = [GlobalErrorAttributes::class])
+    fun getGlobalErrorAttributes(): DefaultErrorAttributes {
         return GlobalErrorAttributes()
     }
-
 }

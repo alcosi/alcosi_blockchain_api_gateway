@@ -32,7 +32,6 @@ class NotValidRTException() : ApiSecurityException(
     """
 Not valid RT data. Probably not the most recent data used
     """
-        .trimIndent(),401102
-) {
-
-}
+        .trimIndent(),
+    401102,
+)

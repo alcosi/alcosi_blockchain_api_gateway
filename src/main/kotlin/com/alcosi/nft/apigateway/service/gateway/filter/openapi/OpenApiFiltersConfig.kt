@@ -26,42 +26,54 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.openapi
 
+import com.alcosi.nft.apigateway.service.gateway.GatewayBasePathProperties
 import com.alcosi.nft.apigateway.service.gateway.filter.GatewayFilterResponseWriter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.ResourceLoader
 
 @Configuration
-@ConditionalOnProperty(prefix = "opendoc",name = ["disabled"], matchIfMissing = true, havingValue = "false")
+@EnableConfigurationProperties(OpenApiProperties::class, GatewayBasePathProperties::class)
+@ConditionalOnProperty(prefix = "opendoc", name = ["disabled"], matchIfMissing = true, havingValue = "false")
 class OpenApiFiltersConfig {
     @Bean
     @ConditionalOnMissingBean(SwaggerApiGatewayFilter::class)
     fun getSwaggerApiFilter(
-        @Value( "\${gateway.base.path:/api}/openapi/docs/swagger-ui/") swaggerUri:String,
+        openApiProperties: OpenApiProperties,
+        gatewayBasePathProperties: GatewayBasePathProperties,
         resourceLoader: ResourceLoader,
-        @Value("\${openapi.path.resource.swagger:classpath:com/alcosi/nft/apigateway/service/gateway/filter/openapi/swagger_html/}")  swaggerFilePath:String,
-        @Value("\${gateway.base.path:/api}\${gateway.openapi.path:/openapi/docs/}\${openapi.path.resource.openApiFile:openapi.yaml}")  openApiFileName:String,
         writer: GatewayFilterResponseWriter,
     ): SwaggerApiGatewayFilter {
-        return SwaggerApiGatewayFilter(writer,resourceLoader, swaggerUri,swaggerFilePath,openApiFileName)
+        return SwaggerApiGatewayFilter(
+            writer,
+            resourceLoader,
+            "${gatewayBasePathProperties.path}${openApiProperties.swaggerUri}",
+            openApiProperties.swaggerFilePath,
+            "${gatewayBasePathProperties.path}${openApiProperties.openApiFileUri}",
+        )
     }
+
     @Bean
-   @ConditionalOnMissingBean(OpenApiDocGatewayFilter::class)
+    @ConditionalOnMissingBean(OpenApiDocGatewayFilter::class)
     fun getOpenApiFilter(
-        @Value( "\${gateway.base.path:/api}\${gateway.openapi.path:/openapi/docs/}") openApiUri:String,
+        openApiProperties: OpenApiProperties,
+        gatewayBasePathProperties: GatewayBasePathProperties,
         @Value("\${gateway.base.path:/api}")
         basePath: String,
         resourceLoader: ResourceLoader,
-        @Value("\${openapi.path.resource.openapi:/opt/openapi/}")  docFilePath:String,
-        @Value("\${spring.cloud.gateway.fake-uri:http://127.0.200.1:87787}")  fakeUri:String,
         writer: GatewayFilterResponseWriter,
-        builder: RouteLocatorBuilder
+        builder: RouteLocatorBuilder,
     ): OpenApiDocGatewayFilter {
-        return OpenApiDocGatewayFilter(resourceLoader,docFilePath,writer, openApiUri)
+        return OpenApiDocGatewayFilter(
+            resourceLoader,
+            openApiProperties.openApiFilesPath,
+            writer,
+            "${gatewayBasePathProperties.path}${openApiProperties.openApiUri}",
+        )
     }
-
 }

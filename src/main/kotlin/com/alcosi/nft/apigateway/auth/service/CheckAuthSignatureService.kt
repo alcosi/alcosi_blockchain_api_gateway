@@ -30,24 +30,26 @@ import com.alcosi.lib.utils.PrepareHexService
 import com.alcosi.nft.apigateway.service.exception.auth.WrongSignerException
 import org.apache.commons.codec.binary.Hex
 import org.apache.logging.log4j.kotlin.Logging
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Service
 import org.web3j.crypto.Keys
 import org.web3j.crypto.Sign
 import org.web3j.crypto.Sign.SignatureData
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-@Service
-class CheckAuthSignatureService(
-    @Value("\${check.sign.disable:false}") protected val disable: Boolean,
-    protected val prepareArgsService: PrepareHexService):Logging {
-    fun check(nonce: com.alcosi.nft.apigateway.auth.dto.ClientNonce, signature: String) {
+open class CheckAuthSignatureService(
+    protected open val disable: Boolean,
+    protected open val prepareArgsService: PrepareHexService,
+) : Logging {
+    open fun check(
+        nonce: com.alcosi.nft.apigateway.auth.dto.ClientNonce,
+        signature: String,
+    ) {
         if (!disable) {
-            val pubKey = Sign.signedPrefixedMessageToKey(
-                nonce.msg.toByteArray(StandardCharsets.UTF_8),
-                getSignatureData(signature)
-            ).toString(16)
+            val pubKey =
+                Sign.signedPrefixedMessageToKey(
+                    nonce.msg.toByteArray(StandardCharsets.UTF_8),
+                    getSignatureData(signature),
+                ).toString(16)
             val recoveredWallet = Keys.getAddress(pubKey)
             if (!recoveredWallet.equals(prepareArgsService.prepareAddr(nonce.wallet), ignoreCase = true)) {
                 throw WrongSignerException(recoveredWallet, nonce.wallet)
@@ -55,16 +57,16 @@ class CheckAuthSignatureService(
         }
     }
 
-    protected fun getSignatureData(signature: String): SignatureData {
+    protected open fun getSignatureData(signature: String): SignatureData {
         val signatureBytes = Hex.decodeHex(prepareArgsService.prepareHex(signature))
         var v = signatureBytes[64]
         if (v < 27) {
-            v =(v+ 27).toByte()
+            v = (v + 27).toByte()
         }
         return SignatureData(
             v,
             Arrays.copyOfRange(signatureBytes, 0, 32),
-            Arrays.copyOfRange(signatureBytes, 32, 64)
+            Arrays.copyOfRange(signatureBytes, 32, 64),
         )
     }
 }

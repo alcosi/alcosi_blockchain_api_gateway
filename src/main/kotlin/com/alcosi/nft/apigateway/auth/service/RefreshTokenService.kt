@@ -26,48 +26,48 @@
 
 package com.alcosi.nft.apigateway.auth.service
 
-
 import com.alcosi.nft.apigateway.auth.dto.JWTAndRefreshToken
-import com.alcosi.nft.apigateway.auth.service.db.RefreshTokenDBComponen
+import com.alcosi.nft.apigateway.auth.service.db.RefreshTokenDBComponent
 import com.alcosi.nft.apigateway.service.exception.auth.WrongWalletException
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import kotlinx.coroutines.reactor.mono
-import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import java.util.*
 
-@Service
-class RefreshTokenService(
+open class RefreshTokenService(
     protected val createJWTService: CreateJWTService,
-    protected val dbComponent: RefreshTokenDBComponen,
+    protected val dbComponent: RefreshTokenDBComponent,
     protected val checkJWTService: CheckJWTService,
 ) {
-
-    fun refresh(wallet: String, jwtString: String, rt: UUID): Mono<JWTAndRefreshToken> {
+    open fun refresh(
+        wallet: String,
+        jwtString: String,
+        rt: UUID,
+    ): Mono<JWTAndRefreshToken> {
         val walletFromJWTMono = mono { getWalletFromToken(jwtString) }
-        val walletMono=walletFromJWTMono.flatMap { walletFromJWT ->
-            if (wallet != walletFromJWT) {
-                return@flatMap Mono.error(WrongWalletException(wallet))
+        val walletMono =
+            walletFromJWTMono.flatMap { walletFromJWT ->
+                if (wallet != walletFromJWT) {
+                    return@flatMap Mono.error(WrongWalletException(wallet))
+                }
+                dbComponent.checkIsValid(rt, jwtString.hashCode(), wallet)
+                    .zipWith(wallet.toMono())
+                    .map { it.t2 }
             }
-             dbComponent.checkIsValid(rt, jwtString.hashCode(), wallet)
-                 .zipWith(wallet.toMono())
-                 .map { it.t2 }
-        }
         return walletMono.flatMap { w -> saveInfo(w) }
     }
 
-
-    fun saveInfo(wallet: String): Mono<JWTAndRefreshToken> {
+    open fun saveInfo(wallet: String): Mono<JWTAndRefreshToken> {
         val newRt = UUID.randomUUID()
         return createJWTService.createJWT(wallet).flatMap {
             dbComponent.saveNew(wallet, newRt, it.hashCode())
-                .map {_->  (JWTAndRefreshToken(newRt, it))}
+                .map { _ -> (JWTAndRefreshToken(newRt, it)) }
         }
     }
 
-    protected fun getWalletFromToken(jwtString: String): String {
+    protected open fun getWalletFromToken(jwtString: String): String {
         return try {
             return parseClaims(checkJWTService.parse(jwtString))
         } catch (e: ExpiredJwtException) {
@@ -75,7 +75,7 @@ class RefreshTokenService(
         }
     }
 
-    protected fun parseClaims(claims: Claims): String {
+    protected open fun parseClaims(claims: Claims): String {
         return claims.get("currentWallet", String::class.java)
     }
 }

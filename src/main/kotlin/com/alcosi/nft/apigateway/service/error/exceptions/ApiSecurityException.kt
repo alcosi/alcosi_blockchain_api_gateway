@@ -26,7 +26,6 @@
 
 package com.alcosi.nft.apigateway.service.error.exceptions
 
-open class ApiSecurityException(code: Long, message: String) : ApiException(code, message,401) {
+open class ApiSecurityException(code: Long, message: String) : ApiException(code, message, 401) {
     constructor(message: String, code: Int) : this(code.toLong(), message)
-
 }

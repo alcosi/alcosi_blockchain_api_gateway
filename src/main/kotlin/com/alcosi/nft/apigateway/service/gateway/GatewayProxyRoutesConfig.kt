@@ -26,7 +26,7 @@
 
 package com.alcosi.nft.apigateway.service.gateway
 
-import com.alcosi.nft.apigateway.config.PathConfig
+import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
 import com.alcosi.nft.apigateway.service.DynamicRouteLocator
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -34,17 +34,15 @@ import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
-
 @Configuration
 class GatewayProxyRoutesConfig {
     @Bean
     @ConditionalOnMissingBean(DynamicRouteLocator::class)
     fun configDynamicRouteLocator(
-        props: PathConfig,
+        props: PathConfigurationComponent,
         filtersList: List<MicroserviceGatewayFilter>,
-        routesBuilder: RouteLocatorBuilder
+        routesBuilder: RouteLocatorBuilder,
     ): DynamicRouteLocator {
-        return DynamicRouteLocator(props.proxyConfig,filtersList,routesBuilder)
+        return DynamicRouteLocator(props.proxyConfig, filtersList, routesBuilder)
     }
-
 }

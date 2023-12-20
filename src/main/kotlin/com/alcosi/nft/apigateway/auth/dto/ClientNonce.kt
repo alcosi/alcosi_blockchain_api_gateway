@@ -24,13 +24,12 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.auth.dto;
+package com.alcosi.nft.apigateway.auth.dto
 
 import com.fasterxml.jackson.annotation.JsonAlias
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
-
-import java.time.LocalDateTime;
+import java.time.LocalDateTime
 
 @JvmRecord
 data class ClientNonce(
@@ -41,11 +40,11 @@ data class ClientNonce(
     val wallet: String,
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @JsonAlias("time")
-    val validUntil: LocalDateTime
+    val validUntil: LocalDateTime,
 ) {
     @JsonProperty("time")
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     fun time(): LocalDateTime {
-        return createdAt;
+        return createdAt
     }
 }

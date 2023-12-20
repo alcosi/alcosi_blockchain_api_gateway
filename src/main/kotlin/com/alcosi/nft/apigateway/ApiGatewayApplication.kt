@@ -26,9 +26,17 @@
 
 package com.alcosi.nft.apigateway
 
+import com.alcosi.lib.db.JdbcTemplateConfig
 import com.alcosi.lib.utils.ExternalJarLoad
 import org.springframework.boot.WebApplicationType
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
+import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
+import org.springframework.boot.autoconfigure.r2dbc.R2dbcTransactionManagerAutoConfiguration
+import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.scheduling.annotation.EnableScheduling
 import kotlin.io.path.Path
@@ -36,18 +44,22 @@ import kotlin.io.path.Path
 @EnableScheduling
 @SpringBootApplication(
     scanBasePackages = [
-        "com.alcosi.lib",
         "com.alcosi.nft.apigateway",
-        "com.github.breninsul.webfluxlogging",
-        "\${scan.basePackage:com.alcosi.nft.apigateway}"
-    ]
+        "\${scan.basePackage:com.alcosi.nft.apigateway}",
+    ],
+    exclude = [
+        RedisAutoConfiguration::class, RedisReactiveAutoConfiguration::class, // Redis
+        R2dbcAutoConfiguration::class, TransactionAutoConfiguration::class, R2dbcTransactionManagerAutoConfiguration::class, // R2DBC
+        DataSourceAutoConfiguration::class,
+        FlywayAutoConfiguration::class,
+        JdbcTemplateConfig::class, // JDBC - never used
+    ],
 )
 class ApiGatewayApplication
 
-
 fun main(args: Array<String>) {
     val externalJarDir = System.getenv()["external.jar.directory.path"] ?: "/opt/external-jar"
-    ExternalJarLoad().loadDependency(listOf(Path(externalJarDir)),true)
+    ExternalJarLoad().loadDependency(listOf(Path(externalJarDir)), true)
     SpringApplicationBuilder(ApiGatewayApplication::class.java)
         .web(WebApplicationType.REACTIVE)
         .run("")

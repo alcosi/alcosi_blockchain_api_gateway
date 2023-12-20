@@ -34,5 +34,8 @@ import java.util.UUID
 
 @JvmRecord
 @RedisHash("LoginRefreshToken")
-data class LoginRefreshToken(val refreshToken:UUID,val jwtHash:Int,@JsonFormat(shape = JsonFormat.Shape.STRING)val updatedAt:LocalDateTime = LocalDateTime.now()) : Serializable {
-}
+data class LoginRefreshToken(
+    val refreshToken: UUID,
+    val jwtHash: Int,
+    @JsonFormat(shape = JsonFormat.Shape.STRING)val updatedAt: LocalDateTime = LocalDateTime.now(),
+) : Serializable

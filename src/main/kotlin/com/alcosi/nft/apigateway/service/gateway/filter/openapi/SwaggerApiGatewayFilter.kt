@@ -36,7 +36,6 @@ import org.springframework.http.MediaType
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
-
 public const val SWAGGER_API_ORDER = 40
 
 open class SwaggerApiGatewayFilter(
@@ -45,24 +44,26 @@ open class SwaggerApiGatewayFilter(
     swaggerUriPath: String,
     filePath: String,
     val apiFilePath: String,
-    val swaggerFileRegex : Regex = "^([a-zA-Z0-9_\\-()])+(\\.png|\\.css|\\.html|\\.js)\$".toRegex()
+    val swaggerFileRegex: Regex = "^([a-zA-Z0-9_\\-()])+(\\.png|\\.css|\\.html|\\.js)\$".toRegex(),
+    private val order: Int = SWAGGER_API_ORDER,
 ) : FileGatewayFilter(filePath, gatewayFilterResponseWriter, swaggerUriPath),
-    Logging, Ordered {
+    Logging,
+    Ordered {
     protected val jsMediaType = MediaType.parseMediaType("application/javascript")
     protected val cssMediaType = MediaType.parseMediaType("text/css")
 
     override fun getOrder(): Int {
-        return SWAGGER_API_ORDER
+        return order
     }
 
     protected fun readFile(fileName: String): ByteArray {
-        if (!swaggerFileRegex.matches(fileName)){
-            throw ApiException(500,"Bad filename")
+        if (!swaggerFileRegex.matches(fileName)) {
+            throw ApiException(500, "Bad filename")
         }
         val getPackage = this.javaClass.getPackage().name.replace('.', '/')
-        val completeFilePath = "classpath:${getPackage}/swagger/html/${fileName}"
+        val completeFilePath = "classpath:$getPackage/swagger/html/$fileName"
         val resource = resourceLoader.getResource(completeFilePath).inputStream.readAllBytes()
-        val isInitializer = fileName.equals("swagger-initializer.js", true);
+        val isInitializer = fileName.equals("swagger-initializer.js", true)
         if (isInitializer) {
             return resource.toString(Charsets.UTF_8).replace("@apiPath@", apiFilePath).toByteArray()
         } else {
@@ -70,9 +71,12 @@ open class SwaggerApiGatewayFilter(
         }
     }
 
-    override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {
+    override fun filter(
+        exchange: ServerWebExchange,
+        chain: GatewayFilterChain,
+    ): Mono<Void> {
         val matcher = getMatcher(exchange.request.path.toString())
-        val response = exchange.response;
+        val response = exchange.response
         val matches = matcher.matches()
         if (matches) {
             val filePath = matcher.group(2)
@@ -97,8 +101,5 @@ open class SwaggerApiGatewayFilter(
         } else {
             return write404(response)
         }
-
     }
-
-
 }

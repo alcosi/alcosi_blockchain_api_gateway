@@ -26,7 +26,7 @@
 
 package com.alcosi.nft.apigateway.service
 
-import com.alcosi.nft.apigateway.config.PathConfig
+import com.alcosi.nft.apigateway.config.path.dto.ProxyRouteConfigDTO
 import com.alcosi.nft.apigateway.service.gateway.filter.GatewayBaseContextFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
 import org.springframework.cloud.gateway.route.Route
@@ -36,46 +36,49 @@ import reactor.core.publisher.Flux
 import java.net.URI
 
 open class DynamicRouteLocator(
-    val proxyRoutes: List<PathConfig.ProxyRouteConfig>,
+    val proxyRoutes: List<ProxyRouteConfigDTO>,
     val filtersList: List<MicroserviceGatewayFilter>,
-    val routesBuilder: RouteLocatorBuilder
+    val routesBuilder: RouteLocatorBuilder,
 ) : RouteLocator {
     val routesCache: Flux<Route> = initFlux()
 
     @OptIn(ExperimentalStdlibApi::class)
     open fun initFlux(): Flux<Route> {
         val routesListBuilder = routesBuilder.routes()
-        val mappedProxyRotes = proxyRoutes
-            .fold(routesListBuilder) { builder, routeConfig ->
-                val predicate = routeConfig.toPredicate()
-                val microserviceUri = URI(routeConfig.microserviceUri)
-                val withBasePathFilter = routeConfig.basePathFilter != false
-                val allFilters = if (withBasePathFilter) {
-                    val order = (filtersList.maxOfOrNull { it.order } ?: 0) + 1
-                    listOf(GatewayBaseContextFilter(order, microserviceUri)) + filtersList
-                } else filtersList
-                val mappedUri = if (withBasePathFilter) {
-                    URI(microserviceUri.scheme, microserviceUri.authority, null, null, null)
-                } else {
-                    microserviceUri
-                }
-                val configuredRoute = builder.route(routeConfig.name ?: routeConfig.hashCode().toHexString()) { route ->
-                    route
-                        .order(routeConfig.order?:0)
-                        .predicate(predicate)
-                        .filters { f -> f.filters(allFilters) }
-                        .uri(mappedUri)
-                }
-                return@fold configuredRoute
-            }.build().routes.sort { o1, o2 -> o1.order.compareTo(o2.order) }.cache()
+        val mappedProxyRotes =
+            proxyRoutes
+                .fold(routesListBuilder) { builder, routeConfig ->
+                    val predicate = routeConfig.toPredicate()
+                    val microserviceUri = URI(routeConfig.microserviceUri)
+                    val withBasePathFilter = routeConfig.basePathFilter != false
+                    val allFilters =
+                        if (withBasePathFilter) {
+                            val order = (filtersList.maxOfOrNull { it.order } ?: 0) + 1
+                            listOf(GatewayBaseContextFilter(order, microserviceUri)) + filtersList
+                        } else {
+                            filtersList
+                        }
+                    val mappedUri =
+                        if (withBasePathFilter) {
+                            URI(microserviceUri.scheme, microserviceUri.authority, null, null, null)
+                        } else {
+                            microserviceUri
+                        }
+                    val configuredRoute =
+                        builder.route(routeConfig.name ?: routeConfig.hashCode().toHexString()) { route ->
+                            route
+                                .order(routeConfig.order ?: 0)
+                                .predicate(predicate)
+                                .filters { f -> f.filters(allFilters) }
+                                .uri(mappedUri)
+                        }
+                    return@fold configuredRoute
+                }.build().routes.sort { o1, o2 -> o1.order.compareTo(o2.order) }.cache()
         mappedProxyRotes.subscribe()
         return mappedProxyRotes
     }
 
-
-
     override fun getRoutes(): Flux<Route> {
         return routesCache
     }
-
 }

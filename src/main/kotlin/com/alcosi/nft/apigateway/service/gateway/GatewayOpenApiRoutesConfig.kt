@@ -29,8 +29,8 @@ package com.alcosi.nft.apigateway.service.gateway
 import com.alcosi.nft.apigateway.service.gateway.filter.GatewayFilterResponseWriter
 import com.alcosi.nft.apigateway.service.gateway.filter.openapi.OpenApiDocGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.openapi.SwaggerApiGatewayFilter
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
 import org.springframework.context.annotation.Bean
@@ -38,15 +38,15 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.ResourceLoader
 
 @Configuration
+@EnableConfigurationProperties(GatewayBasePathProperties::class)
 @ConditionalOnProperty(prefix = "opendoc", name = ["disabled"], matchIfMissing = true, havingValue = "false")
 class GatewayOpenApiRoutesConfig {
-
     @Bean
     fun getSwaggerApiRoute(
         resourceLoader: ResourceLoader,
         filter: SwaggerApiGatewayFilter,
-        @Value("\${spring.cloud.gateway.fake-uri:http://127.0.200.1:87787}") fakeUri: String,
-        builder: RouteLocatorBuilder
+        properties: GatewayBasePathProperties,
+        builder: RouteLocatorBuilder,
     ): RouteLocator {
         return builder
             .routes()
@@ -55,7 +55,7 @@ class GatewayOpenApiRoutesConfig {
                     .filters { f ->
                         f.filters(listOf(filter))
                     }
-                    .uri(fakeUri)
+                    .uri(properties.fakeUri)
             }
             .build()
     }
@@ -64,10 +64,9 @@ class GatewayOpenApiRoutesConfig {
     fun getOpenApiRoute(
         filter: OpenApiDocGatewayFilter,
         resourceLoader: ResourceLoader,
-        @Value("\${openapi.path.resource.swagger:classpath:openapi/*}") docFilePath: String,
-        @Value("\${spring.cloud.gateway.fake-uri:http://127.0.200.1:87787}") fakeUri: String,
+        properties: GatewayBasePathProperties,
         writer: GatewayFilterResponseWriter,
-        builder: RouteLocatorBuilder
+        builder: RouteLocatorBuilder,
     ): RouteLocator {
         return builder
             .routes()
@@ -76,9 +75,8 @@ class GatewayOpenApiRoutesConfig {
                     .filters { f ->
                         f.filters(listOf(filter))
                     }
-                    .uri(fakeUri)
+                    .uri(properties.fakeUri)
             }
             .build()
     }
-
 }

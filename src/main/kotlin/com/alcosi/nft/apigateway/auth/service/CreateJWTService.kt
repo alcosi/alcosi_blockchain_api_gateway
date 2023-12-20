@@ -26,7 +26,7 @@
 
 package com.alcosi.nft.apigateway.auth.service
 
-import com.alcosi.nft.apigateway.service.multi_wallet.MultiWalletProvider
+import com.alcosi.nft.apigateway.service.multiWallet.MultiWalletProvider
 import io.jsonwebtoken.JwtBuilder
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.io.Decoders
@@ -37,38 +37,37 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
-class CreateJWTService(
+open class CreateJWTService(
     val tokenLifetime: Duration,
-     val tokenIssuer: String,
-     appPrivateKey: String,
-    protected val multiWalletProvider: MultiWalletProvider
+    val tokenIssuer: String,
+    appPrivateKey: String,
+    protected val multiWalletProvider: MultiWalletProvider,
 ) {
-    protected val privateKey: Key =Keys.hmacShaKeyFor(Decoders.BASE64.decode(appPrivateKey))
-    protected val builder: JwtBuilder = Jwts.builder()
+    protected open val privateKey: Key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(appPrivateKey))
+    protected open val builder: JwtBuilder = Jwts.builder()
 
-
-    fun createJWT(wallet: String?): Mono<String> {
+    open fun createJWT(wallet: String?): Mono<String> {
         return multiWalletProvider
             .getWalletsListByWallet(wallet!!)
-            .map {profileWalletsConfig->
-            builder
-                .setIssuer(tokenIssuer)
-                .setSubject("profile")
-                .claim("currentWallet", wallet)
-                .claim("profileId", profileWalletsConfig.profileId)
-                .claim("profileWallets", profileWalletsConfig.wallets)
-                .setId(wallet)
-                .claim("authorities", listOf("ALL"))
-                .setIssuedAt(Date.from(Instant.now()))
-                .setExpiration(
-                    Date.from(
-                        Instant.ofEpochMilli(System.currentTimeMillis()).plusSeconds(
-                            tokenLifetime.toSeconds()
-                        )
+            .map { profileWalletsConfig ->
+                builder
+                    .setIssuer(tokenIssuer)
+                    .setSubject("profile")
+                    .claim("currentWallet", wallet)
+                    .claim("profileId", profileWalletsConfig.profileId)
+                    .claim("profileWallets", profileWalletsConfig.wallets)
+                    .setId(wallet)
+                    .claim("authorities", listOf("ALL"))
+                    .setIssuedAt(Date.from(Instant.now()))
+                    .setExpiration(
+                        Date.from(
+                            Instant.ofEpochMilli(System.currentTimeMillis()).plusSeconds(
+                                tokenLifetime.toSeconds(),
+                            ),
+                        ),
                     )
-                )
-                .signWith(privateKey)
-                .compact()
-        }
+                    .signWith(privateKey)
+                    .compact()
+            }
     }
 }

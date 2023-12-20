@@ -32,8 +32,6 @@ import com.alcosi.nft.apigateway.auth.service.db.NonceDBComponent
 import com.alcosi.nft.apigateway.service.exception.auth.NoNonceException
 import kotlinx.coroutines.reactor.mono
 import org.apache.logging.log4j.kotlin.Logging
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
 import java.math.BigInteger
@@ -44,16 +42,16 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-@Component
-class NonceComponent(
+open class NonceComponent(
     protected val prepareArgsService: PrepareHexService,
     protected val prepareMsgComponent: PrepareLoginMsgComponent,
     protected val nonceDBComponent: NonceDBComponent,
-    @Value("\${jwt.nonce.lifetime:5m}") protected val lifetime: Duration,
-    ) : Logging {
-    protected val dateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
-    protected val random = SecureRandom();
-    fun getNewNonce(wallet: String?): Mono<ClientNonce> {
+    protected val lifetime: Duration,
+) : Logging {
+    protected open val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
+    protected open val random: Random = SecureRandom()
+
+    open fun getNewNonce(wallet: String?): Mono<ClientNonce> {
         return mono {
             logger.info("Get new nonce for wallet - $wallet")
             val currentDate = LocalDateTime.now()
@@ -64,22 +62,24 @@ class NonceComponent(
                 currentDate,
                 prepareMsgComponent.getMsg(prepareWallet, nonce),
                 prepareWallet,
-                currentDate.plus(lifetime)
+                currentDate.plus(lifetime),
             )
         }
             .flatMap { nonceDBComponent.saveNew(it.wallet, it).thenReturn(it) }
     }
 
-    fun getSavedNonce(wallet: String): Mono<ClientNonce> {
-        return (nonceDBComponent.get(wallet)
-            .switchIfEmpty { throw NoNonceException(wallet)  })
-                as Mono<ClientNonce>
+    open fun getSavedNonce(wallet: String): Mono<ClientNonce> {
+        return (
+            nonceDBComponent.get(wallet)
+                .switchIfEmpty { throw NoNonceException(wallet) }
+        )
+            as Mono<ClientNonce>
     }
 
-    fun nonce(): BigInteger {
+    open fun nonce(): BigInteger {
         val id = UUID.randomUUID()
         return BigInteger(
-            ByteBuffer.allocate(16).putLong(id.mostSignificantBits).putLong(id.leastSignificantBits).array()
-        );
+            ByteBuffer.allocate(16).putLong(id.mostSignificantBits).putLong(id.leastSignificantBits).array(),
+        )
     }
 }

@@ -27,31 +27,34 @@
 package com.alcosi.nft.apigateway.service.gateway
 
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
-import com.alcosi.nft.apigateway.service.gateway.filter.login.*
-import org.springframework.beans.factory.annotation.Value
+import com.alcosi.nft.apigateway.service.gateway.filter.ethLogin.*
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
+@EnableConfigurationProperties(GatewayBasePathProperties::class)
+@ConditionalOnProperty(prefix = "filter.config.path.security.type", name = ["method"], havingValue = "ETH_JWT", matchIfMissing = true)
 class LoginRoutesConfig {
     @Bean
     fun getAuthoritiesRoute(
         filtersList: List<MicroserviceGatewayFilter>,
         builder: RouteLocatorBuilder,
-        filter:AuthoritiesGetGatewayFilter,
-        @Value("\${spring.cloud.gateway.fake-uri:http://127.0.200.1:87787}")  fakeUri:String,
+        filter: AuthoritiesGetGatewayFilter,
+        properties: GatewayBasePathProperties,
     ): RouteLocator {
         return builder
             .routes()
             .route("authoritiesGet") { r ->
-                r.predicate{filter.matches(it.request) }
+                r.predicate { filter.matches(it.request) }
                     .filters { f ->
-                        f.filters(listOf(filter)+filtersList)
+                        f.filters(listOf(filter) + filtersList)
                     }
-                    .uri(fakeUri)
+                    .uri(properties.fakeUri)
             }
             .build()
     }
@@ -61,16 +64,16 @@ class LoginRoutesConfig {
         filter: LoginGetGatewayFilter,
         filtersList: List<MicroserviceGatewayFilter>,
         builder: RouteLocatorBuilder,
-        @Value("\${spring.cloud.gateway.fake-uri:http://127.0.200.1:87787}")  fakeUri:String,
+        properties: GatewayBasePathProperties,
     ): RouteLocator {
         return builder
             .routes()
             .route("loginGet") { r ->
-                r.predicate{filter.matches(it.request) }
+                r.predicate { filter.matches(it.request) }
                     .filters { f ->
-                        f.filters(listOf(filter)+filtersList)
+                        f.filters(listOf(filter) + filtersList)
                     }
-                    .uri(fakeUri)
+                    .uri(properties.fakeUri)
             }
             .build()
     }
@@ -80,16 +83,16 @@ class LoginRoutesConfig {
         filter: LoginPostGatewayFilter,
         filtersList: List<MicroserviceGatewayFilter>,
         builder: RouteLocatorBuilder,
-        @Value("\${spring.cloud.gateway.fake-uri:http://127.0.200.1:87787}")  fakeUri:String,
+        properties: GatewayBasePathProperties,
     ): RouteLocator {
         return builder
             .routes()
             .route("loginPost") { r ->
-                r.predicate{filter.matches(it.request) }
+                r.predicate { filter.matches(it.request) }
                     .filters { f ->
-                        f.filters(listOf(filter)+filtersList)
+                        f.filters(listOf(filter) + filtersList)
                     }
-                    .uri(fakeUri)
+                    .uri(properties.fakeUri)
             }
             .build()
     }
@@ -99,20 +102,19 @@ class LoginRoutesConfig {
         filter: LoginPutGatewayFilter,
         filtersList: List<MicroserviceGatewayFilter>,
         builder: RouteLocatorBuilder,
-        @Value("\${spring.cloud.gateway.fake-uri:http://127.0.200.1:87787}")  fakeUri:String,
+        properties: GatewayBasePathProperties,
     ): RouteLocator {
         return builder
             .routes()
             .route("loginPut") { r ->
-                r.predicate{filter.matches(it.request) }
+                r.predicate { filter.matches(it.request) }
                     .filters { f ->
-                        f.filters(listOf(filter)+filtersList)
+                        f.filters(listOf(filter) + filtersList)
                     }
-                    .uri(fakeUri)
+                    .uri(properties.fakeUri)
             }
             .build()
     }
-
 
     @Bean
     @ConditionalOnBean(AuthBoundWalletsPutGatewayFilter::class)
@@ -120,16 +122,16 @@ class LoginRoutesConfig {
         filter: AuthBoundWalletsPutGatewayFilter,
         filtersList: List<MicroserviceGatewayFilter>,
         builder: RouteLocatorBuilder,
-        @Value("\${spring.cloud.gateway.fake-uri:http://127.0.200.1:87787}")  fakeUri:String,
+        properties: GatewayBasePathProperties,
     ): RouteLocator {
         return builder
             .routes()
             .route("boundPut") { r ->
-                r.predicate{filter.matches(it.request) }
+                r.predicate { filter.matches(it.request) }
                     .filters { f ->
-                        f.filters(listOf(filter)+filtersList)
+                        f.filters(listOf(filter) + filtersList)
                     }
-                    .uri(fakeUri)
+                    .uri(properties.fakeUri)
             }
             .build()
     }

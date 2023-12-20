@@ -26,40 +26,29 @@
 
 package com.alcosi.nft.apigateway.auth.service
 
-import com.alcosi.lib.object_mapper.MappingHelper
+import com.alcosi.lib.objectMapper.MappingHelper
 import com.alcosi.nft.apigateway.service.error.ErrorRs
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiException
-import com.alcosi.nft.apigateway.service.gateway.filter.security.X_CLIENT_WALLET_HEADER
-import com.alcosi.nft.apigateway.service.gateway.filter.security.X_CLIENT_WALLET_LIST_HEADER
+import com.alcosi.nft.apigateway.service.gateway.filter.security.eth.EthJwtGatewayFilter
 import org.apache.logging.log4j.kotlin.Logging
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate
 import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.HttpMethod
-import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 
-
-@Component
-@ConditionalOnSingleCandidate(LoginRequestProcess::class)
-@ConditionalOnProperty(matchIfMissing=true, prefix = "gateway.defaultRequestLoginRequestProcess", value= ["enabled"],havingValue = "true")
-class DefaultRequestLoginRequestProcess(
-    @Value("\${gateway.microservice.uri.DefaultRequestLoginRequestProcess}") val serviceUri: String,
-    @Value("\${gateway.defaultRequestLoginRequestProcess.rqTypes:}") rqTypesString: String,
-    @Value("\${gateway.defaultRequestLoginRequestProcess.types:}") typesString: String,
-    @Value("\${gateway.defaultRequestLoginRequestProcess.method:POST}") val  method: HttpMethod,
+open class DefaultRequestLoginRequestProcess(
+    val serviceUri: String,
+    val rqTypes: List<LoginRequestProcess.RequestType>,
+    val types: List<LoginRequestProcess.TYPE>,
+    val method: HttpMethod,
     val webClient: WebClient,
-    val mappingHelper: MappingHelper
+    val mappingHelper: MappingHelper,
 ) : Logging, LoginRequestProcess {
-    protected val rqTypes: List<LoginRequestProcess.REQUEST_TYPE> =
-        rqTypesString.split(",").map { LoginRequestProcess.REQUEST_TYPE.valueOf(it) }
-    protected val types: List<LoginRequestProcess.TYPE> =
-        typesString.split(",").map { LoginRequestProcess.TYPE.valueOf(it) }
+    open val clientWalletHeader: String = EthJwtGatewayFilter.CLIENT_WALLET_HEADER
+    open val clientWalletsHeader: String = EthJwtGatewayFilter.CLIENT_WALLETS_HEADER
 
-    override fun rqTypes(): List<LoginRequestProcess.REQUEST_TYPE> {
+    override fun rqTypes(): List<LoginRequestProcess.RequestType> {
         return rqTypes
     }
 
@@ -73,27 +62,35 @@ class DefaultRequestLoginRequestProcess(
 
     override fun process(wallet: String): Mono<Void> {
         val uri = "$serviceUri/$wallet"
-        val response = webClient
-            .method(method())
-            .uri(uri)
-            .header(X_CLIENT_WALLET_HEADER, wallet)
-            .header(X_CLIENT_WALLET_LIST_HEADER, listOf(wallet).joinToString  (","))
-            .exchangeToMono { res ->
-                val t = res.body { inputMessage, _ ->
-                    val msg = DataBufferUtils.join(inputMessage.body)
-                        .publishOn(Schedulers.boundedElastic())
-                        .map { it.asInputStream().readAllBytes() }
-                        .map { bytes -> String(bytes) }
-                    return@body msg
+        val response =
+            webClient
+                .method(method())
+                .uri(uri)
+                .header(clientWalletHeader, wallet)
+                .header(clientWalletsHeader, listOf(wallet).joinToString(","))
+                .exchangeToMono { res ->
+                    val t =
+                        res.body { inputMessage, _ ->
+                            val msg =
+                                DataBufferUtils.join(inputMessage.body)
+                                    .publishOn(Schedulers.boundedElastic())
+                                    .map { it.asInputStream().readAllBytes() }
+                                    .map { bytes -> String(bytes) }
+                            return@body msg
+                        }
+                    return@exchangeToMono t.map { it to res }
                 }
-                return@exchangeToMono t.map { it to res }
-            }
         return response.flatMap { rs ->
             if (!rs.second.statusCode().is2xxSuccessful) {
                 logger.error("Error processing $wallet ${rs.first}")
                 try {
                     val errorRs = mappingHelper.mapOne(rs.first, ErrorRs::class.java)
-                    return@flatMap Mono.error(object : ApiException(errorRs?.errorCode?:5040, errorRs?.message?:"Can't create user :${rs.first}") {})
+                    return@flatMap Mono.error(
+                        object : ApiException(
+                            errorRs?.errorCode ?: 5040,
+                            errorRs?.message ?: "Can't create user :${rs.first}",
+                        ) {},
+                    )
                 } catch (t: Throwable) {
                     return@flatMap Mono.error(object : ApiException(5040, "Can't process: ${rs.first}") {})
                 }

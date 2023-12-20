@@ -29,5 +29,4 @@ package com.alcosi.nft.apigateway.service.error.exceptions
 import org.springframework.http.HttpStatusCode
 import org.springframework.web.server.ResponseStatusException
 
-open class ApiException(val code: Long, message:String, val httpCode:Int = code.toString().substring(0,3).toInt()): ResponseStatusException(HttpStatusCode.valueOf(httpCode), message){
-}
+open class ApiException(val code: Long, message: String, val httpCode: Int = code.toString().substring(0, 3).toInt()) : ResponseStatusException(HttpStatusCode.valueOf(httpCode), message)

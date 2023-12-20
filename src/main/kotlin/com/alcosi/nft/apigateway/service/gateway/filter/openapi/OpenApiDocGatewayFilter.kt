@@ -47,34 +47,39 @@ open class OpenApiDocGatewayFilter(
     filePath: String,
     val gatewayFilterResponseWriter: GatewayFilterResponseWriter,
     openApiUri: String,
-    val openDocFileRegex: Regex = "^([a-zA-Z0-9_\\-()])+(\\.yaml|\\.json)\$".toRegex()
+    val openDocFileRegex: Regex = "^([a-zA-Z0-9_\\-()])+(\\.yaml|\\.json)\$".toRegex(),
+    private val order: Int = OPEN_API_ORDER,
 ) : FileGatewayFilter(filePath, gatewayFilterResponseWriter, openApiUri),
-    Logging, Ordered {
+    Logging,
+    Ordered {
     val patternResolver = PathMatchingResourcePatternResolver(resourceLoader)
     val yamlMediaType = MediaType.parseMediaType("text/yaml")
 
     override fun getOrder(): Int {
-        return OPEN_API_ORDER
+        return order
     }
 
     protected fun readFile(fileName: String): ByteArray {
         if (!openDocFileRegex.matches(fileName)) {
             throw ApiException(500, "Bad filename")
         }
-        val inputStream = if (!filePath.startsWith("classpath", true)) {
-            val path = filePath + fileName
-            File(path).inputStream()
-        } else {
-            patternResolver.getResource("$filePath$fileName").inputStream
-        }
+        val inputStream =
+            if (!filePath.startsWith("classpath", true)) {
+                val path = filePath + fileName
+                File(path).inputStream()
+            } else {
+                patternResolver.getResource("$filePath$fileName").inputStream
+            }
         return inputStream.readAllBytes()
     }
 
-
-    override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {
+    override fun filter(
+        exchange: ServerWebExchange,
+        chain: GatewayFilterChain,
+    ): Mono<Void> {
         val uri = exchange.request.path.toString()
         val matcher = getMatcher(uri)
-        val response = exchange.response;
+        val response = exchange.response
         val matches = matcher.matches()
         if (matches) {
             val filePath = matcher.group(2)
@@ -82,9 +87,10 @@ open class OpenApiDocGatewayFilter(
             if (file == null) {
                 return write404(response)
             } else {
-                val cachceControl = CacheControl
-                    .maxAge(Duration.ofDays(1))
-                    .cachePublic()
+                val cachceControl =
+                    CacheControl
+                        .maxAge(Duration.ofDays(1))
+                        .cachePublic()
                 response.headers.cacheControl = cachceControl.headerValue
                 if (filePath.endsWith("yaml", true) || filePath.endsWith("yml", true)) {
                     response.headers.contentType = yamlMediaType
@@ -99,5 +105,4 @@ open class OpenApiDocGatewayFilter(
             return write404(response)
         }
     }
-
 }

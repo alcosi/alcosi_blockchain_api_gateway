@@ -28,10 +28,10 @@ package com.alcosi.nft.apigateway.service.exception.auth
 
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiSecurityException
 
-class WrongWalletException(wallet:String) : ApiSecurityException(
+class WrongWalletException(wallet: String) : ApiSecurityException(
     """
 Wallet is wrong for this JWT  $wallet
     """
-        .trimIndent(),40110
-) {
-}
+        .trimIndent(),
+    40110,
+)

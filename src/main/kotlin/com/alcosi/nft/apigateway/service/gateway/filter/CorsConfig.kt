@@ -28,6 +28,7 @@ package com.alcosi.nft.apigateway.service.gateway.filter
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -36,12 +37,13 @@ import org.springframework.web.cors.reactive.CorsWebFilter
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
 
 @ConditionalOnProperty(
-    prefix = "com.alcosi.nft.apigateway.cors-filter",
+    prefix = "gateway.filter.cors",
     name = ["enabled"],
     matchIfMissing = true,
-    havingValue = "true"
+    havingValue = "true",
 )
 @Configuration
+@EnableConfigurationProperties(CorsFilterProperties::class)
 class CorsConfig : CorsConfiguration() {
     @Bean
     @ConditionalOnMissingBean(CorsWebFilter::class)

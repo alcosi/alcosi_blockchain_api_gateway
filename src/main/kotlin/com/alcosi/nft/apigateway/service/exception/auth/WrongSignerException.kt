@@ -28,10 +28,10 @@ package com.alcosi.nft.apigateway.service.exception.auth
 
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiSecurityException
 
-class WrongSignerException(walletSign:String,walletRq:String) : ApiSecurityException(
+class WrongSignerException(walletSign: String, walletRq: String) : ApiSecurityException(
     """
 Wrong signer. Sign: $walletSign rq:$walletRq
     """
-        .trimIndent(),401100
-) {
-}
+        .trimIndent(),
+    401100,
+)
