@@ -32,7 +32,7 @@ buildscript{
 
 group = "com.alcosi.nft"
 version = "1.0"
-java.sourceCompatibility = JavaVersion.VERSION_19
+java.sourceCompatibility = JavaVersion.VERSION_21
 val web3jVersion = "4.10.3"
 val jjwtVersion = "0.12.3"
 val openApiJoinedFile = "openapi.yaml"
@@ -165,12 +165,12 @@ configurations {
 }
 
 dependencies {
-    implementation("com.alcosi:commons-library-basic-dependency:3.2.0.1.10")
-    implementation("com.github.breninsul:webflux-logging:+")
+    implementation("com.alcosi:commons-library-basic-dependency:3.2.0.2.6")
+    implementation("com.github.breninsul:webflux-logging:1.0.13")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:+")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:+")
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway:4.0.8")
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway:4.1.0")
     implementation("org.apache.commons:commons-pool2:2.12.0")
     implementation("jakarta.servlet:jakarta.servlet-api:5.0.0")
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
@@ -229,7 +229,7 @@ tasks.register<Exec>("joinApi") {
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "19"
+        jvmTarget = "21"
     }
 }
 

@@ -29,6 +29,7 @@ package com.alcosi.nft.apigateway.config
 import com.alcosi.lib.object_mapper.MappingHelper
 import com.alcosi.nft.apigateway.service.predicate.ApiRegexRequestMatcherPredicate
 import com.alcosi.nft.apigateway.service.predicate.ApiRequestMvcMatcherPredicate
+import com.alcosi.nft.apigateway.service.predicate.RouteConfigGatewayPredicate
 import com.alcosi.nft.apigateway.service.predicate.PredicateMatcherType
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -123,7 +124,6 @@ class PathConfig(
             }
         }
     }
-
     @JvmRecord
     data class ProxyRouteConfig(
         val name: String?,
@@ -135,20 +135,26 @@ class PathConfig(
         val basePathFilter: Boolean?,
         val order: Int?,
         val basePath: String?,
-        val addBasePath:Boolean?
+        val addBasePath:Boolean?,
+        val encryptFields:List<String>?,
     ) {
-        fun toPredicate(): Predicate<ServerWebExchange> {
+
+        fun toPredicate(): RouteConfigGatewayPredicate {
             val predicateMatcherType = matchType ?: PredicateMatcherType.MATCH_IF_CONTAINS_IN_LIST
             val predicateType = type ?: PREDICATE_TYPE.MVC
             val prefix= if (addBasePath==false)  "" else (basePath?:"")
-            return when (predicateType) {
+            val predicate= when (predicateType) {
                 PREDICATE_TYPE.MVC -> ApiRequestMvcMatcherPredicate(prefix,predicateMatcherType, matches)
                 PREDICATE_TYPE.REGEX -> ApiRegexRequestMatcherPredicate(prefix,predicateMatcherType, matches)
             }
+            return RouteConfigGatewayPredicate(predicate,this,ATTRIBUTE_CONFIG_FIELD)
         }
     }
 
     enum class PREDICATE_TYPE {
         MVC, REGEX;
+    }
+    companion object{
+        open public val ATTRIBUTE_CONFIG_FIELD: String = "ATTRIBUTES_CONFIG"
     }
 }
