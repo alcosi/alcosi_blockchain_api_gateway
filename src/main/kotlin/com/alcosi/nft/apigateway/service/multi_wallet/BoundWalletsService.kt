@@ -26,10 +26,10 @@
 
 package com.alcosi.nft.apigateway.service.multi_wallet
 
-import com.alcosi.nft.apigateway.auth.dto.SecurityClient
+import com.alcosi.nft.apigateway.auth.dto.EthClient
 import reactor.core.publisher.Mono
 
 interface BoundWalletsService {
 
-    fun bound(client:SecurityClient,walletSecond:String):Mono<String>
+    fun bound(client:EthClient, walletSecond:String):Mono<String>
 }

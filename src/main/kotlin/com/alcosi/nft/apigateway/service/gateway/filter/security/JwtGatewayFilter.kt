@@ -26,10 +26,9 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.security
 
-import com.alcosi.lib.object_mapper.MappingHelper
-import com.alcosi.nft.apigateway.auth.dto.SecurityClient
-import com.alcosi.nft.apigateway.auth.service.CheckJWTService
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
+import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter.Companion.SECURITY_CLIENT_ATTRIBUTE
+import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter.Companion.SECURITY_LOG_ORDER
 import org.apache.commons.lang3.StringUtils
 import org.springframework.cloud.gateway.filter.GatewayFilterChain
 import org.springframework.http.HttpMethod
@@ -39,68 +38,53 @@ import org.springframework.web.server.ServerWebExchangeDecorator
 import reactor.core.publisher.Mono
 import java.security.Principal
 
-const val JWT_LOG_ORDER = 10
-const val SECURITY_CLIENT_ATTRIBUTE = "SecurityClientAttribute"
-const val AUTHORIZATION_HEADER = "Authorization"
-const val X_CLIENT_WALLET_HEADER = "X-Client-Wallet"
-const val X_CLIENT_WALLET_LIST_HEADER = "X-Client-Wallets"
-const val X_CLIENT_ID_HEADER = "X-Client-Id"
 
-open class JwtGatewayFilter(
-    val securityGatewayFilter:SecurityGatewayFilter,
-    protected val checkJWTService: CheckJWTService,
-    protected val mappingHelper: MappingHelper,
-) :
-    MicroserviceGatewayFilter {
+abstract class JwtGatewayFilter(
+    val securityGatewayFilter: SecurityGatewayFilter,
+    protected val authHeaders: List<String>,
+    private val order: Int = JWT_LOG_ORDER,
+    val jwtHeader: String = AUTHORIZATION_HEADER,
+    val securityClientAttribute: String = SECURITY_CLIENT_ATTRIBUTE,
+) : MicroserviceGatewayFilter {
     override fun getOrder(): Int {
-        return JWT_LOG_ORDER
+        return order
     }
 
     override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {
         val isOptions = exchange.request.method == HttpMethod.OPTIONS
-        val isSecurityRequest = securityGatewayFilter.predicate.test(exchange)
-        if (isOptions||!isSecurityRequest) {
+        if (isOptions) {
             return chain.filter(exchange)
         }
-        val jwt = getHeaderInternal(exchange.request)?.substring(7)
-        val exchangeWithClient = if (jwt != null) {
-            val claims = checkJWTService.parse(jwt)
-            val currentWallet = claims.get("currentWallet", String::class.java)
-            val profileWallets = claims.get("profileWallets",List::class.java) as List<String>
-            val profileId = claims.get("profileId", String::class.java)
-            exchange.attributes[SECURITY_CLIENT_ATTRIBUTE] = SecurityClient(currentWallet,profileWallets, profileId)
-            val withWallet = exchange.request
-                .mutate()
-                .header(X_CLIENT_WALLET_HEADER, currentWallet)
-                .header(X_CLIENT_WALLET_LIST_HEADER,profileWallets.joinToString (","))
-                .header(X_CLIENT_ID_HEADER,profileId)
-                .build()
-            exchange.mutate().request(withWallet).build()
+        val isSecurityRequest = securityGatewayFilter.predicate.test(exchange)
+        if (!isSecurityRequest) {
+            return chain.filter(exchange)
+        }
+        val token = getHeaderInternal(exchange.request, jwtHeader)?.substring(7)
+        val clearedExchange = clearExchange(exchange)
+        if (token == null) {
+            return chain.filter(clearedExchange)
         } else {
-            val withNoWallet = exchange.request.mutate().header(X_CLIENT_WALLET_HEADER, null).build()
-            exchange.mutate().request(withNoWallet).build()
+            val exchangeWithClient = mutateExchange(token, clearedExchange, securityClientAttribute)
+            val withPrincipal = exchangeWithClient.map { createExchangeWithPrincipal(it) }
+            return withPrincipal.flatMap { chain.filter(it) }
         }
-        return chain.filter(PrincipalWebExchange(exchangeWithClient))
     }
 
-   open class PrincipalWebExchange(
-        delegateExchange: ServerWebExchange,
-    ) : ServerWebExchangeDecorator(delegateExchange) {
-        override fun <T : Principal> getPrincipal(): Mono<T> {
-            val attribute = getAttribute<T?>(SECURITY_CLIENT_ATTRIBUTE)
-            return if (attribute == null) {
-                Mono.empty()
-            } else {
-                Mono.just(attribute as T)
-            }
-        }
-
+    protected fun clearExchange(exchange: ServerWebExchange): ServerWebExchange {
+        val rqBuilder = exchange.request.mutate()
+        authHeaders.forEach { rqBuilder.header(it, null) }
+        val clearRq = rqBuilder.build()
+        return exchange.mutate().request(clearRq).build()
     }
 
-    protected fun getHeaderInternal(request: ServerHttpRequest): String? {
-        val tokenString = request.headers[AUTHORIZATION_HEADER]?.firstOrNull()
+    protected open fun createExchangeWithPrincipal(exchangeWithClient: ServerWebExchange): ServerWebExchange {
+        return PrincipalWebExchange(exchangeWithClient, securityClientAttribute)
+    }
+
+    protected fun getHeaderInternal(request: ServerHttpRequest, authHeader: String): String? {
+        val tokenString = request.headers[authHeader]?.firstOrNull()
         return if (tokenString.isNullOrEmpty()) {
-            val parameter = request.queryParams[AUTHORIZATION_HEADER]?.firstOrNull() ?: return null
+            val parameter = request.queryParams[authHeader]?.firstOrNull() ?: return null
             if (request.method == HttpMethod.GET &&
                 StringUtils.isNotEmpty(parameter) &&
                 !parameter.startsWith("Bearer")
@@ -110,5 +94,29 @@ open class JwtGatewayFilter(
         } else tokenString
     }
 
+    abstract fun mutateExchange(
+        jwt: String,
+        exchange: ServerWebExchange,
+        clientAttribute: String
+    ): Mono<ServerWebExchange>
 
+    open class PrincipalWebExchange(
+        delegateExchange: ServerWebExchange,
+        protected val securityClientAttribute: String
+    ) : ServerWebExchangeDecorator(delegateExchange) {
+        override fun <T : Principal> getPrincipal(): Mono<T> {
+            val attribute = getAttribute<T?>(securityClientAttribute)
+            return if (attribute == null) {
+                Mono.empty()
+            } else {
+                Mono.just(attribute as T)
+            }
+        }
+
+    }
+
+    companion object {
+        const val JWT_LOG_ORDER = SECURITY_LOG_ORDER - 10
+        const val AUTHORIZATION_HEADER = "Authorization"
+    }
 }

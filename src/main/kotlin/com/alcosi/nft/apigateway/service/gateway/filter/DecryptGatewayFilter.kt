@@ -18,7 +18,8 @@ import reactor.core.scheduler.Schedulers
 open class DecryptGatewayFilter(
     val utils: CommonLoggingUtils,
     val sensitiveComponent: SensitiveComponent,
-    val keyProvider: KeyProvider
+    val keyProvider: KeyProvider,
+    private val order: Int = Int.MIN_VALUE,
 ) : MicroserviceGatewayFilter {
     override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {
         val decorated=exchange.mutate().response(DecryptResponseDecorator(exchange, utils, sensitiveComponent, keyProvider)).build()
@@ -28,7 +29,7 @@ open class DecryptGatewayFilter(
     }
 
     override fun getOrder(): Int {
-        return Int.MIN_VALUE
+        return order
     }
 
     open class DecryptResponseDecorator(

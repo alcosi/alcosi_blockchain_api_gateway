@@ -24,38 +24,39 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.gateway.filter.login
+package com.alcosi.nft.apigateway.service.gateway.filter.eth_login
 
 import com.alcosi.lib.utils.PrepareHexService
-import com.alcosi.nft.apigateway.auth.dto.ProfileAuthorities
-import com.alcosi.nft.apigateway.auth.dto.SecurityClient
-import com.alcosi.nft.apigateway.service.error.exceptions.ApiSecurityException
+import com.alcosi.nft.apigateway.auth.service.LoginRequestProcess
+import com.alcosi.nft.apigateway.auth.service.RefreshTokenService
 import com.alcosi.nft.apigateway.service.gateway.filter.GatewayFilterResponseWriter
-import com.alcosi.nft.apigateway.service.gateway.filter.security.SECURITY_CLIENT_ATTRIBUTE
+import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.cloud.gateway.filter.GatewayFilterChain
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
+import java.util.*
 
 
-open class AuthoritiesGetGatewayFilter(
-    basePath: String,
+open class LoginPutGatewayFilter(
+    basePath:String,
     writer: GatewayFilterResponseWriter,
-    uriRegexString: String,
-    prepareHexService: PrepareHexService,
-    ) : LoginAbstractGatewayFilter(basePath, writer, listOf(HttpMethod.GET), uriRegexString, listOf(), prepareHexService) {
-
-    override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {
-        val client = exchange.getAttribute<SecurityClient?>(SECURITY_CLIENT_ATTRIBUTE) ?: throw ApiSecurityException(
-            4017,
-            "Not authorised"
-        )
-        val authorities = ProfileAuthorities(
-            client.authorities.map { com.alcosi.nft.apigateway.auth.dto.ProfileAuthorities.AUTHORITIES.valueOf(it.name) })
-        return writer.writeJson(exchange.response, authorities)
-    }
+     prepareHexService: PrepareHexService,
+    val refreshTokenService: RefreshTokenService,
+    uriRegex:String,
+    loginProcessors: List<LoginRequestProcess>,
+) : LoginAbstractGatewayFilter(basePath,writer, listOf(HttpMethod.PUT), uriRegex ,loginProcessors.filter { it.rqTypes().contains(LoginRequestProcess.REQUEST_TYPE.PUT) },prepareHexService) {
     override fun internal(wallet: String, exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Any> {
-        TODO("Not yet implemented")
+        val wallet = prepareHexService.prepareAddr(getWallet(exchange.request))
+        val bodyMonoJson=writer.readBody(exchange,JsonNode::class.java)
+        val token=bodyMonoJson.flatMap { bodyJson ->
+            val jwt = bodyJson["jwt"]?.asText()?:exchange.request.headers.getFirst(HttpHeaders.AUTHORIZATION)!!.split(" ")[1]
+            val rt = UUID.fromString(bodyJson["rt"].asText())
+            val refreshToken = refreshTokenService.refresh(wallet, jwt, rt)
+            refreshToken
+        }
+        return token as Mono<Any>;
     }
 
 }

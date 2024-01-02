@@ -24,41 +24,44 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.predicate
+package com.alcosi.nft.apigateway.service.gateway.filter.eth_login
 
-import com.alcosi.nft.apigateway.config.FilterMatchConfig
-import org.apache.logging.log4j.kotlin.Logging
+import com.alcosi.lib.utils.PrepareHexService
+import com.alcosi.nft.apigateway.auth.service.CheckAuthSignatureService
+import com.alcosi.nft.apigateway.auth.service.LoginRequestProcess
+import com.alcosi.nft.apigateway.auth.service.NonceComponent
+import com.alcosi.nft.apigateway.auth.service.RefreshTokenService
+import com.alcosi.nft.apigateway.service.gateway.filter.GatewayFilterResponseWriter
+import com.fasterxml.jackson.databind.JsonNode
+import org.springframework.cloud.gateway.filter.GatewayFilterChain
 import org.springframework.http.HttpMethod
-import org.springframework.http.server.PathContainer
-import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.web.server.ServerWebExchange
-import org.springframework.web.util.pattern.PathPattern
-import java.util.function.Predicate
+import reactor.core.publisher.Mono
 
-open class ApiRequestMvcMatcherPredicate(
-    val prefix:String,
-    val type: PredicateMatcherType,
-    allowListMap: List<FilterMatchConfig>
-) : Logging, Predicate<ServerWebExchange> {
 
-    val allowListMvcMapMap: Map<PathPattern, List<HttpMethod>> = run {
-        val map = mutableMapOf<PathPattern, List<HttpMethod>>()
-        map.putAll(allowListMap.map {  it.toMvcPair(prefix) })
-        map
-    }
+open class LoginPostGatewayFilter(
+    basePath: String,
+    writer: GatewayFilterResponseWriter,
+    prepareHexService: PrepareHexService,
+    val refreshTokenService: RefreshTokenService,
+    val nonceComponent: NonceComponent,
+    val checkSignatureService: CheckAuthSignatureService,
+    uriRegexString:String,
+    loginProcessors: List<LoginRequestProcess>,
+    ) : LoginAbstractGatewayFilter(basePath, writer, listOf(HttpMethod.POST),uriRegexString,loginProcessors.filter { it.rqTypes().contains(LoginRequestProcess.REQUEST_TYPE.POST) },prepareHexService) {
 
-    protected fun check(request: ServerHttpRequest): Boolean {
-        val uri = request.path.toString();
-        val matches =
-            allowListMvcMapMap.entries.filter { it.key.matches(PathContainer.parsePath(uri)) }.any { it.value.contains(request.method) }
-        return if (type == PredicateMatcherType.MATCH_IF_NOT_CONTAINS_IN_LIST) {
-            !matches
-        } else {
-            matches
+    override fun internal(wallet:String,exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Any> {
+        val bodyJsonMono = writer.readBody(exchange, JsonNode::class.java)
+        val tokenMono = bodyJsonMono
+            .flatMap {
+            val check = nonceComponent.getSavedNonce(wallet)
+                .map { nonce ->
+                    checkSignatureService.check(nonce, it["sign"].asText())
+                    return@map nonce
+                }
+            return@flatMap check.then(refreshTokenService.saveInfo(wallet))
         }
+        return tokenMono as Mono<Any>
     }
 
-    override fun test(t: ServerWebExchange): Boolean {
-        return check(t.request)
-    }
 }

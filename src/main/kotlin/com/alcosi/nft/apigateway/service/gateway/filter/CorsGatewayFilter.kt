@@ -32,12 +32,13 @@ import org.springframework.http.server.reactive.ServerHttpRequest
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
-const val CORS_LOG_ORDER = Int.MIN_VALUE + 10
 
-open class CorsGatewayFilter(val writer: GatewayFilterResponseWriter) : MicroserviceGatewayFilter {
+open class CorsGatewayFilter(val writer: GatewayFilterResponseWriter,
+                             private val order: Int = Int.MIN_VALUE + 10
+) : MicroserviceGatewayFilter {
     val emptyRs = "".toByteArray()
     override fun getOrder(): Int {
-        return CORS_LOG_ORDER
+        return order
     }
 
     open fun matches(request: ServerHttpRequest): Boolean {

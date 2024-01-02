@@ -27,7 +27,7 @@
 package com.alcosi.nft.apigateway.service.gateway
 
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
-import com.alcosi.nft.apigateway.service.gateway.filter.login.*
+import com.alcosi.nft.apigateway.service.gateway.filter.eth_login.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.cloud.gateway.route.RouteLocator

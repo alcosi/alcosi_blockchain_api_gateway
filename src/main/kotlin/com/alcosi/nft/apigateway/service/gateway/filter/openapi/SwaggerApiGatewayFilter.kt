@@ -45,14 +45,15 @@ open class SwaggerApiGatewayFilter(
     swaggerUriPath: String,
     filePath: String,
     val apiFilePath: String,
-    val swaggerFileRegex : Regex = "^([a-zA-Z0-9_\\-()])+(\\.png|\\.css|\\.html|\\.js)\$".toRegex()
+    val swaggerFileRegex : Regex = "^([a-zA-Z0-9_\\-()])+(\\.png|\\.css|\\.html|\\.js)\$".toRegex(),
+    private val order: Int = SWAGGER_API_ORDER
 ) : FileGatewayFilter(filePath, gatewayFilterResponseWriter, swaggerUriPath),
     Logging, Ordered {
     protected val jsMediaType = MediaType.parseMediaType("application/javascript")
     protected val cssMediaType = MediaType.parseMediaType("text/css")
 
     override fun getOrder(): Int {
-        return SWAGGER_API_ORDER
+        return order
     }
 
     protected fun readFile(fileName: String): ByteArray {

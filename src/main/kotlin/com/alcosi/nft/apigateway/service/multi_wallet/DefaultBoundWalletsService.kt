@@ -27,10 +27,10 @@
 package com.alcosi.nft.apigateway.service.multi_wallet
 
 import com.alcosi.lib.object_mapper.MappingHelper
-import com.alcosi.nft.apigateway.auth.dto.SecurityClient
-import com.alcosi.nft.apigateway.service.gateway.filter.security.X_CLIENT_ID_HEADER
-import com.alcosi.nft.apigateway.service.gateway.filter.security.X_CLIENT_WALLET_HEADER
-import com.alcosi.nft.apigateway.service.gateway.filter.security.X_CLIENT_WALLET_LIST_HEADER
+import com.alcosi.nft.apigateway.auth.dto.EthClient
+import com.alcosi.nft.apigateway.service.gateway.filter.security.eth.EthJwtGatewayFilter.Companion.CLIENT_ID_HEADER
+import com.alcosi.nft.apigateway.service.gateway.filter.security.eth.EthJwtGatewayFilter.Companion.CLIENT_WALLETS_HEADER
+import com.alcosi.nft.apigateway.service.gateway.filter.security.eth.EthJwtGatewayFilter.Companion.CLIENT_WALLET_HEADER
 import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
@@ -44,16 +44,16 @@ class DefaultBoundWalletsService(
     @JvmRecord
     data class AddRs(val status:String) {
     }
-    override fun bound(client: SecurityClient, walletSecond: String): Mono<String> {
+    override fun bound(client: EthClient, walletSecond: String): Mono<String> {
         val uri=serviceUriTemplate
             .replace("{profileId}",client.profileId)
             .replace("{walletSecond}",walletSecond);
         return webClient
             .method(method)
             .uri(uri)
-            .header(X_CLIENT_WALLET_HEADER,client.currentWallet)
-            .header(X_CLIENT_WALLET_LIST_HEADER,(client.profileWallets+listOf(walletSecond)).joinToString(","))
-            .header(X_CLIENT_ID_HEADER,client.profileId)
+            .header(CLIENT_WALLET_HEADER,client.currentWallet)
+            .header(CLIENT_WALLETS_HEADER,(client.profileWallets+listOf(walletSecond)).joinToString(","))
+            .header(CLIENT_ID_HEADER,client.profileId)
             .retrieve()
             .bodyToMono(AddRs::class.java)
             .map {it.status }

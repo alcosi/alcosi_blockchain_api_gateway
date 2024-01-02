@@ -46,6 +46,15 @@ services:
       gateway.microservice.uri.listing: "http://nft-listing:8077"
       filter.config.path.security.type.predicate: "REGEX"
       filter.config.path.security.type.match: "MATCH_IF_NOT_CONTAINS_IN_LIST"
+      filter.config.path.security.type.method: "ETH_JWT"
+      filter.config.path.security.identity_server.uri: "https://ids.iii.test"
+      filter.config.path.security.identity_server.client_id: "test_client"
+      filter.config.path.security.identity_server.client_secret: "test_client_secret"
+      filter.config.path.security.identity_server.client_scopes: ""
+      filter.config.path.security.identity_server.grant_type: "client_credentials"
+      filter.config.path.security.identity_server.password: ""
+      filter.config.path.security.identity_server.username: ""
+      filter.config.path.security.base_authorities: '["ALL"]'
       filter.config.path.security.path.openapi: '{"methods":["GET","HEAD","POST","PUT","PATCH","DELETE","OPTIONS","TRACE"],"path":"/openapi/.*"}'
       filter.config.path.security.path.login: '{"methods":["GET","HEAD","POST","PUT","PATCH","DELETE","OPTIONS","TRACE"],"path":"/v1/auth/login/.*"}'
       filter.config.path.security.path.search_profile: '{"methods":["GET"],"path":"/v1/profile/.*"}'

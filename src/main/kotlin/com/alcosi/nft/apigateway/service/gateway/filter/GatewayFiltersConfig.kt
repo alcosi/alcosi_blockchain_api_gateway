@@ -26,11 +26,13 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter
 
+import com.alcosi.lib.filters.HeaderHelper
 import com.alcosi.lib.object_mapper.MappingHelper
 import com.alcosi.lib.secured.encrypt.SensitiveComponent
 import com.alcosi.lib.secured.encrypt.key.KeyProvider
 import com.alcosi.nft.apigateway.auth.service.CheckJWTService
 import com.alcosi.nft.apigateway.config.PathConfig
+import com.alcosi.nft.apigateway.config.PathConfigProperties
 import com.alcosi.nft.apigateway.service.gateway.filter.security.CaptchaGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
@@ -48,12 +50,23 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class GatewayFiltersConfig {
     @Bean
-    @ConditionalOnMissingBean
+    fun getPathConfig(
+        properties: PathConfigProperties,
+        helper: MappingHelper,
+        objectMapper: ObjectMapper,
+        @Value("\${gateway.base.path:/api}") basePath: String
+    ): PathConfig {
+        return PathConfig(properties, helper, objectMapper, basePath)
+    }
+    @Bean
     fun getSpringCloudGatewayLoggingFilter(
-        @Value("\${com.github.breninsul.webfluxlogging.logging.add_id_header.spring_cloud_gateway:true}") addIdHeader: Boolean,
         springCloudGatewayLoggingUtils: SpringCloudGatewayLoggingUtils,
+        encryptFilters:List<EncryptGatewayFilter>,
+        decryptFilters: List<DecryptGatewayFilter>
     ): SpringCloudGatewayLoggingFilter {
-        return SpringCloudGatewayLoggingFilter(addIdHeader,springCloudGatewayLoggingUtils, Int.MIN_VALUE+1 )
+        val maxFromEncryptFilters = (encryptFilters + decryptFilters).map { it.order + 1 }+ listOf(Int.MIN_VALUE)
+        val orderVal= maxFromEncryptFilters.max()
+        return SpringCloudGatewayLoggingFilter(true,springCloudGatewayLoggingUtils, orderVal,HeaderHelper.RQ_ID)
     }
     @Bean
     fun getGatewayFilterResponseWriter(mappingHelper: MappingHelper): GatewayFilterResponseWriter {
@@ -76,23 +89,7 @@ class GatewayFiltersConfig {
         return MultipartToJsonGatewayFilter()
     }
 
-    @Bean
-    @ConditionalOnMissingBean(JwtGatewayFilter::class)
-    fun getJwtGatewayFilter(
-        securityGatewayFilter: SecurityGatewayFilter,
-        checkJWTService: CheckJWTService,
-        mappingHelper: MappingHelper
-    ): JwtGatewayFilter {
-        return JwtGatewayFilter(securityGatewayFilter, checkJWTService,mappingHelper)
-    }
 
-    @Bean
-    @ConditionalOnMissingBean(SecurityGatewayFilter::class)
-    fun getSecurityGatewayFilter(
-        pathConfig: PathConfig
-    ): SecurityGatewayFilter {
-        return SecurityGatewayFilter(pathConfig.securityConfig.toPredicate())
-    }
     @Bean
     @ConditionalOnMissingBean(EncryptGatewayFilter::class)
     fun getEncryptGatewayFilter(
@@ -100,7 +97,7 @@ class GatewayFiltersConfig {
         keyProvider: KeyProvider,
         objectMapper: ObjectMapper
     ): EncryptGatewayFilter {
-        return EncryptGatewayFilter(commonUtils,keyProvider, objectMapper)
+        return EncryptGatewayFilter(commonUtils,keyProvider, objectMapper,PathConfig.ATTRIBUTE_PROXY_CONFIG_FIELD)
     }
     @Bean
     @ConditionalOnMissingBean(DecryptGatewayFilter::class)
@@ -120,5 +117,12 @@ class GatewayFiltersConfig {
     ): CaptchaGatewayFilter {
         return CaptchaGatewayFilter(captchaService, pathConfig.captchaConfig.toPredicate())
     }
-
+    @Bean
+    @ConditionalOnMissingBean(ContextHeadersGatewayFilter::class)
+    fun getContextHeadersGatewayFilter(
+        @Value("\${spring.application.name:API_GATEWAY}")  serviceName: String,
+        @Value("\${spring.application.environment:dev}")  environment: String,
+    ): ContextHeadersGatewayFilter {
+        return ContextHeadersGatewayFilter(serviceName, environment)
+    }
 }

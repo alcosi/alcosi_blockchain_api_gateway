@@ -27,8 +27,6 @@
 package com.alcosi.nft.apigateway.auth.dto
 
 @JvmRecord
-data class ProfileAuthorities(val authorities:List<com.alcosi.nft.apigateway.auth.dto.ProfileAuthorities.AUTHORITIES>) {
-    enum class AUTHORITIES(){
-        ALL
-    }
+data class ProfileAuthorities(val authorities:List<String>) {
+
 }

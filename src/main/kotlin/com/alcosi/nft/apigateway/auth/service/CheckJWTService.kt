@@ -33,17 +33,17 @@ import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import org.apache.logging.log4j.kotlin.Logging
 
-class CheckJWTService (privateKey: String):Logging {
+open class CheckJWTService (privateKey: String):Logging {
     protected val jwtParser: JwtParser = buildParser(privateKey)
 
-    protected fun buildParser(pk:String):JwtParser{
+    protected open fun buildParser(pk:String):JwtParser{
         return Jwts.parser()
             .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(pk)))
             .build()
     }
 
 
-    fun parse(jwtString: String): Claims {
+   open fun parse(jwtString: String): Claims {
         val claimsJws = jwtParser.parseSignedClaims(jwtString)
         return claimsJws.payload
     }

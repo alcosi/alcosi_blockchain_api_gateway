@@ -47,14 +47,15 @@ open class OpenApiDocGatewayFilter(
     filePath: String,
     val gatewayFilterResponseWriter: GatewayFilterResponseWriter,
     openApiUri: String,
-    val openDocFileRegex: Regex = "^([a-zA-Z0-9_\\-()])+(\\.yaml|\\.json)\$".toRegex()
+    val openDocFileRegex: Regex = "^([a-zA-Z0-9_\\-()])+(\\.yaml|\\.json)\$".toRegex(),
+    private val order: Int = OPEN_API_ORDER
 ) : FileGatewayFilter(filePath, gatewayFilterResponseWriter, openApiUri),
     Logging, Ordered {
     val patternResolver = PathMatchingResourcePatternResolver(resourceLoader)
     val yamlMediaType = MediaType.parseMediaType("text/yaml")
 
     override fun getOrder(): Int {
-        return OPEN_API_ORDER
+        return order
     }
 
     protected fun readFile(fileName: String): ByteArray {

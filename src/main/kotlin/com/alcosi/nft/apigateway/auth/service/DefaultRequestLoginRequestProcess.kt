@@ -29,8 +29,8 @@ package com.alcosi.nft.apigateway.auth.service
 import com.alcosi.lib.object_mapper.MappingHelper
 import com.alcosi.nft.apigateway.service.error.ErrorRs
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiException
-import com.alcosi.nft.apigateway.service.gateway.filter.security.X_CLIENT_WALLET_HEADER
-import com.alcosi.nft.apigateway.service.gateway.filter.security.X_CLIENT_WALLET_LIST_HEADER
+import com.alcosi.nft.apigateway.service.gateway.filter.security.eth.EthJwtGatewayFilter
+
 import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -45,15 +45,23 @@ import reactor.core.scheduler.Schedulers
 
 @Component
 @ConditionalOnSingleCandidate(LoginRequestProcess::class)
-@ConditionalOnProperty(matchIfMissing=true, prefix = "gateway.defaultRequestLoginRequestProcess", value= ["enabled"],havingValue = "true")
-class DefaultRequestLoginRequestProcess(
+@ConditionalOnProperty(
+    matchIfMissing = true,
+    prefix = "gateway.defaultRequestLoginRequestProcess",
+    value = ["enabled"],
+    havingValue = "true"
+)
+open class DefaultRequestLoginRequestProcess(
     @Value("\${gateway.microservice.uri.DefaultRequestLoginRequestProcess}") val serviceUri: String,
     @Value("\${gateway.defaultRequestLoginRequestProcess.rqTypes:}") rqTypesString: String,
     @Value("\${gateway.defaultRequestLoginRequestProcess.types:}") typesString: String,
-    @Value("\${gateway.defaultRequestLoginRequestProcess.method:POST}") val  method: HttpMethod,
+    @Value("\${gateway.defaultRequestLoginRequestProcess.method:POST}") val method: HttpMethod,
     val webClient: WebClient,
-    val mappingHelper: MappingHelper
-) : Logging, LoginRequestProcess {
+    val mappingHelper: MappingHelper,
+
+    ) : Logging, LoginRequestProcess {
+    open val clientWalletHeader: String = EthJwtGatewayFilter.CLIENT_WALLET_HEADER
+    open val clientWalletsHeader: String = EthJwtGatewayFilter.CLIENT_WALLETS_HEADER
     protected val rqTypes: List<LoginRequestProcess.REQUEST_TYPE> =
         rqTypesString.split(",").map { LoginRequestProcess.REQUEST_TYPE.valueOf(it) }
     protected val types: List<LoginRequestProcess.TYPE> =
@@ -76,8 +84,8 @@ class DefaultRequestLoginRequestProcess(
         val response = webClient
             .method(method())
             .uri(uri)
-            .header(X_CLIENT_WALLET_HEADER, wallet)
-            .header(X_CLIENT_WALLET_LIST_HEADER, listOf(wallet).joinToString  (","))
+            .header(clientWalletHeader, wallet)
+            .header(clientWalletsHeader, listOf(wallet).joinToString(","))
             .exchangeToMono { res ->
                 val t = res.body { inputMessage, _ ->
                     val msg = DataBufferUtils.join(inputMessage.body)
@@ -93,7 +101,10 @@ class DefaultRequestLoginRequestProcess(
                 logger.error("Error processing $wallet ${rs.first}")
                 try {
                     val errorRs = mappingHelper.mapOne(rs.first, ErrorRs::class.java)
-                    return@flatMap Mono.error(object : ApiException(errorRs?.errorCode?:5040, errorRs?.message?:"Can't create user :${rs.first}") {})
+                    return@flatMap Mono.error(object : ApiException(
+                        errorRs?.errorCode ?: 5040,
+                        errorRs?.message ?: "Can't create user :${rs.first}"
+                    ) {})
                 } catch (t: Throwable) {
                     return@flatMap Mono.error(object : ApiException(5040, "Can't process: ${rs.first}") {})
                 }

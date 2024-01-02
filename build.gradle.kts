@@ -165,7 +165,7 @@ configurations {
 }
 
 dependencies {
-    implementation("com.alcosi:commons-library-basic-dependency:3.2.0.2.6")
+    implementation("com.alcosi:commons-library-basic-dependency:3.2.0.2.9")
     implementation("com.github.breninsul:webflux-logging:1.0.13")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:+")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:+")

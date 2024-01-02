@@ -46,7 +46,7 @@ import reactor.core.scheduler.Schedulers
 
 private val TRANSFER_ENCODING_VALUE = "chunked"
 
-open class MultipartToJsonGatewayFilter() : MicroserviceGatewayFilter {
+open class MultipartToJsonGatewayFilter(private val order: Int = 0) : MicroserviceGatewayFilter {
     override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {
 
         val contentType = exchange.request.headers.contentType
@@ -65,7 +65,7 @@ open class MultipartToJsonGatewayFilter() : MicroserviceGatewayFilter {
     }
 
     override fun getOrder(): Int {
-        return 0
+        return order
     }
 
     open class MultipartToJsonWebExchange(delegate: ServerWebExchange) : ServerWebExchangeDecorator(delegate) {
@@ -113,13 +113,13 @@ open class MultipartToJsonGatewayFilter() : MicroserviceGatewayFilter {
         protected fun setJsonNodeValue(
             value: Any?,
             node: ObjectNode,
-            key:String
+            key: String
         ): ObjectNode {
             if (value != null) {
                 if (value is JsonNode) {
                     node.set(key, value as JsonNode)
                 } else {
-                    node.put(key,value as String)
+                    node.put(key, value as String)
                 }
             }
             return node
@@ -144,7 +144,7 @@ open class MultipartToJsonGatewayFilter() : MicroserviceGatewayFilter {
         }
 
         companion object {
-             val objectMapper = jacksonObjectMapper()
+            val objectMapper = jacksonObjectMapper()
         }
     }
 }

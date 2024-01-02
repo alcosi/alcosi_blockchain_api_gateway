@@ -31,18 +31,17 @@ import org.springframework.cloud.gateway.filter.factory.StripPrefixGatewayFilter
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
-open class StripBaseUriFilter(        basePath:String):MicroserviceGatewayFilter {
-    protected val toDelete=basePath.count { it=='/' }
-    protected val filter = StripPrefixGatewayFilterFactory().apply {
-            c: StripPrefixGatewayFilterFactory.Config ->
+open class StripBaseUriFilter(basePath: String, private val order: Int = -50) : MicroserviceGatewayFilter {
+    protected val toDelete = basePath.count { it == '/' }
+    protected val filter = StripPrefixGatewayFilterFactory().apply { c: StripPrefixGatewayFilterFactory.Config ->
         c.parts = toDelete
     }
 
     override fun filter(exchange: ServerWebExchange?, chain: GatewayFilterChain?): Mono<Void> {
-      return  filter.filter(exchange,chain)
+        return filter.filter(exchange, chain)
     }
 
     override fun getOrder(): Int {
-       return -50;
+        return order
     }
 }

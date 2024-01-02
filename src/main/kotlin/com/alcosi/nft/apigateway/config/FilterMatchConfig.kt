@@ -26,30 +26,24 @@
 
 package com.alcosi.nft.apigateway.config
 
+import com.fasterxml.jackson.annotation.JsonCreator
+import org.springframework.core.Ordered
 import org.springframework.http.HttpMethod
-import org.springframework.web.util.pattern.PathPattern
-import org.springframework.web.util.pattern.PathPatternParser
 
-@JvmRecord
-data class FilterMatchConfig(val methods: List<HttpMethod>, val path: String) {
-
-    fun toRegexPair(prefix:String): Pair<Regex, List<HttpMethod>> {
-        return pathRegex(prefix) to methods
+open class FilterMatchConfig @JsonCreator constructor(
+    val methods: List<HttpMethod>,
+    val path: String,
+    private val authorities: List<String>?,
+    private val order: Int?
+    ): Ordered,Comparable<FilterMatchConfig> {
+    fun authorities():List<String>{
+        return authorities?: listOf("ALL")
+    }
+    override fun getOrder(): Int {
+        return order?:0
     }
 
-    fun toMvcPair(prefix:String): Pair<PathPattern, List<HttpMethod>> {
-        return pathMvc(prefix) to methods
-    }
-
-    fun pathMvc(prefix:String): PathPattern {
-        return pathPatternParser.parse("$prefix$path")
-    }
-
-    fun pathRegex( prefix:String): Regex {
-        return "$prefix$path".replace("/", "\\/").toRegex()
-    }
-
-    companion object {
-        val pathPatternParser = PathPatternParser()
+    override fun compareTo(other: FilterMatchConfig): Int {
+        return getOrder().compareTo(other.getOrder())
     }
 }

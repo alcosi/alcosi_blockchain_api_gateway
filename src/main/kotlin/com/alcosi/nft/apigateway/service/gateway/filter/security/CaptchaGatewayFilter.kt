@@ -28,6 +28,7 @@ package com.alcosi.nft.apigateway.service.gateway.filter.security
 
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiCaptchaException
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
+import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilter.Companion.JWT_LOG_ORDER
 import com.alcosi.nft.apigateway.service.validation.CaptchaService
 import org.springframework.cloud.gateway.filter.GatewayFilterChain
 import org.springframework.http.HttpMethod
@@ -38,10 +39,11 @@ import java.util.function.Predicate
 
 open class CaptchaGatewayFilter(
     val captchaService: CaptchaService,
-    val predicate: Predicate<ServerWebExchange>
+    val predicate: Predicate<ServerWebExchange>,
+    private val order: Int = JWT_LOG_ORDER + 11
 ) : MicroserviceGatewayFilter {
     override fun getOrder(): Int {
-        return JWT_LOG_ORDER + 11;
+        return order
     }
 
     override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {

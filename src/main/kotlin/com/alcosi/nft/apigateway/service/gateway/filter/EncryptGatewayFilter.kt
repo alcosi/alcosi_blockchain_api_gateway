@@ -4,7 +4,6 @@ import com.alcosi.lib.secured.container.SecuredDataByteArray
 import com.alcosi.lib.secured.container.SecuredDataString
 import com.alcosi.lib.secured.encrypt.key.KeyProvider
 import com.alcosi.nft.apigateway.config.PathConfig
-import com.alcosi.nft.apigateway.config.PathConfig.Companion.ATTRIBUTE_CONFIG_FIELD
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -31,7 +30,9 @@ private val TRANSFER_ENCODING_VALUE = "chunked"
 open class EncryptGatewayFilter(
     val utils: CommonLoggingUtils,
     val keyProvider: KeyProvider,
-    val objectMapper: ObjectMapper
+    val objectMapper: ObjectMapper,
+    val attrProxyConfigField:String,
+    private val order: Int = Int.MIN_VALUE
 ) : MicroserviceGatewayFilter {
     override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {
         val contentType = exchange.request.headers.contentType
@@ -47,25 +48,26 @@ open class EncryptGatewayFilter(
         }  else{
             exchange
         }
-        return chain.filter(EncryptWebExchange(exchangeMod, utils, keyProvider, objectMapper))
+        return chain.filter(EncryptWebExchange(exchangeMod, utils, keyProvider, objectMapper,attrProxyConfigField))
 
     }
 
     override fun getOrder(): Int {
-        return Int.MIN_VALUE
+        return order
     }
 
     open class EncryptWebExchange(
         delegate: ServerWebExchange,
         val utils: CommonLoggingUtils,
         val keyProvider: KeyProvider,
-        val objectMapper: ObjectMapper
-    ) :
+        val objectMapper: ObjectMapper,
+        val attrProxyConfigField:String,
+        ) :
         ServerWebExchangeDecorator(delegate), Logging {
-        val configFields = (delegate.attributes[ATTRIBUTE_CONFIG_FIELD] as PathConfig.ProxyRouteConfig?)?.encryptFields
+        val configFields = (delegate.attributes[attrProxyConfigField] as PathConfig.ProxyRouteConfig?)?.encryptFields
 
         override fun getRequest(): ServerHttpRequest {
-            return EncryptResponseDecorator(delegate, utils, keyProvider, objectMapper)
+            return EncryptResponseDecorator(delegate, utils, keyProvider, objectMapper,attrProxyConfigField)
         }
 
         override fun getMultipartData(): Mono<MultiValueMap<String, Part>> {
@@ -150,10 +152,11 @@ open class EncryptGatewayFilter(
         protected val exchange: ServerWebExchange,
         val utils: CommonLoggingUtils,
         val keyProvider: KeyProvider,
-        val objectMapper: ObjectMapper
-    ) :
+        val objectMapper: ObjectMapper,
+        val attrProxyConfigField:String,
+        ) :
         ServerHttpRequestDecorator(exchange.request), Logging {
-        val configFields = (exchange.attributes[ATTRIBUTE_CONFIG_FIELD] as PathConfig.ProxyRouteConfig?)?.encryptFields
+        val configFields = (exchange.attributes[attrProxyConfigField] as PathConfig.ProxyRouteConfig?)?.encryptFields
         override fun getBody(): Flux<DataBuffer> {
             if (configFields.isNullOrEmpty()) {
                 return super.getBody()

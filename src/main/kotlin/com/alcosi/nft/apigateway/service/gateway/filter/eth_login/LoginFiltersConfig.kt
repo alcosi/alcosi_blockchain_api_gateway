@@ -24,7 +24,7 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.gateway.filter.login
+package com.alcosi.nft.apigateway.service.gateway.filter.eth_login
 
 import com.alcosi.lib.object_mapper.MappingHelper
 import com.alcosi.lib.utils.PrepareHexService
@@ -33,6 +33,7 @@ import com.alcosi.nft.apigateway.auth.service.LoginRequestProcess
 import com.alcosi.nft.apigateway.auth.service.NonceComponent
 import com.alcosi.nft.apigateway.auth.service.RefreshTokenService
 import com.alcosi.nft.apigateway.service.gateway.filter.GatewayFilterResponseWriter
+import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
 import com.alcosi.nft.apigateway.service.multi_wallet.BoundWalletsService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
@@ -120,7 +121,7 @@ class LoginFiltersConfig {
         checkSignatureService: CheckAuthSignatureService,
          refreshTokenService: RefreshTokenService,
         ): AuthBoundWalletsPutGatewayFilter {
-        val filter = AuthBoundWalletsPutGatewayFilter(basePath,writer,uriRegexString,prepareHexService,mappingHelper,boundWalletsService,nonceComponent,checkSignatureService,refreshTokenService)
+        val filter = AuthBoundWalletsPutGatewayFilter(basePath,writer,uriRegexString,prepareHexService,mappingHelper,boundWalletsService,nonceComponent,checkSignatureService,refreshTokenService,SecurityGatewayFilter.SECURITY_CLIENT_ATTRIBUTE)
         return filter
     }
 }

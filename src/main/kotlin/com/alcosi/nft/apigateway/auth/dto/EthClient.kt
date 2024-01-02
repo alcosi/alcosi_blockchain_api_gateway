@@ -24,38 +24,19 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.predicate
+package com.alcosi.nft.apigateway.auth.dto
 
-import com.alcosi.nft.apigateway.config.FilterMatchConfig
-import org.apache.logging.log4j.kotlin.Logging
-import org.springframework.http.HttpMethod
-import org.springframework.http.server.reactive.ServerHttpRequest
-import org.springframework.web.server.ServerWebExchange
-import java.util.function.Predicate
-
-open class ApiRegexRequestMatcherPredicate(
-    prefix:String,
-    val type: PredicateMatcherType,
-    pathMethods: List<FilterMatchConfig>
-) : Logging, Predicate<ServerWebExchange> {
+import com.alcosi.lib.security.AccountDetails
 
 
-    val pathMethodsMap: Map<Regex, List<HttpMethod>> = run {
-        val map = mutableMapOf<Regex, List<HttpMethod>>()
-        map.putAll(pathMethods.map { it.toRegexPair(prefix) })
-        map
-    }
+class EthClient(
+    val currentWallet: String,
+    val profileWallets:List<String>,
+    val profileId:String,
+    authorities: List<String> = listOf("ALL")
+): AccountDetails(profileId,authorities) {
 
-    protected fun check(request: ServerHttpRequest): Boolean {
-        val uri = request.path.toString();
-        val matches = pathMethodsMap.entries.filter { it.key.matches(uri) }.any { it.value.contains(request.method) }
-        return when (type) {
-            PredicateMatcherType.MATCH_IF_NOT_CONTAINS_IN_LIST -> !matches
-            PredicateMatcherType.MATCH_IF_CONTAINS_IN_LIST -> matches
-        }
-    }
-
-    override fun test(t: ServerWebExchange): Boolean {
-        return check(t.request)
+    override fun getName(): String {
+        return profileId
     }
 }
