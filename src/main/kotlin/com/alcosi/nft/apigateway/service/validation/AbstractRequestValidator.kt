@@ -24,45 +24,26 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service
+package com.alcosi.nft.apigateway.service.validation
 
-import org.apache.logging.log4j.kotlin.Logging
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.data.redis.core.ReactiveStringRedisTemplate
+
+import org.apache.logging.log4j.kotlin.logger
+import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
-import java.time.Duration
-import java.util.*
 
-
-@Configuration
-@ConditionalOnProperty(prefix = "check.redis_status", name = ["disabled"], matchIfMissing = true, havingValue = "false")
-class RedisStatusChecker() : Logging {
-    @Bean
-    fun getRedisCheckScheduler(
-        @Value("\${check.redis_status.delay:5s}") scheduleDelay: Duration,
-        redisTemplate: ReactiveStringRedisTemplate
-    ): Timer {
-        val task = object : TimerTask() {
-            override fun run() {
-                val connection = redisTemplate.connectionFactory.reactiveConnection
-                val resultMono = connection.ping()
-                resultMono.map {
-                    if ("PONG".equals(it, ignoreCase = true)) {
-                        logger.info("Redis status: connected")
-                        return@map Mono.empty<Void>()
-                    } else {
-                        logger.info("Redis status: connection problem")
-                        throw IllegalStateException("Redis connection problem!")
-                    }
-                }.subscribe()
+abstract class AbstractRequestValidator(protected open val validationComponent: RequestValidationComponent, override val type: String):RequestValidator{
+    override fun validate(
+        exchange: ServerWebExchange
+    ): Mono<ValidationResult> {
+        val token = exchange.request.headers[RequestValidator.Headers.TOKEN_HEADER]?.firstOrNull()
+        val ip = exchange.request.headers[RequestValidator.Headers.IP_HEADER]?.firstOrNull()
+        val validationResult = validationComponent.check(token, ip)
+        return validationResult.map {
+            if (!it.success){
+                logger.info("ValidationService success:false.${it.errorDescription}")
             }
+            it
         }
-        val timer = Timer()
-        timer.scheduleAtFixedRate(task, scheduleDelay.toMillis(), scheduleDelay.toMillis())
-        return timer
     }
 
 }

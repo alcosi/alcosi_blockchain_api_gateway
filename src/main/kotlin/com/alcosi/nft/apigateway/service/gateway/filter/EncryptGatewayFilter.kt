@@ -3,7 +3,7 @@ package com.alcosi.nft.apigateway.service.gateway.filter
 import com.alcosi.lib.secured.container.SecuredDataByteArray
 import com.alcosi.lib.secured.container.SecuredDataString
 import com.alcosi.lib.secured.encrypt.key.KeyProvider
-import com.alcosi.nft.apigateway.config.PathConfig
+import com.alcosi.nft.apigateway.config.dto.ProxyRouteConfigDTO
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -64,7 +64,7 @@ open class EncryptGatewayFilter(
         val attrProxyConfigField:String,
         ) :
         ServerWebExchangeDecorator(delegate), Logging {
-        val configFields = (delegate.attributes[attrProxyConfigField] as PathConfig.ProxyRouteConfig?)?.encryptFields
+        val configFields = (delegate.attributes[attrProxyConfigField] as ProxyRouteConfigDTO?)?.encryptFields
 
         override fun getRequest(): ServerHttpRequest {
             return EncryptResponseDecorator(delegate, utils, keyProvider, objectMapper,attrProxyConfigField)
@@ -156,7 +156,7 @@ open class EncryptGatewayFilter(
         val attrProxyConfigField:String,
         ) :
         ServerHttpRequestDecorator(exchange.request), Logging {
-        val configFields = (exchange.attributes[attrProxyConfigField] as PathConfig.ProxyRouteConfig?)?.encryptFields
+        val configFields = (exchange.attributes[attrProxyConfigField] as ProxyRouteConfigDTO?)?.encryptFields
         override fun getBody(): Flux<DataBuffer> {
             if (configFields.isNullOrEmpty()) {
                 return super.getBody()

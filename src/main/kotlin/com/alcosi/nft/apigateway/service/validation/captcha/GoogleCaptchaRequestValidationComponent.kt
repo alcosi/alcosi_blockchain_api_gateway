@@ -24,15 +24,17 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.validation
+package com.alcosi.nft.apigateway.service.validation.captcha
 
 import com.alcosi.lib.object_mapper.MappingHelper
+import com.alcosi.nft.apigateway.service.error.exceptions.ApiValidationException
+import com.alcosi.nft.apigateway.service.validation.RequestValidationComponent
+import com.alcosi.nft.apigateway.service.validation.ValidationResult
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonRawValue
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.util.LinkedMultiValueMap
@@ -46,33 +48,19 @@ import java.net.URLEncoder
 import java.nio.charset.Charset
 import java.util.function.Consumer
 
-open class GoogleCaptchaComponent(
+open class GoogleCaptchaRequestValidationComponent(
     protected val captchaKey: String,
-    protected val captchaEnabled: Boolean,
+    captchaEnabled: Boolean,
     protected val captchaMinRate: BigDecimal,
     protected val googleServerUrl: String,
-    protected val captchaSuperTokenEnabled: Boolean,
+    captchaSuperTokenEnabled: Boolean,
     protected val webClient: WebClient,
     protected val mappingHelper: MappingHelper,
-    protected val superUserToken: String
-) : Logging {
+    superUserToken: String
+) : RequestValidationComponent(captchaEnabled, captchaSuperTokenEnabled, superUserToken) {
+    data class BadResponseCaptchaException(private var s: String) : ApiValidationException(s, 1)
 
-    val noTokenResult = ValidationResult(false, BigDecimal.ZERO, "No token")
-    val disabledResult = ValidationResult(true, BigDecimal.ONE, "Not active")
-
-    data class BadResponseCaptchaException(private var s: String) : RuntimeException(s)
-    open fun check(token: String?, ip: String?): Mono<ValidationResult> {
-        if (!captchaEnabled) {
-            return Mono.just(disabledResult)
-        }
-        if (token.isNullOrBlank()) {
-            return Mono.just(noTokenResult)
-        }
-        if (superUserToken == token) {
-            if (captchaSuperTokenEnabled) {
-                return Mono.just(disabledResult)
-            }
-        }
+    override fun checkInternal(token: String,ip:String?): Mono<ValidationResult> {
         val body = serializeForm(Request(captchaKey, token, ip).toValueMap() as MultiValueMap<String?, String>)
         val request = webClient
             .post()
@@ -101,12 +89,7 @@ open class GoogleCaptchaComponent(
         return googleRs
     }
 
-    @JvmRecord
-    data class ValidationResult(
-        val success: Boolean,
-        val score: BigDecimal,
-        val errorDescription: String?
-    )
+
     @JvmRecord
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)

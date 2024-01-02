@@ -26,7 +26,7 @@
 
 package com.alcosi.nft.apigateway.service
 
-import com.alcosi.nft.apigateway.config.PathConfig
+import com.alcosi.nft.apigateway.config.dto.ProxyRouteConfigDTO
 import com.alcosi.nft.apigateway.service.gateway.filter.GatewayBaseContextFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
 import org.springframework.cloud.gateway.route.Route
@@ -36,7 +36,7 @@ import reactor.core.publisher.Flux
 import java.net.URI
 
 open class DynamicRouteLocator(
-    val proxyRoutes: List<PathConfig.ProxyRouteConfig>,
+    val proxyRoutes: List<ProxyRouteConfigDTO>,
     val filtersList: List<MicroserviceGatewayFilter>,
     val routesBuilder: RouteLocatorBuilder
 ) : RouteLocator {

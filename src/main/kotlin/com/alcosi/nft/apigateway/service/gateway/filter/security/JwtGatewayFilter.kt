@@ -26,10 +26,10 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.security
 
+import com.alcosi.nft.apigateway.config.WebfluxHeadersHelper
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter.Companion.SECURITY_CLIENT_ATTRIBUTE
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter.Companion.SECURITY_LOG_ORDER
-import org.apache.commons.lang3.StringUtils
 import org.springframework.cloud.gateway.filter.GatewayFilterChain
 import org.springframework.http.HttpMethod
 import org.springframework.http.server.reactive.ServerHttpRequest
@@ -82,16 +82,10 @@ abstract class JwtGatewayFilter(
     }
 
     protected fun getHeaderInternal(request: ServerHttpRequest, authHeader: String): String? {
-        val tokenString = request.headers[authHeader]?.firstOrNull()
-        return if (tokenString.isNullOrEmpty()) {
-            val parameter = request.queryParams[authHeader]?.firstOrNull() ?: return null
-            if (request.method == HttpMethod.GET &&
-                StringUtils.isNotEmpty(parameter) &&
-                !parameter.startsWith("Bearer")
-            ) {
-                "Bearer $parameter"
-            } else parameter
-        } else tokenString
+        val tokenString = WebfluxHeadersHelper.getHeaderOrQuery(request, authHeader)
+        return if (tokenString?.startsWith("Bearer") != false) {
+            tokenString
+        } else "Bearer $tokenString"
     }
 
     abstract fun mutateExchange(

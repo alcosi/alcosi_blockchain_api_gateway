@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component
 @Component
 @ConfigurationProperties(prefix = "filter.config.path")
 data class PathConfigProperties(
-    var captcha: Map<String,Any?> = mapOf(),
+    var validation: Map<String,Any?> = mapOf(),
     var security: Map<String,Any?> = mapOf(),
     var proxy: Map<String,String?> = mapOf()
 )

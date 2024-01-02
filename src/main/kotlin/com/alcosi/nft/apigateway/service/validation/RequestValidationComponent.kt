@@ -26,52 +26,35 @@
 
 package com.alcosi.nft.apigateway.service.validation
 
-import com.alcosi.lib.object_mapper.MappingHelper
+import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
-@Configuration
-@ConditionalOnProperty(prefix = "captcha.google", name = ["disabled"], matchIfMissing = true, havingValue = "false")
-class CaptchaConfig {
-    @Bean
-    @ConditionalOnMissingBean(GoogleCaptchaComponent::class)
-    fun getGoogleCaptchaComponent(
-        @Value("\${captcha.google.key:none}")
-        captchaKey: String,
-        @Value("\${captcha.google.enabled:true}")
-        captchaEnabled: Boolean,
-        @Value("\${captcha.google.min_rate:0.3}")
-        captchaMinRate: BigDecimal,
-        @Value("\${captcha.google.url:https://www.google.com/recaptcha/api/siteverify}")
-        googleServerUrl: String,
-        @Value("\${captcha.google.super_token.enabled:false}")
-        captchaSuperTokenEnabled: Boolean,
-        webClient: WebClient,
-        mappingHelper: MappingHelper,
-        @Value("\${captcha.google.super_token.value:test}") superUserToken: String
-    ): GoogleCaptchaComponent {
-        return GoogleCaptchaComponent(
-            captchaKey,
-            captchaEnabled,
-            captchaMinRate,
-            googleServerUrl,
-            captchaSuperTokenEnabled,
-            webClient,
-            mappingHelper,
-            superUserToken
-        )
-    }
+abstract class RequestValidationComponent(
+    @Value("\${validation.google.attestation.enabled}") val enabled: Boolean,
+    @Value("\${validation.google.attestation.super_token.enabled}") val superTokenEnabled: Boolean,
+    @Value("\${validation.google.attestation.super_token.value}") val superUserToken: String,
+) : Logging {
+    protected open val noTokenResult = ValidationResult(false, BigDecimal.ZERO, "No token")
+    protected open val disabledResult = ValidationResult(true, BigDecimal.ONE, "Not active")
+    protected open val okResult = ValidationResult(true, BigDecimal.ONE)
 
-    @Bean
-    @ConditionalOnMissingBean(CaptchaService::class)
-    fun getGoogleCaptchaService(
-        component:GoogleCaptchaComponent
-    ): CaptchaService {
-        return GoogleCaptchaService(component)
-    }
+
+    abstract fun checkInternal(token: String,ip:String?): Mono<ValidationResult>
+
+     open fun check(token: String?, ip: String?): Mono<ValidationResult> {
+         if (!enabled) {
+             return Mono.just(disabledResult)
+         }
+         if (token.isNullOrBlank()) {
+             return Mono.just(noTokenResult)
+         }
+         if (superUserToken == token) {
+             if (superTokenEnabled) {
+                 return Mono.just(disabledResult)
+             }
+         }
+         return checkInternal(token,ip)
+     }
 }

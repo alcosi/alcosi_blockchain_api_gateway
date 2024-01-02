@@ -33,7 +33,7 @@ services:
       logging.level.root: "INFO"
       jwt.token.lifetime: "1h"
       logging.level.org.springframework.cloud.gateway: "INFO"
-      captcha.google.enabled: "false"
+      validation.google.captcha.enabled: "false"
       spring.data.redis.host: "nft-api-back-cache"
       spring.data.redis.port: "6379"
       spring.data.redis.password: "test_pass"

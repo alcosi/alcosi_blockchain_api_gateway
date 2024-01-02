@@ -27,19 +27,19 @@
 package com.alcosi.nft.apigateway.service.validation
 
 
-import org.springframework.stereotype.Service
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
-interface CaptchaService{
+interface RequestValidator{
+    val type:String
     object Headers {
         val TOKEN_HEADER = "ValidationToken"
         val IP_HEADER = "x-real-ip"
-        val CAPTCHA_IS_PASSED = "captchaIsPassed"
+        val VALIDATION_IS_PASSED = "ValidationIsPassed"
+        val TYPE ="ValidationType"
     }
-
-    fun check(
+    fun validate(
         exchange: ServerWebExchange
-    ): Mono<Boolean>
+    ): Mono<ValidationResult>
 
 }

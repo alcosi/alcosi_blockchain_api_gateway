@@ -1,6 +1,6 @@
 package com.alcosi.nft.apigateway.service.predicate
 
-import com.alcosi.nft.apigateway.config.FilterMatchConfig
+import com.alcosi.nft.apigateway.config.dto.FilterMatchConfigDTO
 import com.alcosi.nft.apigateway.config.PathConfig
 import com.alcosi.nft.apigateway.service.predicate.matcher.HttpFilterMatcher
 import com.alcosi.nft.apigateway.service.predicate.matcher.HttpFilterMatcherMVC
@@ -10,7 +10,7 @@ import org.springframework.web.server.ServerWebExchange
 import java.util.function.Predicate
 open class FilterMatchPredicate(
     prefix: String,
-    pathMethods: List<FilterMatchConfig>,
+    pathMethods: List<FilterMatchConfigDTO>,
     val type: PathConfig.PREDICATE_TYPE,
     val matchType:PredicateMatcherType,
     val attrReqAuthoritiesField:String,

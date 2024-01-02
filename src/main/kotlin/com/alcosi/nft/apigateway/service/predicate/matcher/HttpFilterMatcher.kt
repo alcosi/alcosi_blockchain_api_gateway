@@ -1,16 +1,17 @@
 package com.alcosi.nft.apigateway.service.predicate.matcher
 
-import com.alcosi.nft.apigateway.config.FilterMatchConfig
+import com.alcosi.nft.apigateway.config.dto.FilterMatchConfigDTO
 import com.alcosi.nft.apigateway.config.PathConfig
 import org.springframework.http.HttpMethod
 
 abstract class HttpFilterMatcher<T> (
     val prefix:String,
-    val config:FilterMatchConfig) {
+    val config: FilterMatchConfigDTO
+) {
     val matcher:T by lazy { createMather(prefix, config) }
     abstract val predicateType:PathConfig.PREDICATE_TYPE
     val methods:List<HttpMethod> =config.methods
-    abstract fun createMather(prefix: String, config: FilterMatchConfig): T
+    abstract fun createMather(prefix: String, config: FilterMatchConfigDTO): T
 
     open fun checkRequest(uri:String,method:HttpMethod):Boolean{
         val methodMatches=checkMethod(method)

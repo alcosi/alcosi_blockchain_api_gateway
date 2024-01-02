@@ -172,6 +172,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
     implementation("org.springframework.cloud:spring-cloud-starter-gateway:4.1.0")
     implementation("org.apache.commons:commons-pool2:2.12.0")
+    implementation("com.google.api-client:google-api-client:2.2.0")
+    implementation("com.google.guava:guava:33.0.0-jre")//TODO to avoid Vulnerabilities in google api 2.2.0. Delete after update google-api-client
     implementation("jakarta.servlet:jakarta.servlet-api:5.0.0")
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     implementation("io.jsonwebtoken:jjwt-impl:$jjwtVersion")

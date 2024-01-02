@@ -30,13 +30,10 @@ import com.alcosi.lib.filters.HeaderHelper
 import com.alcosi.lib.object_mapper.MappingHelper
 import com.alcosi.lib.secured.encrypt.SensitiveComponent
 import com.alcosi.lib.secured.encrypt.key.KeyProvider
-import com.alcosi.nft.apigateway.auth.service.CheckJWTService
 import com.alcosi.nft.apigateway.config.PathConfig
 import com.alcosi.nft.apigateway.config.PathConfigProperties
-import com.alcosi.nft.apigateway.service.gateway.filter.security.CaptchaGatewayFilter
-import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilter
-import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
-import com.alcosi.nft.apigateway.service.validation.CaptchaService
+import com.alcosi.nft.apigateway.service.gateway.filter.security.ValidationGatewayFilter
+import com.alcosi.nft.apigateway.service.validation.FilterValidationService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.breninsul.webfluxlogging.CommonLoggingUtils
 import com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingFilter
@@ -109,13 +106,13 @@ class GatewayFiltersConfig {
         return DecryptGatewayFilter(commonUtils,sensitiveComponent,keyProvider)
     }
     @Bean
-    @ConditionalOnMissingBean(CaptchaGatewayFilter::class)
-    fun getCaptchaGatewayFilter(
-        captchaService: CaptchaService,
+    @ConditionalOnMissingBean(ValidationGatewayFilter::class)
+    fun getValidationGatewayFilter(
+        validationService: FilterValidationService,
         pathConfig: PathConfig,
         @Value("\${gateway.base.path:/api}") basePath: String,
-    ): CaptchaGatewayFilter {
-        return CaptchaGatewayFilter(captchaService, pathConfig.captchaConfig.toPredicate())
+    ): ValidationGatewayFilter {
+        return ValidationGatewayFilter(validationService, pathConfig.validationConfig.toPredicate())
     }
     @Bean
     @ConditionalOnMissingBean(ContextHeadersGatewayFilter::class)

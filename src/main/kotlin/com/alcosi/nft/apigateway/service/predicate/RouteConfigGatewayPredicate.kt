@@ -1,13 +1,13 @@
 package com.alcosi.nft.apigateway.service.predicate
 
-import com.alcosi.nft.apigateway.config.PathConfig
+import com.alcosi.nft.apigateway.config.dto.ProxyRouteConfigDTO
 import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.web.server.ServerWebExchange
 import java.util.function.Predicate
 
 open class RouteConfigGatewayPredicate(
     open val delegate: FilterMatchPredicate,
-    open val proxyConfig: PathConfig.ProxyRouteConfig,
+    open val proxyConfig: ProxyRouteConfigDTO,
     open val attrConfigFiled: String
 ) : Logging, Predicate<ServerWebExchange> {
 

@@ -24,26 +24,27 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.config
+package com.alcosi.nft.apigateway.service.validation
 
-import com.fasterxml.jackson.annotation.JsonCreator
-import org.springframework.core.Ordered
-import org.springframework.http.HttpMethod
 
-open class FilterMatchConfig @JsonCreator constructor(
-    val methods: List<HttpMethod>,
-    val path: String,
-    private val authorities: List<String>?,
-    private val order: Int?
-    ): Ordered,Comparable<FilterMatchConfig> {
-    fun authorities():List<String>{
-        return authorities?: listOf("ALL")
-    }
-    override fun getOrder(): Int {
-        return order?:0
+import org.apache.logging.log4j.kotlin.Logging
+import org.springframework.web.server.ServerWebExchange
+import reactor.core.publisher.Mono
+import java.math.BigDecimal
+
+open class FilterValidationService(protected open val validationServices: List<RequestValidator>):Logging{
+    fun check(
+        exchange: ServerWebExchange
+    ): Mono<ValidationResult> {
+        val type = exchange.request.headers[RequestValidator.Headers.TYPE]?.firstOrNull()?:"GoogleCaptcha"
+         val validationServiceForType=validationServices
+             .find { it.type== type}
+         if (validationServiceForType==null){
+             logger.error("Wrong type for validation $type")
+             exchange.attributes[RequestValidator.Headers.VALIDATION_IS_PASSED]=false
+             return Mono.just( ValidationResult(false, BigDecimal.ZERO,"Wrong type for validation $type"))
+         }
+        return validationServiceForType.validate(exchange)
     }
 
-    override fun compareTo(other: FilterMatchConfig): Int {
-        return getOrder().compareTo(other.getOrder())
-    }
 }

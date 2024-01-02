@@ -27,29 +27,19 @@
 package com.alcosi.nft.apigateway.service.validation
 
 
-import com.alcosi.nft.apigateway.service.validation.CaptchaService.Headers.CAPTCHA_IS_PASSED
-import com.alcosi.nft.apigateway.service.validation.CaptchaService.Headers.IP_HEADER
-import com.alcosi.nft.apigateway.service.validation.CaptchaService.Headers.TOKEN_HEADER
-import org.springframework.web.server.ServerWebExchange
-import reactor.core.publisher.Mono
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 
-open class GoogleCaptchaService(protected val googleCaptchaComponent: GoogleCaptchaComponent):CaptchaService {
-
-
-    override fun check(
-        exchange: ServerWebExchange
-    ): Mono<Boolean> {
-        val token = exchange.request.headers[TOKEN_HEADER]?.firstOrNull()
-        val ip = exchange.request.headers[IP_HEADER]?.firstOrNull()
-        val validationResult = googleCaptchaComponent.check(
-            token,
-            ip
-        )
-        return validationResult.map {
-            exchange.attributes[CAPTCHA_IS_PASSED]=it.success
-            it.success
-        }
+@Configuration
+@ConditionalOnProperty(prefix = "validation", name = ["disabled"], matchIfMissing = true, havingValue = "false")
+class ValidationConfig {
+    @Bean
+    @ConditionalOnMissingBean(FilterValidationService::class)
+    fun getFilterValidationService(
+        services: List<RequestValidator>
+    ): FilterValidationService {
+        return FilterValidationService(services)
     }
-
-
 }

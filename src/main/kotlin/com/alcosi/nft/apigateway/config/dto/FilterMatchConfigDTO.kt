@@ -24,33 +24,26 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway
+package com.alcosi.nft.apigateway.config.dto
 
-import com.alcosi.lib.utils.ExternalJarLoad
-import org.springframework.boot.WebApplicationType
-import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
-import org.springframework.boot.builder.SpringApplicationBuilder
-import org.springframework.scheduling.annotation.EnableScheduling
-import kotlin.io.path.Path
+import com.fasterxml.jackson.annotation.JsonCreator
+import org.springframework.core.Ordered
+import org.springframework.http.HttpMethod
 
-@EnableScheduling
-@SpringBootApplication(
-    scanBasePackages = [
-        "com.alcosi.lib",
-        "com.alcosi.nft.apigateway",
-        "com.github.breninsul.webfluxlogging",
-        "\${scan.basePackage:com.alcosi.nft.apigateway}"
-    ],exclude = [RedisAutoConfiguration::class,RedisReactiveAutoConfiguration::class]
-)
-class ApiGatewayApplication
+open class FilterMatchConfigDTO @JsonCreator constructor(
+    val methods: List<HttpMethod>,
+    val path: String,
+    private val authorities: List<String>?,
+    private val order: Int?
+    ): Ordered,Comparable<FilterMatchConfigDTO> {
+    fun authorities():List<String>{
+        return authorities?: listOf("ALL")
+    }
+    override fun getOrder(): Int {
+        return order?:0
+    }
 
-
-fun main(args: Array<String>) {
-    val externalJarDir = System.getenv()["external.jar.directory.path"] ?: "/opt/external-jar"
-    ExternalJarLoad().loadDependency(listOf(Path(externalJarDir)),true)
-    SpringApplicationBuilder(ApiGatewayApplication::class.java)
-        .web(WebApplicationType.REACTIVE)
-        .run("")
+    override fun compareTo(other: FilterMatchConfigDTO): Int {
+        return getOrder().compareTo(other.getOrder())
+    }
 }

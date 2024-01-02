@@ -26,10 +26,11 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.security
 
-import com.alcosi.nft.apigateway.service.error.exceptions.ApiCaptchaException
+import com.alcosi.nft.apigateway.service.error.exceptions.ApiValidationException
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilter.Companion.JWT_LOG_ORDER
-import com.alcosi.nft.apigateway.service.validation.CaptchaService
+import com.alcosi.nft.apigateway.service.validation.FilterValidationService
+import com.alcosi.nft.apigateway.service.validation.RequestValidator
 import org.springframework.cloud.gateway.filter.GatewayFilterChain
 import org.springframework.http.HttpMethod
 import org.springframework.web.server.ServerWebExchange
@@ -37,15 +38,14 @@ import reactor.core.publisher.Mono
 import java.util.function.Predicate
 
 
-open class CaptchaGatewayFilter(
-    val captchaService: CaptchaService,
+open class ValidationGatewayFilter(
+    val validationService: FilterValidationService,
     val predicate: Predicate<ServerWebExchange>,
     private val order: Int = JWT_LOG_ORDER + 11
 ) : MicroserviceGatewayFilter {
     override fun getOrder(): Int {
         return order
     }
-
     override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {
         if (exchange.request.method == HttpMethod.OPTIONS) {
             return chain.filter(exchange)
@@ -54,12 +54,16 @@ open class CaptchaGatewayFilter(
         return if (!haveToAuth) {
             chain.filter(exchange)
         } else {
-            captchaService.check(exchange)
+            validationService.check(exchange)
                 .flatMap {
-                    if (!it) {
-                        Mono.error(ApiCaptchaException())
+                    exchange.attributes[RequestValidator.Headers.VALIDATION_IS_PASSED]=it.success
+                    if (!it.success) {
+                        Mono.error(ApiValidationException(it.errorDescription))
                     } else {
-                        chain.filter(exchange)
+                       val rqBuilder= exchange.request.mutate()
+                        rqBuilder.header(RequestValidator.Headers.VALIDATION_IS_PASSED,"${it.success}")
+                        val modExchange=exchange.mutate().request(rqBuilder.build()).build()
+                        chain.filter(modExchange)
                     }
                 }
         }
