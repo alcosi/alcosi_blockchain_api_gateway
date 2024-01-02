@@ -50,23 +50,31 @@ open class ValidationGatewayFilter(
         if (exchange.request.method == HttpMethod.OPTIONS) {
             return chain.filter(exchange)
         }
-        val haveToAuth = predicate.test(exchange)
+        val clearExchange = clearResult(exchange)
+        val haveToAuth = predicate.test(clearExchange)
         return if (!haveToAuth) {
-            chain.filter(exchange)
+            chain.filter(clearExchange)
         } else {
-            validationService.check(exchange)
+            validationService.check(clearExchange)
                 .flatMap {
-                    exchange.attributes[RequestValidator.Headers.VALIDATION_IS_PASSED]=it.success
+                    clearExchange.attributes[RequestValidator.Headers.VALIDATION_IS_PASSED]=it.success
                     if (!it.success) {
                         Mono.error(ApiValidationException(it.errorDescription))
                     } else {
-                       val rqBuilder= exchange.request.mutate()
+                       val rqBuilder= clearExchange.request.mutate()
                         rqBuilder.header(RequestValidator.Headers.VALIDATION_IS_PASSED,"${it.success}")
-                        val modExchange=exchange.mutate().request(rqBuilder.build()).build()
+                        val modExchange=clearExchange.mutate().request(rqBuilder.build()).build()
                         chain.filter(modExchange)
                     }
                 }
         }
+    }
+
+    private fun clearResult(exchange: ServerWebExchange): ServerWebExchange {
+        val rqBuilder = exchange.request.mutate()
+        rqBuilder.header(RequestValidator.Headers.VALIDATION_IS_PASSED, null)
+        val modExchange = exchange.mutate().request(rqBuilder.build()).build()
+        return modExchange
     }
 
 }
