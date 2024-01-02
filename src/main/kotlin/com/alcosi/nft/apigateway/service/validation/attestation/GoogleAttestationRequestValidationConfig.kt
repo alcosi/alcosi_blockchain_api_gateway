@@ -43,12 +43,12 @@ class GoogleAttestationRequestValidationConfig {
     fun getGoogleOnlineAttestationComponent(
         webClient: WebClient,
         mappingHelper: MappingHelper,
-        @Value("\${validation.google.attestation.enabled}")  attestationEnabled: Boolean,
-        @Value("\${validation.google.attestation.super_token.enabled}")  attestationSuperTokenEnabled: Boolean,
-        @Value("\${validation.google.attestation.super_token.value}")  superUserToken: String,
-        @Value("\${validation.google.attestation.key}")  key: String,
-        @Value("\${validation.google.attestation.packageName}")  packageName: String,
-        @Value("\${validation.google.attestation.ttl}")  ttl: Long,
+        @Value("\${validation.google.attestation.enabled:false}")  attestationEnabled: Boolean,
+        @Value("\${validation.google.attestation.super_token.enabled:false}")  attestationSuperTokenEnabled: Boolean,
+        @Value("\${validation.google.attestation.super_token.value:}")  superUserToken: String,
+        @Value("\${validation.google.attestation.key:}")  key: String,
+        @Value("\${validation.google.attestation.packageName:}")  packageName: String,
+        @Value("\${validation.google.attestation.ttl:100}")  ttl: Long,
         @Value("\${validation.google.attestation.uri:https://www.googleapis.com/androidcheck/v1/attestations/verify}")  uri: String,
     ): GoogleAttestationRequestValidationComponent {
         return GoogleAttestationOnlineRequestValidationComponent(webClient, mappingHelper, attestationEnabled, attestationSuperTokenEnabled, superUserToken, key, packageName, ttl,uri)
@@ -59,13 +59,13 @@ class GoogleAttestationRequestValidationConfig {
     fun getGoogleOfflineAttestationComponent(
         webClient: WebClient,
         mappingHelper: MappingHelper,
-        @Value("\${validation.google.attestation.enabled}")  attestationEnabled: Boolean,
-        @Value("\${validation.google.attestation.super_token.enabled}")  attestationSuperTokenEnabled: Boolean,
-        @Value("\${validation.google.attestation.super_token.value}")  superUserToken: String,
-        @Value("\${validation.google.attestation.key}")  key: String,
-        @Value("\${validation.google.attestation.packageName}")  packageName: String,
-        @Value("\${validation.google.attestation.ttl}")  ttl: Long,
-        @Value("\${validation.google.attestation.hostname}")  hostname: String,
+        @Value("\${validation.google.attestation.enabled:false}")  attestationEnabled: Boolean,
+        @Value("\${validation.google.attestation.super_token.enabled:false}")  attestationSuperTokenEnabled: Boolean,
+        @Value("\${validation.google.attestation.super_token.value:}")  superUserToken: String,
+        @Value("\${validation.google.attestation.key:}")  key: String,
+        @Value("\${validation.google.attestation.packageName:}")  packageName: String,
+        @Value("\${validation.google.attestation.ttl:100}")  ttl: Long,
+        @Value("\${validation.google.attestation.hostname:}")  hostname: String,
     ): GoogleAttestationRequestValidationComponent {
         return GoogleAttestationOfflineRequestValidationComponent( mappingHelper, attestationEnabled, attestationSuperTokenEnabled, superUserToken, key, packageName, ttl,hostname)
     }

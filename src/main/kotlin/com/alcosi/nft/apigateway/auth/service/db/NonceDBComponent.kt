@@ -32,21 +32,17 @@ import com.alcosi.nft.apigateway.service.error.exceptions.ApiException
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import org.apache.logging.log4j.kotlin.Logging
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
-import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import java.time.Duration
 import java.time.LocalDateTime
 
-@Component
-class NonceDBComponent(
+open class NonceDBComponent(
     redisTemplate: ReactiveStringRedisTemplate,
     val mappingHelper: MappingHelper,
-    @Value("\${jwt.nonce.lifetime:5m}") protected val lifetime: Duration,
-    @Value("\${jwt.nonce.redis_prefix:LOGIN_NONCE}") protected val keyPrefix: String,
-
-    ) : Logging {
+    protected val lifetime: Duration,
+    protected val keyPrefix: String,
+) : Logging {
     val redisOpsForValue = redisTemplate.opsForValue();
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -59,7 +55,7 @@ class NonceDBComponent(
         @JsonFormat(shape = JsonFormat.Shape.STRING) val validUntil: LocalDateTime
     )
 
-    fun get(wallet: String): Mono<ClientNonce?> {
+    open fun get(wallet: String): Mono<ClientNonce?> {
         return redisOpsForValue.getAndDelete(getRedisId(wallet))
             .mapNotNull { mappingHelper.mapOne(it, DBClientNonce::class.java) }
             .mapNotNull {
@@ -73,9 +69,9 @@ class NonceDBComponent(
             }
     }
 
-    fun saveNew(wallet: String, nonce: ClientNonce): Mono<Void> {
+    open fun saveNew(wallet: String, nonce: ClientNonce): Mono<Void> {
         try {
-            val dbNonce=DBClientNonce(nonce.nonce,nonce.createdAt,nonce.msg,nonce.wallet,nonce.validUntil)
+            val dbNonce = DBClientNonce(nonce.nonce, nonce.createdAt, nonce.msg, nonce.wallet, nonce.validUntil)
             return redisOpsForValue.set(getRedisId(wallet), mappingHelper.serialize(dbNonce)!!, lifetime)
                 .map {
                     logger.info("$it")
@@ -87,5 +83,5 @@ class NonceDBComponent(
         }
     }
 
-    private fun getRedisId(wallet: String) = "${keyPrefix}_$wallet"
+    protected open fun getRedisId(wallet: String) = "${keyPrefix}_$wallet"
 }

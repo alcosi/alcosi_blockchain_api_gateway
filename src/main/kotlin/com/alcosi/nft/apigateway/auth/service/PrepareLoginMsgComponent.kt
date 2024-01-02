@@ -30,12 +30,8 @@ import org.apache.commons.text.StringSubstitutor
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
-@Component
-class PrepareLoginMsgComponent(
-    @Value("\${message.login:Please connect your wallet \n  @nonce@}")
-    val loginTemplate:String,
-) {
-    fun getMsg(wallet: String, nonce: String): String {
+open class PrepareLoginMsgComponent(val loginTemplate:String, ) {
+    open fun getMsg(wallet: String, nonce: String): String {
         val values = mapOf("nonce" to nonce, "wallet" to wallet)
         val rs = StringSubstitutor.replace(loginTemplate, values, "@", "@")
         return rs

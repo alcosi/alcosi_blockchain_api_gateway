@@ -43,15 +43,14 @@ import java.util.*
 
 private const val KEY_PREFIX = "REFRESH_TOKEN"
 
-@Component
-class RefreshTokenDBComponen(
+open class RefreshTokenDBComponent(
     redisTemplate: ReactiveStringRedisTemplate,
     val mappingHelper: MappingHelper,
-    @Value("\${jwt.rt.lifetime:7d}") val rtLifetime: Duration
+     val rtLifetime: Duration
 ) : Logging {
     val redisOpsForValue = redisTemplate.opsForValue();
 
-    fun checkIsValid(rt: UUID, jwtHash: Int, wallet: String): Mono<Boolean> {
+    open fun checkIsValid(rt: UUID, jwtHash: Int, wallet: String): Mono<Boolean> {
         return redisOpsForValue.get(getRedisId(wallet))
             .switchIfEmpty {
                 logger.error("Error with RT: Rt is not saved")
@@ -75,7 +74,7 @@ class RefreshTokenDBComponen(
 
 
     @LogTime
-    fun saveNew(wallet: String, rt: UUID, jwtHash: Int): Mono<Boolean> {
+    open fun saveNew(wallet: String, rt: UUID, jwtHash: Int): Mono<Boolean> {
         return redisOpsForValue.set(getRedisId(wallet), mappingHelper.serialize(LoginRefreshToken(
                 rt,
                 jwtHash
@@ -84,5 +83,5 @@ class RefreshTokenDBComponen(
             .map { true }
     }
 
-    private fun getRedisId(wallet: String) = "${KEY_PREFIX}_$wallet"
+    protected open fun getRedisId(wallet: String) = "${KEY_PREFIX}_$wallet"
 }

@@ -34,14 +34,12 @@ import io.jsonwebtoken.security.Keys
 import org.apache.logging.log4j.kotlin.Logging
 
 open class CheckJWTService (privateKey: String):Logging {
-    protected val jwtParser: JwtParser = buildParser(privateKey)
-
+    protected open val jwtParser: JwtParser by lazy {   buildParser(privateKey)}
     protected open fun buildParser(pk:String):JwtParser{
         return Jwts.parser()
             .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(pk)))
             .build()
     }
-
 
    open fun parse(jwtString: String): Claims {
         val claimsJws = jwtParser.parseSignedClaims(jwtString)

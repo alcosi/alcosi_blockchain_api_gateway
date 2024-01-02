@@ -30,12 +30,14 @@ import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilte
 import com.alcosi.nft.apigateway.service.gateway.filter.eth_login.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.cloud.gateway.route.RouteLocator
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
+@ConditionalOnProperty(prefix = "filter.config.path.security.type", name = ["method"], havingValue = "ETH_JWT", matchIfMissing = true)
 class LoginRoutesConfig {
     @Bean
     fun getAuthoritiesRoute(

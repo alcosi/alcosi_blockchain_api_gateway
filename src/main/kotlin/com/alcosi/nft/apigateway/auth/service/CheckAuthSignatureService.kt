@@ -38,11 +38,10 @@ import org.web3j.crypto.Sign.SignatureData
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-@Service
-class CheckAuthSignatureService(
-    @Value("\${check.sign.disable:false}") protected val disable: Boolean,
-    protected val prepareArgsService: PrepareHexService):Logging {
-    fun check(nonce: com.alcosi.nft.apigateway.auth.dto.ClientNonce, signature: String) {
+open class CheckAuthSignatureService(
+    protected open val disable: Boolean,
+    protected open val prepareArgsService: PrepareHexService):Logging {
+    open fun check(nonce: com.alcosi.nft.apigateway.auth.dto.ClientNonce, signature: String) {
         if (!disable) {
             val pubKey = Sign.signedPrefixedMessageToKey(
                 nonce.msg.toByteArray(StandardCharsets.UTF_8),
@@ -55,7 +54,7 @@ class CheckAuthSignatureService(
         }
     }
 
-    protected fun getSignatureData(signature: String): SignatureData {
+    protected open fun getSignatureData(signature: String): SignatureData {
         val signatureBytes = Hex.decodeHex(prepareArgsService.prepareHex(signature))
         var v = signatureBytes[64]
         if (v < 27) {

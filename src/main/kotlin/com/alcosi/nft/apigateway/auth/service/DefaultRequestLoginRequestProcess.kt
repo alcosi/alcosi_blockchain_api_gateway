@@ -42,29 +42,19 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 
-
-@Component
-@ConditionalOnSingleCandidate(LoginRequestProcess::class)
-@ConditionalOnProperty(
-    matchIfMissing = true,
-    prefix = "gateway.defaultRequestLoginRequestProcess",
-    value = ["enabled"],
-    havingValue = "true"
-)
 open class DefaultRequestLoginRequestProcess(
-    @Value("\${gateway.microservice.uri.DefaultRequestLoginRequestProcess}") val serviceUri: String,
-    @Value("\${gateway.defaultRequestLoginRequestProcess.rqTypes:}") rqTypesString: String,
-    @Value("\${gateway.defaultRequestLoginRequestProcess.types:}") typesString: String,
-    @Value("\${gateway.defaultRequestLoginRequestProcess.method:POST}") val method: HttpMethod,
-    val webClient: WebClient,
-    val mappingHelper: MappingHelper,
-
+   val serviceUri: String,
+   rqTypesString: String,
+   typesString: String,
+   val method: HttpMethod,
+   val webClient: WebClient,
+   val mappingHelper: MappingHelper,
     ) : Logging, LoginRequestProcess {
     open val clientWalletHeader: String = EthJwtGatewayFilter.CLIENT_WALLET_HEADER
     open val clientWalletsHeader: String = EthJwtGatewayFilter.CLIENT_WALLETS_HEADER
-    protected val rqTypes: List<LoginRequestProcess.REQUEST_TYPE> =
+    protected open val rqTypes: List<LoginRequestProcess.REQUEST_TYPE> =
         rqTypesString.split(",").map { LoginRequestProcess.REQUEST_TYPE.valueOf(it) }
-    protected val types: List<LoginRequestProcess.TYPE> =
+    protected open val types: List<LoginRequestProcess.TYPE> =
         typesString.split(",").map { LoginRequestProcess.TYPE.valueOf(it) }
 
     override fun rqTypes(): List<LoginRequestProcess.REQUEST_TYPE> {

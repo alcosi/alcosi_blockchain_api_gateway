@@ -44,16 +44,15 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-@Component
-class NonceComponent(
+open class NonceComponent(
     protected val prepareArgsService: PrepareHexService,
     protected val prepareMsgComponent: PrepareLoginMsgComponent,
     protected val nonceDBComponent: NonceDBComponent,
-    @Value("\${jwt.nonce.lifetime:5m}") protected val lifetime: Duration,
+    protected val lifetime: Duration,
     ) : Logging {
-    protected val dateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
-    protected val random = SecureRandom();
-    fun getNewNonce(wallet: String?): Mono<ClientNonce> {
+    protected open val dateTimeFormatter:DateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
+    protected open val random:Random = SecureRandom();
+    open fun getNewNonce(wallet: String?): Mono<ClientNonce> {
         return mono {
             logger.info("Get new nonce for wallet - $wallet")
             val currentDate = LocalDateTime.now()
@@ -70,13 +69,13 @@ class NonceComponent(
             .flatMap { nonceDBComponent.saveNew(it.wallet, it).thenReturn(it) }
     }
 
-    fun getSavedNonce(wallet: String): Mono<ClientNonce> {
+    open fun getSavedNonce(wallet: String): Mono<ClientNonce> {
         return (nonceDBComponent.get(wallet)
             .switchIfEmpty { throw NoNonceException(wallet)  })
                 as Mono<ClientNonce>
     }
 
-    fun nonce(): BigInteger {
+    open fun nonce(): BigInteger {
         val id = UUID.randomUUID()
         return BigInteger(
             ByteBuffer.allocate(16).putLong(id.mostSignificantBits).putLong(id.leastSignificantBits).array()
