@@ -24,12 +24,13 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.validation.captcha
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.captcha
 
 import com.alcosi.lib.object_mapper.MappingHelper
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiValidationException
-import com.alcosi.nft.apigateway.service.validation.RequestValidationComponent
-import com.alcosi.nft.apigateway.service.validation.ValidationResult
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.RequestValidationComponent
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationResult
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationUniqueTokenChecker
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -49,15 +50,17 @@ import java.nio.charset.Charset
 import java.util.function.Consumer
 
 open class GoogleCaptchaRequestValidationComponent(
+    alwaysPassed: Boolean,
+    superTokenEnabled: Boolean,
+    superUserToken: String,
+    ttl:Long,
     protected val captchaKey: String,
-    captchaEnabled: Boolean,
     protected val captchaMinRate: BigDecimal,
     protected val googleServerUrl: String,
-    captchaSuperTokenEnabled: Boolean,
     protected val webClient: WebClient,
     protected val mappingHelper: MappingHelper,
-    superUserToken: String
-) : RequestValidationComponent(captchaEnabled, captchaSuperTokenEnabled, superUserToken) {
+    uniqueTokenChecker: ValidationUniqueTokenChecker,
+    ) : RequestValidationComponent(alwaysPassed, superTokenEnabled, superUserToken,ttl,uniqueTokenChecker) {
     data class BadResponseCaptchaException(private var s: String) : ApiValidationException(s, 1)
 
     override fun checkInternal(token: String,ip:String?): Mono<ValidationResult> {

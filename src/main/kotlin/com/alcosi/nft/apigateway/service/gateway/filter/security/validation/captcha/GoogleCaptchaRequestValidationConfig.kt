@@ -24,9 +24,10 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.validation.captcha
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.captcha
 
 import com.alcosi.lib.object_mapper.MappingHelper
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationUniqueTokenChecker
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -41,35 +42,40 @@ class GoogleCaptchaRequestValidationConfig {
     @Bean
     @ConditionalOnMissingBean(GoogleCaptchaRequestValidationComponent::class)
     fun getGoogleCaptchaComponent(
+        @Value("\${validation.google.captcha.always_passed:false}")
+        alwaysPassed: Boolean,
+        @Value("\${validation.google.captcha.super_token.enabled:false}")
+        captchaSuperTokenEnabled: Boolean,
+        @Value("\${validation.google.captcha.super_token.value:test}") superUserToken: String,
+        @Value("\${validation.google.captcha.ttl:6000}")
+        ttl: Long,
         @Value("\${validation.google.captcha.key:none}")
         captchaKey: String,
-        @Value("\${validation.google.captcha.enabled:true}")
-        captchaEnabled: Boolean,
         @Value("\${validation.google.captcha.min_rate:0.3}")
         captchaMinRate: BigDecimal,
         @Value("\${validation.google.captcha.url:https://www.google.com/recaptcha/api/siteverify}")
         googleServerUrl: String,
-        @Value("\${validation.google.captcha.super_token.enabled:false}")
-        captchaSuperTokenEnabled: Boolean,
         webClient: WebClient,
         mappingHelper: MappingHelper,
-        @Value("\${validation.google.captcha.super_token.value:test}") superUserToken: String
+        validationUniqueTokenChecker: ValidationUniqueTokenChecker
     ): GoogleCaptchaRequestValidationComponent {
         return GoogleCaptchaRequestValidationComponent(
+            alwaysPassed,
+            captchaSuperTokenEnabled,
+            superUserToken,
+            ttl,
             captchaKey,
-            captchaEnabled,
             captchaMinRate,
             googleServerUrl,
-            captchaSuperTokenEnabled,
             webClient,
             mappingHelper,
-            superUserToken
+            validationUniqueTokenChecker
         )
     }
 
     @Bean
     @ConditionalOnMissingBean(GoogleCaptchaValidator::class)
-    fun getGoogleCaptchaService(
+    fun getGoogleCaptchaValidator(
         component: GoogleCaptchaRequestValidationComponent
     ): GoogleCaptchaValidator {
         return GoogleCaptchaValidator(component)

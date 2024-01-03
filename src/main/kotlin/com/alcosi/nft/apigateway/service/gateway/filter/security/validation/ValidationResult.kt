@@ -1,4 +1,4 @@
-package com.alcosi.nft.apigateway.service.validation
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation
 
 import java.math.BigDecimal
 

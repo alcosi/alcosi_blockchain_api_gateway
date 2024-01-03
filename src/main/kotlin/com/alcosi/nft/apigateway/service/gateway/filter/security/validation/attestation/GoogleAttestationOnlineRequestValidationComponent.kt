@@ -24,10 +24,11 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.validation.attestation
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.attestation
 
 import com.alcosi.lib.object_mapper.MappingHelper
-import com.alcosi.nft.apigateway.service.validation.ValidationResult
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationResult
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationUniqueTokenChecker
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -39,16 +40,17 @@ import java.math.BigDecimal
 import java.time.Instant
 
 open class GoogleAttestationOnlineRequestValidationComponent(
-    val webClient: WebClient,
-    mappingHelper: MappingHelper,
-    attestationEnabled: Boolean,
-    attestationSuperTokenEnabled: Boolean,
+    alwaysPassed: Boolean,
+    superTokenEnabled: Boolean,
     superUserToken: String,
     key: String,
     packageName: String,
     ttl: Long,
-    val uri: String
-) : GoogleAttestationRequestValidationComponent(mappingHelper, attestationEnabled, attestationSuperTokenEnabled, superUserToken, key, packageName, ttl) {
+    val uri: String,
+    val webClient: WebClient,
+    mappingHelper: MappingHelper,
+    uniqueTokenChecker: ValidationUniqueTokenChecker,
+    ) : GoogleAttestationRequestValidationComponent(alwaysPassed, superTokenEnabled, superUserToken,  key, packageName, ttl,mappingHelper,uniqueTokenChecker) {
 
     @JvmRecord
     data class VerificationRequest @JsonCreator constructor(val signedAttestation: String?)

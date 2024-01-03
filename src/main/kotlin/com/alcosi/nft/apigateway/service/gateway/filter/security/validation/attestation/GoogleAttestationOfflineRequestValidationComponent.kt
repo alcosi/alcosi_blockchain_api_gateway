@@ -24,11 +24,12 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.validation.attestation
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.attestation
 
 import com.alcosi.lib.object_mapper.MappingHelper
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiValidationException
-import com.alcosi.nft.apigateway.service.validation.ValidationResult
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationResult
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationUniqueTokenChecker
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.client.json.webtoken.JsonWebSignature
 import com.google.api.client.json.webtoken.JsonWebToken
@@ -36,19 +37,21 @@ import com.google.api.client.util.Key
 import org.apache.commons.codec.binary.Base64
 import org.apache.http.conn.ssl.DefaultHostnameVerifier
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
 import java.math.BigDecimal
 import java.time.Instant
 
 open class GoogleAttestationOfflineRequestValidationComponent(
-    mappingHelper: MappingHelper,
-    attestationEnabled: Boolean,
-    attestationSuperTokenEnabled: Boolean,
+    alwaysPassed: Boolean,
+    superTokenEnabled: Boolean,
     superUserToken: String,
     key: String,
     packageName: String,
     ttl: Long,
     val hostname: String,
-) : GoogleAttestationRequestValidationComponent(mappingHelper, attestationEnabled, attestationSuperTokenEnabled, superUserToken, key, packageName, ttl) {
+    mappingHelper: MappingHelper,
+    uniqueTokenChecker: ValidationUniqueTokenChecker,
+    ) : GoogleAttestationRequestValidationComponent(alwaysPassed,superTokenEnabled,superUserToken, key, packageName, ttl,mappingHelper,uniqueTokenChecker) {
     protected open val hostnameVerifier: DefaultHostnameVerifier = DefaultHostnameVerifier()
     protected open val parser: JsonWebSignature.Parser = JsonWebSignature.parser(GsonFactory.getDefaultInstance()).setPayloadClass(AttestationStatement::class.java)
     data class AttestationStatement(
@@ -91,20 +94,24 @@ open class GoogleAttestationOfflineRequestValidationComponent(
     }
 
 
-    override fun checkInternal(token: String, ip: String?): Mono<ValidationResult> {
-        try {
-            val signature: JsonWebSignature = parser.parse(token)
-            val cert = signature.verifySignature()
-            hostnameVerifier.verify(hostname, cert)
-            val stmt = signature.payload as AttestationStatement
-            checkRequest(stmt)
-            return Mono.just(okResult)
-        } catch (t: ApiValidationException) {
-            logger.error("GoogleAttestation error! ", t)
-            return Mono.just(ValidationResult(false, BigDecimal.ZERO, t.message))
-        } catch (t: Throwable) {
-            logger.error("GoogleAttestation unknown error! ", t)
-            return Mono.just(ValidationResult(false, BigDecimal.ZERO, "Unknown error ${t.javaClass}:${t.message}"))
+    override fun checkInternal(tokenVal: String, ip: String?): Mono<ValidationResult> {
+        return Mono.just(tokenVal)
+            .subscribeOn(Schedulers.boundedElastic())
+            .map {token->
+            try {
+                val signature: JsonWebSignature = parser.parse(token)
+                val cert = signature.verifySignature()
+                hostnameVerifier.verify(hostname, cert)
+                val stmt = signature.payload as AttestationStatement
+                checkRequest(stmt)
+                return@map okResult
+            } catch (t: ApiValidationException) {
+                logger.error("GoogleAttestation error! ", t)
+                return@map ValidationResult(false, BigDecimal.ZERO, t.message)
+            } catch (t: Throwable) {
+                logger.error("GoogleAttestation unknown error! ", t)
+                return@map ValidationResult(false, BigDecimal.ZERO, "Unknown error ${t.javaClass}:${t.message}")
+            }
         }
 
     }

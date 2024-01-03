@@ -24,9 +24,31 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.validation.captcha
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation
 
 
-import com.alcosi.nft.apigateway.service.validation.AbstractRequestValidator
+import org.apache.logging.log4j.kotlin.Logging
+import org.springframework.web.server.ServerWebExchange
+import reactor.core.publisher.Mono
+import java.math.BigDecimal
 
-open class GoogleCaptchaValidator(googleCaptchaComponent: GoogleCaptchaRequestValidationComponent): AbstractRequestValidator(googleCaptchaComponent,"GoogleCaptcha")
+open class FilterValidationService(protected open val validationServices: List<RequestValidator>,
+                                   protected open val alwaysPassed:Boolean):Logging{
+    fun check(
+        exchange: ServerWebExchange
+    ): Mono<ValidationResult> {
+        if (alwaysPassed){
+            return Mono.just( ValidationResult(false, BigDecimal.ONE,"Always passed mode for FilterValidationService"))
+        }
+        val type = exchange.request.headers[RequestValidator.Headers.TYPE]?.firstOrNull()?:"GoogleCaptcha"
+         val validationServiceForType=validationServices
+             .find { it.type== type}
+         if (validationServiceForType==null){
+             logger.error("Wrong type for validation $type")
+             exchange.attributes[RequestValidator.Headers.VALIDATION_IS_PASSED]=false
+             return Mono.just( ValidationResult(false, BigDecimal.ZERO,"Wrong type for validation $type"))
+         }
+        return validationServiceForType.validate(exchange)
+    }
+
+}

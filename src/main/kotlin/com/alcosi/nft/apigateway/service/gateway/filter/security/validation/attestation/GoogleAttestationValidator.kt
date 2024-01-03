@@ -24,26 +24,9 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.validation
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.attestation
 
 
-import org.apache.logging.log4j.kotlin.logger
-import org.springframework.web.server.ServerWebExchange
-import reactor.core.publisher.Mono
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.AbstractRequestValidator
 
-abstract class AbstractRequestValidator(protected open val validationComponent: RequestValidationComponent, override val type: String):RequestValidator{
-    override fun validate(
-        exchange: ServerWebExchange
-    ): Mono<ValidationResult> {
-        val token = exchange.request.headers[RequestValidator.Headers.TOKEN_HEADER]?.firstOrNull()
-        val ip = exchange.request.headers[RequestValidator.Headers.IP_HEADER]?.firstOrNull()
-        val validationResult = validationComponent.check(token, ip)
-        return validationResult.map {
-            if (!it.success){
-                logger.info("ValidationService success:false.${it.errorDescription}")
-            }
-            it
-        }
-    }
-
-}
+open class GoogleAttestationValidator(googleComponent: GoogleAttestationRequestValidationComponent): AbstractRequestValidator(googleComponent,"GoogleAttestation")

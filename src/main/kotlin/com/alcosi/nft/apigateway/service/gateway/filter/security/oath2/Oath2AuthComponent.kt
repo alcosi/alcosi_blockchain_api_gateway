@@ -22,7 +22,7 @@ import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicReference
 
 
-class Oath2AuthComponent(
+open class Oath2AuthComponent(
     val webClient: WebClient,
     val idServerUri: String,
     val clientId: String,
@@ -34,8 +34,8 @@ class Oath2AuthComponent(
     relativePath:String = "/connect/token"
 
 ) {
-    open protected val tokenUri = "${idServerUri}${relativePath}"
-    protected val token = AtomicReference<Token>(Token("", LocalDateTime.MIN, 0, listOf()))
+    protected open val tokenUri = "${idServerUri}${relativePath}"
+    protected open val token = AtomicReference<Token>(Token("", LocalDateTime.MIN, 0, listOf()))
 
     @JvmRecord
     data class TokenRs @JsonCreator constructor(
@@ -50,7 +50,7 @@ class Oath2AuthComponent(
         val scopes: List<String>,
     )
 
-    class Token(
+    open class Token(
         val accessToken: String,
         creationTime: LocalDateTime,
         val expiresIn: Int,
@@ -59,7 +59,7 @@ class Oath2AuthComponent(
         val validTill = creationTime.plusSeconds(expiresIn.toLong())
     }
 
-    val scheduler = object : SchedulerTimer(Duration.ofSeconds(1)) {
+    protected open val scheduler = object : SchedulerTimer(Duration.ofSeconds(1)) {
         override fun startBatch() {
             val tk = token.get()
             val expireDelay = tk.expiresIn / 2
@@ -73,7 +73,7 @@ class Oath2AuthComponent(
             }
         }
     }
-    fun getAccessToken():String{
+    open fun getAccessToken():String{
         val tk = token.get()
         val isExpired=tk.validTill.isBefore(LocalDateTime.now())
         if (isExpired){
@@ -82,7 +82,7 @@ class Oath2AuthComponent(
         return token.get().accessToken
     }
 
-    fun getFromServer(): Mono<Token> {
+    open fun getFromServer(): Mono<Token> {
         val formData: MultiValueMap<String, String> = LinkedMultiValueMap()
         listOf(
             "client_id" to clientId,
@@ -111,7 +111,7 @@ class Oath2AuthComponent(
 
     }
 
-    class ListStringDeSerializer : StdDeserializer<List<String>>(List::class.java) {
+   open class ListStringDeSerializer : StdDeserializer<List<String>>(List::class.java) {
         override fun deserialize(p: JsonParser?, ctxt: DeserializationContext?): List<String> {
             if (p == null) {
                 return listOf()

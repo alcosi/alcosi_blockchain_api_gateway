@@ -24,37 +24,35 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.validation
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation
 
-import org.apache.logging.log4j.kotlin.Logging
+
+import com.alcosi.lib.synchronisation.SynchronisationServiceConfig
+import com.alcosi.lib.synchronisation.SynchronizationService
+import com.alcosi.nft.apigateway.config.PathConfig
+import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
 import org.springframework.beans.factory.annotation.Value
-import reactor.core.publisher.Mono
-import java.math.BigDecimal
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 
-abstract class RequestValidationComponent(
-    @Value("\${validation.google.attestation.enabled}") val enabled: Boolean,
-    @Value("\${validation.google.attestation.super_token.enabled}") val superTokenEnabled: Boolean,
-    @Value("\${validation.google.attestation.super_token.value}") val superUserToken: String,
-) : Logging {
-    protected open val noTokenResult = ValidationResult(false, BigDecimal.ZERO, "No token")
-    protected open val disabledResult = ValidationResult(true, BigDecimal.ONE, "Not active")
-    protected open val okResult = ValidationResult(true, BigDecimal.ONE)
+@Configuration
+@ConditionalOnProperty(prefix = "validation", name = ["disabled"], matchIfMissing = true, havingValue = "false")
+class ValidationConfig {
+    @Bean
+    @ConditionalOnMissingBean(FilterValidationService::class)
+    fun getFilterValidationService(
+        services: List<RequestValidator>,
+        @Value("\${validation.always_passed:false}")  alwaysPassed: Boolean, ): FilterValidationService {
+        return FilterValidationService(services,alwaysPassed)
+    }
 
-
-    abstract fun checkInternal(token: String,ip:String?): Mono<ValidationResult>
-
-     open fun check(token: String?, ip: String?): Mono<ValidationResult> {
-         if (!enabled) {
-             return Mono.just(disabledResult)
-         }
-         if (token.isNullOrBlank()) {
-             return Mono.just(noTokenResult)
-         }
-         if (superUserToken == token) {
-             if (superTokenEnabled) {
-                 return Mono.just(disabledResult)
-             }
-         }
-         return checkInternal(token,ip)
-     }
+    @Bean
+    @ConditionalOnMissingBean(ValidationUniqueTokenChecker::class)
+    fun getValidationUniqueTokenChecker(
+        synchronizationService: SynchronizationService
+    ): ValidationUniqueTokenChecker {
+        return ValidationUniqueTokenChecker(synchronizationService)
+    }
 }

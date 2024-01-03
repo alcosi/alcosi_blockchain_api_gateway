@@ -90,4 +90,5 @@ class SecurityFiltersConfig {
     ): SecurityGatewayFilter {
         return SecurityGatewayFilter(pathConfig.securityConfig.toPredicate(),PathConfig.ATTRIBUTE_REQ_AUTHORITIES_FIELD)
     }
+
 }

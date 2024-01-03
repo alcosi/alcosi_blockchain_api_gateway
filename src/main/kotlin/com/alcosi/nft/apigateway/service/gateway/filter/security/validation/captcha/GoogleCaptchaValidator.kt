@@ -24,21 +24,9 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.validation.attestation
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.captcha
 
-import com.alcosi.lib.object_mapper.MappingHelper
-import com.alcosi.nft.apigateway.service.error.exceptions.ApiValidationException
-import com.alcosi.nft.apigateway.service.validation.RequestValidationComponent
-import org.springframework.beans.factory.annotation.Value
- abstract class GoogleAttestationRequestValidationComponent(
-    val mappingHelper: MappingHelper,
-    @Value("\${validation.google.attestation.enabled}")  attestationEnabled: Boolean,
-    @Value("\${validation.google.attestation.super_token.enabled}")  attestationSuperTokenEnabled: Boolean,
-    @Value("\${validation.google.attestation.super_token.value}")  superUserToken: String,
-    @Value("\${validation.google.attestation.key}") val key: String,
-    @Value("\${validation.google.attestation.packageName}") val packageName: String,
-    @Value("\${validation.google.attestation.ttl}") val ttl: Long,
-) : RequestValidationComponent(attestationEnabled,attestationSuperTokenEnabled,superUserToken) {
-    data class AttestationValidationException(var s: String) : ApiValidationException(s, 2)
 
-}
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.AbstractRequestValidator
+
+open class GoogleCaptchaValidator(googleCaptchaComponent: GoogleCaptchaRequestValidationComponent): AbstractRequestValidator(googleCaptchaComponent,"GoogleCaptcha")

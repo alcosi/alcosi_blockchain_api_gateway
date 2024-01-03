@@ -24,9 +24,9 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.validation.attestation
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ios_device_check
 
 
-import com.alcosi.nft.apigateway.service.validation.AbstractRequestValidator
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.AbstractRequestValidator
 
-open class GoogleAttestationValidator(googleComponent: GoogleAttestationRequestValidationComponent): AbstractRequestValidator(googleComponent,"GoogleAttestation")
+open class IOSDeviceCheckValidator(iosDeviceCheckComponent: IOSDeviceCheckRequestValidationComponent): AbstractRequestValidator(iosDeviceCheckComponent,"IOSDeviceCheck")

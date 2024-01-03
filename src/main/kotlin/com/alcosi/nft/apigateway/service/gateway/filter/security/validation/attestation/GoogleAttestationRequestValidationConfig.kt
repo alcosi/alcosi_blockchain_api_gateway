@@ -24,9 +24,10 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.validation.attestation
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.attestation
 
 import com.alcosi.lib.object_mapper.MappingHelper
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationUniqueTokenChecker
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -43,35 +44,36 @@ class GoogleAttestationRequestValidationConfig {
     fun getGoogleOnlineAttestationComponent(
         webClient: WebClient,
         mappingHelper: MappingHelper,
-        @Value("\${validation.google.attestation.enabled:false}")  attestationEnabled: Boolean,
+        uniqueTokenChecker:ValidationUniqueTokenChecker,
+        @Value("\${validation.google.attestation.always_passed:false}")  alwaysPassed: Boolean,
         @Value("\${validation.google.attestation.super_token.enabled:false}")  attestationSuperTokenEnabled: Boolean,
         @Value("\${validation.google.attestation.super_token.value:}")  superUserToken: String,
         @Value("\${validation.google.attestation.key:}")  key: String,
-        @Value("\${validation.google.attestation.packageName:}")  packageName: String,
+        @Value("\${validation.google.attestation.package_name:}")  packageName: String,
         @Value("\${validation.google.attestation.ttl:100}")  ttl: Long,
         @Value("\${validation.google.attestation.uri:https://www.googleapis.com/androidcheck/v1/attestations/verify}")  uri: String,
     ): GoogleAttestationRequestValidationComponent {
-        return GoogleAttestationOnlineRequestValidationComponent(webClient, mappingHelper, attestationEnabled, attestationSuperTokenEnabled, superUserToken, key, packageName, ttl,uri)
+        return GoogleAttestationOnlineRequestValidationComponent(alwaysPassed, attestationSuperTokenEnabled,superUserToken, key, packageName, ttl,uri,webClient,mappingHelper,uniqueTokenChecker)
     }
     @Bean
     @ConditionalOnMissingBean(GoogleAttestationRequestValidationComponent::class)
     @ConditionalOnProperty(prefix = "validation.google.attestation", name = ["type"], matchIfMissing = false, havingValue = "OFFLINE")
     fun getGoogleOfflineAttestationComponent(
-        webClient: WebClient,
         mappingHelper: MappingHelper,
-        @Value("\${validation.google.attestation.enabled:false}")  attestationEnabled: Boolean,
+        uniqueTokenChecker:ValidationUniqueTokenChecker,
+        @Value("\${validation.google.attestation.always_passed:false}")  alwaysPassed: Boolean,
         @Value("\${validation.google.attestation.super_token.enabled:false}")  attestationSuperTokenEnabled: Boolean,
         @Value("\${validation.google.attestation.super_token.value:}")  superUserToken: String,
         @Value("\${validation.google.attestation.key:}")  key: String,
-        @Value("\${validation.google.attestation.packageName:}")  packageName: String,
+        @Value("\${validation.google.attestation.package_name:}")  packageName: String,
         @Value("\${validation.google.attestation.ttl:100}")  ttl: Long,
         @Value("\${validation.google.attestation.hostname:}")  hostname: String,
     ): GoogleAttestationRequestValidationComponent {
-        return GoogleAttestationOfflineRequestValidationComponent( mappingHelper, attestationEnabled, attestationSuperTokenEnabled, superUserToken, key, packageName, ttl,hostname)
+        return GoogleAttestationOfflineRequestValidationComponent( alwaysPassed, attestationSuperTokenEnabled, superUserToken, key, packageName, ttl,hostname,mappingHelper,uniqueTokenChecker)
     }
     @Bean
     @ConditionalOnMissingBean(GoogleAttestationValidator::class)
-    fun getGoogleAttestationService(
+    fun getGoogleAttestationValidator(
         component: GoogleAttestationRequestValidationComponent
     ): GoogleAttestationValidator {
         return GoogleAttestationValidator(component)

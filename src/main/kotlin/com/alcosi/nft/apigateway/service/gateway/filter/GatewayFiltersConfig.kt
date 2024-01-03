@@ -33,7 +33,7 @@ import com.alcosi.lib.secured.encrypt.key.KeyProvider
 import com.alcosi.nft.apigateway.config.PathConfig
 import com.alcosi.nft.apigateway.config.PathConfigProperties
 import com.alcosi.nft.apigateway.service.gateway.filter.security.ValidationGatewayFilter
-import com.alcosi.nft.apigateway.service.validation.FilterValidationService
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.FilterValidationService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.breninsul.webfluxlogging.CommonLoggingUtils
 import com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingFilter

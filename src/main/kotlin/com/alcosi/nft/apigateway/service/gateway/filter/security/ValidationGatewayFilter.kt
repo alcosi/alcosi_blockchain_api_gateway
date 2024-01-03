@@ -29,8 +29,8 @@ package com.alcosi.nft.apigateway.service.gateway.filter.security
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiValidationException
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilter.Companion.JWT_LOG_ORDER
-import com.alcosi.nft.apigateway.service.validation.FilterValidationService
-import com.alcosi.nft.apigateway.service.validation.RequestValidator
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.FilterValidationService
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.RequestValidator
 import org.springframework.cloud.gateway.filter.GatewayFilterChain
 import org.springframework.http.HttpMethod
 import org.springframework.web.server.ServerWebExchange
@@ -50,7 +50,7 @@ open class ValidationGatewayFilter(
         if (exchange.request.method == HttpMethod.OPTIONS) {
             return chain.filter(exchange)
         }
-        val clearExchange = clearResult(exchange)
+        val clearExchange = setValidationHeader(exchange,null)
         val haveToAuth = predicate.test(clearExchange)
         return if (!haveToAuth) {
             chain.filter(clearExchange)
@@ -61,18 +61,16 @@ open class ValidationGatewayFilter(
                     if (!it.success) {
                         Mono.error(ApiValidationException(it.errorDescription))
                     } else {
-                       val rqBuilder= clearExchange.request.mutate()
-                        rqBuilder.header(RequestValidator.Headers.VALIDATION_IS_PASSED,"${it.success}")
-                        val modExchange=clearExchange.mutate().request(rqBuilder.build()).build()
+                        val modExchange=setValidationHeader(clearExchange,it.success)
                         chain.filter(modExchange)
                     }
                 }
         }
     }
 
-    private fun clearResult(exchange: ServerWebExchange): ServerWebExchange {
+    private fun setValidationHeader(exchange: ServerWebExchange,value:Boolean?): ServerWebExchange {
         val rqBuilder = exchange.request.mutate()
-        rqBuilder.header(RequestValidator.Headers.VALIDATION_IS_PASSED, null)
+        rqBuilder.header(RequestValidator.Headers.VALIDATION_IS_PASSED, value?.toString())
         val modExchange = exchange.mutate().request(rqBuilder.build()).build()
         return modExchange
     }

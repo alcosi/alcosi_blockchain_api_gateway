@@ -24,22 +24,9 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.validation
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.huawei_safety_detect
 
 
-import org.springframework.web.server.ServerWebExchange
-import reactor.core.publisher.Mono
+import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.AbstractRequestValidator
 
-interface RequestValidator{
-    val type:String
-    object Headers {
-        val TOKEN_HEADER = "ValidationToken"
-        val IP_HEADER = "x-real-ip"
-        val VALIDATION_IS_PASSED = "ValidationIsPassed"
-        val TYPE ="ValidationType"
-    }
-    fun validate(
-        exchange: ServerWebExchange
-    ): Mono<ValidationResult>
-
-}
+open class HuaweiSafetyDetectCheckValidator(safetyDetectComponent: HuaweiSafetyDetectRequestValidationComponent): AbstractRequestValidator(safetyDetectComponent,"HuaweiSafetyDetect")

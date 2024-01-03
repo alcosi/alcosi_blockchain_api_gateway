@@ -24,22 +24,46 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.service.validation
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation
+
+import org.apache.logging.log4j.kotlin.Logging
+import reactor.core.publisher.Mono
+import java.math.BigDecimal
+
+abstract class RequestValidationComponent(
+    val alwaysPassed: Boolean,
+    val superTokenEnabled: Boolean,
+    val superUserToken: String,
+    val uniqueTokenTTL: Long,
+    val uniqueTokenChecker: ValidationUniqueTokenChecker,
+) : Logging {
+    protected open val noTokenResult = ValidationResult(false, BigDecimal.ZERO, "No token")
+    protected open val notUniqueTokenResult = ValidationResult(false, BigDecimal.ZERO, "Not unique token")
+    protected open val alwaysPassedResult = ValidationResult(true, BigDecimal.ONE, "Always passed mode")
+    protected open val superTokenResult = ValidationResult(true, BigDecimal.ONE, "Super token mode")
+    protected open val okResult = ValidationResult(true, BigDecimal.ONE)
 
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
+    abstract fun checkInternal(token: String, ip: String?): Mono<ValidationResult>
 
-@Configuration
-@ConditionalOnProperty(prefix = "validation", name = ["disabled"], matchIfMissing = true, havingValue = "false")
-class ValidationConfig {
-    @Bean
-    @ConditionalOnMissingBean(FilterValidationService::class)
-    fun getFilterValidationService(
-        services: List<RequestValidator>
-    ): FilterValidationService {
-        return FilterValidationService(services)
+    open fun check(token: String?, ip: String?): Mono<ValidationResult> {
+        if (alwaysPassed) {
+            return Mono.just(alwaysPassedResult)
+        }
+        if (token.isNullOrBlank()) {
+            return Mono.just(noTokenResult)
+        }
+        if (superUserToken == token) {
+            if (superTokenEnabled) {
+                return Mono.just(superTokenResult)
+            }
+        }
+        return uniqueTokenChecker.isNotUnique(token, uniqueTokenTTL).flatMap {
+            if (it) {
+                return@flatMap checkInternal(token, ip)
+            } else {
+                return@flatMap Mono.just(notUniqueTokenResult)
+            }
+        }
     }
 }
