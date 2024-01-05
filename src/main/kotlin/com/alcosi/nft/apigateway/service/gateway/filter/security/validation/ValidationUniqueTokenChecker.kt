@@ -6,15 +6,18 @@ import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import java.time.Duration
 import java.time.LocalDateTime
+import java.util.logging.Level
 
 open class ValidationUniqueTokenChecker(val synchronizationService: SynchronizationService) {
     protected open val tokenMap: MutableMap<Int, LocalDateTime> = mutableMapOf()
-    protected open val scheduler = object : SchedulerTimer(Duration.ofSeconds(1)) {
+    protected open val scheduler = object : SchedulerTimer(Duration.ofSeconds(1), "SchedulerUniqueToken",Level.FINE) {
         override fun startBatch() {
             val currTime = LocalDateTime.now()
             val expired = tokenMap.filter { it.value.isBefore(currTime) }.keys
             expired.forEach { tokenMap.remove(it) }
-            logger.info("ValidationUniqueTokenChecker cleared ${expired.size} tokens")
+            if (expired.size>0) {
+                logger.info("ValidationUniqueTokenChecker cleared ${expired.size} tokens")
+            }
         }
     }
 

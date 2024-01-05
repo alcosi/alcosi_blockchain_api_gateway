@@ -2,7 +2,7 @@ package com.alcosi.nft.apigateway.service.gateway.filter.security
 
 import com.alcosi.lib.object_mapper.MappingHelper
 import com.alcosi.nft.apigateway.auth.service.CheckJWTService
-import com.alcosi.nft.apigateway.config.PathConfig
+import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
 import com.alcosi.nft.apigateway.service.gateway.filter.security.eth.EthJwtGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.*
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -11,7 +11,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Lazy
 import org.springframework.web.reactive.function.client.WebClient
 
 @Configuration
@@ -86,9 +85,9 @@ class SecurityFiltersConfig {
     @Bean
     @ConditionalOnMissingBean(SecurityGatewayFilter::class)
     fun getSecurityGatewayFilter(
-        pathConfig: PathConfig
+        pathConfig: PathConfigurationComponent
     ): SecurityGatewayFilter {
-        return SecurityGatewayFilter(pathConfig.securityConfig.toPredicate(),PathConfig.ATTRIBUTE_REQ_AUTHORITIES_FIELD)
+        return SecurityGatewayFilter(pathConfig.securityConfig.toPredicate(), PathConfigurationComponent.ATTRIBUTE_REQ_AUTHORITIES_FIELD)
     }
 
 }

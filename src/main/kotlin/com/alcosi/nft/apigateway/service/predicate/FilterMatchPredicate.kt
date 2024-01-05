@@ -1,7 +1,7 @@
 package com.alcosi.nft.apigateway.service.predicate
 
-import com.alcosi.nft.apigateway.config.dto.FilterMatchConfigDTO
-import com.alcosi.nft.apigateway.config.PathConfig
+import com.alcosi.nft.apigateway.config.path.dto.FilterMatchConfigDTO
+import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
 import com.alcosi.nft.apigateway.service.predicate.matcher.HttpFilterMatcher
 import com.alcosi.nft.apigateway.service.predicate.matcher.HttpFilterMatcherMVC
 import com.alcosi.nft.apigateway.service.predicate.matcher.HttpFilterMatcherRegex
@@ -11,14 +11,14 @@ import java.util.function.Predicate
 open class FilterMatchPredicate(
     prefix: String,
     pathMethods: List<FilterMatchConfigDTO>,
-    val type: PathConfig.PREDICATE_TYPE,
+    val type: PathConfigurationComponent.PREDICATE_TYPE,
     val matchType:PredicateMatcherType,
     val attrReqAuthoritiesField:String,
     val baseAuthorities:List<String>,
     ) : Logging, Predicate<ServerWebExchange> {
    open val matchers: List<HttpFilterMatcher<*>> = when (type) {
-        PathConfig.PREDICATE_TYPE.REGEX -> pathMethods.map { HttpFilterMatcherRegex(prefix, it) }
-        PathConfig.PREDICATE_TYPE.MVC -> pathMethods.map { HttpFilterMatcherMVC(prefix, it) }
+        PathConfigurationComponent.PREDICATE_TYPE.REGEX -> pathMethods.map { HttpFilterMatcherRegex(prefix, it) }
+        PathConfigurationComponent.PREDICATE_TYPE.MVC -> pathMethods.map { HttpFilterMatcherMVC(prefix, it) }
     }.sortedBy { it.config }
 
 

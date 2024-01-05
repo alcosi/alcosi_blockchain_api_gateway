@@ -1,4 +1,4 @@
-package com.alcosi.nft.apigateway.config
+package com.alcosi.nft.apigateway.config.db.redis
 
 import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.beans.factory.annotation.Value

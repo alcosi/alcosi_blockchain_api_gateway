@@ -27,10 +27,7 @@
 package com.alcosi.nft.apigateway.service.gateway.filter.security.validation
 
 
-import com.alcosi.lib.synchronisation.SynchronisationServiceConfig
 import com.alcosi.lib.synchronisation.SynchronizationService
-import com.alcosi.nft.apigateway.config.PathConfig
-import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

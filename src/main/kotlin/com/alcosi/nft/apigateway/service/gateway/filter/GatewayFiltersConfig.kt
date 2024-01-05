@@ -30,8 +30,7 @@ import com.alcosi.lib.filters.HeaderHelper
 import com.alcosi.lib.object_mapper.MappingHelper
 import com.alcosi.lib.secured.encrypt.SensitiveComponent
 import com.alcosi.lib.secured.encrypt.key.KeyProvider
-import com.alcosi.nft.apigateway.config.PathConfig
-import com.alcosi.nft.apigateway.config.PathConfigProperties
+import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
 import com.alcosi.nft.apigateway.service.gateway.filter.security.ValidationGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.FilterValidationService
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -46,15 +45,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class GatewayFiltersConfig {
-    @Bean
-    fun getPathConfig(
-        properties: PathConfigProperties,
-        helper: MappingHelper,
-        objectMapper: ObjectMapper,
-        @Value("\${gateway.base.path:/api}") basePath: String
-    ): PathConfig {
-        return PathConfig(properties, helper, objectMapper, basePath)
-    }
+
     @Bean
     fun getSpringCloudGatewayLoggingFilter(
         springCloudGatewayLoggingUtils: SpringCloudGatewayLoggingUtils,
@@ -94,7 +85,7 @@ class GatewayFiltersConfig {
         keyProvider: KeyProvider,
         objectMapper: ObjectMapper
     ): EncryptGatewayFilter {
-        return EncryptGatewayFilter(commonUtils,keyProvider, objectMapper,PathConfig.ATTRIBUTE_PROXY_CONFIG_FIELD)
+        return EncryptGatewayFilter(commonUtils,keyProvider, objectMapper, PathConfigurationComponent.ATTRIBUTE_PROXY_CONFIG_FIELD)
     }
     @Bean
     @ConditionalOnMissingBean(DecryptGatewayFilter::class)
@@ -109,7 +100,7 @@ class GatewayFiltersConfig {
     @ConditionalOnMissingBean(ValidationGatewayFilter::class)
     fun getValidationGatewayFilter(
         validationService: FilterValidationService,
-        pathConfig: PathConfig,
+        pathConfig: PathConfigurationComponent,
         @Value("\${gateway.base.path:/api}") basePath: String,
     ): ValidationGatewayFilter {
         return ValidationGatewayFilter(validationService, pathConfig.validationConfig.toPredicate())

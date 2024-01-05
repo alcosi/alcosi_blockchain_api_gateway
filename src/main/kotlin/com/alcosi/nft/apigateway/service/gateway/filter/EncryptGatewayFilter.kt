@@ -3,7 +3,7 @@ package com.alcosi.nft.apigateway.service.gateway.filter
 import com.alcosi.lib.secured.container.SecuredDataByteArray
 import com.alcosi.lib.secured.container.SecuredDataString
 import com.alcosi.lib.secured.encrypt.key.KeyProvider
-import com.alcosi.nft.apigateway.config.dto.ProxyRouteConfigDTO
+import com.alcosi.nft.apigateway.config.path.dto.ProxyRouteConfigDTO
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode

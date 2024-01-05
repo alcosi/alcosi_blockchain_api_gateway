@@ -24,26 +24,31 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.config.dto
+package com.alcosi.nft.apigateway.config.path
 
-import com.fasterxml.jackson.annotation.JsonCreator
-import org.springframework.core.Ordered
-import org.springframework.http.HttpMethod
+import com.alcosi.lib.object_mapper.MappingHelper
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 
-open class FilterMatchConfigDTO @JsonCreator constructor(
-    val methods: List<HttpMethod>,
-    val path: String,
-    private val authorities: List<String>?,
-    private val order: Int?
-    ): Ordered,Comparable<FilterMatchConfigDTO> {
-    fun authorities():List<String>{
-        return authorities?: listOf("ALL")
-    }
-    override fun getOrder(): Int {
-        return order?:0
-    }
+@Configuration
+@EnableConfigurationProperties(PathConfigurationProperties::class)
+open class PathConfig {
 
-    override fun compareTo(other: FilterMatchConfigDTO): Int {
-        return getOrder().compareTo(other.getOrder())
+//    @Bean
+//    fun getPathConfigProperties(): PathConfigurationProperties {
+//        return PathConfigurationProperties()
+//    }
+    @Bean
+    fun getPathConfig(
+        properties: PathConfigurationProperties,
+        helper: MappingHelper,
+        objectMapper: ObjectMapper,
+        @Value("\${gateway.base.path:/api}") basePath: String
+    ): PathConfigurationComponent {
+        return PathConfigurationComponent(properties, helper, objectMapper, basePath)
     }
 }

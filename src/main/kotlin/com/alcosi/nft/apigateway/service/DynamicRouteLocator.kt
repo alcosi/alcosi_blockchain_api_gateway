@@ -26,7 +26,7 @@
 
 package com.alcosi.nft.apigateway.service
 
-import com.alcosi.nft.apigateway.config.dto.ProxyRouteConfigDTO
+import com.alcosi.nft.apigateway.config.path.dto.ProxyRouteConfigDTO
 import com.alcosi.nft.apigateway.service.gateway.filter.GatewayBaseContextFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
 import org.springframework.cloud.gateway.route.Route

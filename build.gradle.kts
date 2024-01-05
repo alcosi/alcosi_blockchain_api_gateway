@@ -6,12 +6,13 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id("com.bmuschko.docker-remote-api") version "9.3.2"
-    id("org.springframework.boot") version "3.2.0"
+    id("org.springframework.boot") version "3.2.1"
     id("io.spring.dependency-management") version "1.1.4"
     id("maven-publish")
     id("com.github.jk1.dependency-license-report") version "2.5"
-    kotlin("jvm") version "1.9.20"
-    kotlin("plugin.spring") version "1.9.20"
+    kotlin("jvm") version "1.9.22"
+    kotlin("plugin.spring") version "1.9.22"
+    id("org.jetbrains.kotlin.kapt") version "1.9.22"
 }
 
 buildscript{
@@ -165,8 +166,12 @@ configurations {
 }
 
 dependencies {
-    implementation("com.alcosi:commons-library-basic-dependency:3.2.0.2.9")
-    implementation("com.github.breninsul:webflux-logging:1.0.13")
+    implementation("com.alcosi:commons-library-basic-dependency:3.2.1.3.0")
+    implementation("org.springframework.data:spring-data-r2dbc:3.2.1")
+//    implementation("org.springframework.data:spring-boot-starter-data-r2dbc:3.2.1")
+    implementation("org.postgresql:r2dbc-postgresql:1.0.3.RELEASE")
+    implementation("io.r2dbc:r2dbc-pool:1.0.1.RELEASE")
+    implementation("com.github.breninsul:webflux-logging:1.1.00")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:+")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:+")
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
@@ -182,6 +187,7 @@ dependencies {
     implementation("commons-codec:commons-codec:1.16.0")
     implementation("org.apache.commons:commons-text:1.11.0")
     annotationProcessor("org.apache.logging.log4j:log4j-core")
+    kapt("org.apache.logging.log4j:log4j-core")
 }
 configure<SourceSetContainer> {
     named("main") {

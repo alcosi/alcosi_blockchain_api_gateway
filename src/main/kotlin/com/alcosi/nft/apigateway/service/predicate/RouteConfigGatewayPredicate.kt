@@ -1,6 +1,6 @@
 package com.alcosi.nft.apigateway.service.predicate
 
-import com.alcosi.nft.apigateway.config.dto.ProxyRouteConfigDTO
+import com.alcosi.nft.apigateway.config.path.dto.ProxyRouteConfigDTO
 import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.web.server.ServerWebExchange
 import java.util.function.Predicate

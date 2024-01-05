@@ -24,21 +24,21 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package com.alcosi.nft.apigateway.config
+package com.alcosi.nft.apigateway.config.path
 
 import com.alcosi.lib.object_mapper.MappingHelper
-import com.alcosi.nft.apigateway.config.dto.FilterMatchConfigDTO
-import com.alcosi.nft.apigateway.config.dto.ProxyRouteConfigDTO
-import com.alcosi.nft.apigateway.config.dto.SecurityRouteConfigDTO
+import com.alcosi.nft.apigateway.config.path.dto.FilterMatchConfigDTO
+import com.alcosi.nft.apigateway.config.path.dto.ProxyRouteConfigDTO
+import com.alcosi.nft.apigateway.config.path.dto.SecurityRouteConfigDTO
 import com.alcosi.nft.apigateway.service.predicate.PredicateMatcherType
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 
-open class PathConfig(
-    val properties: PathConfigProperties,
+open class PathConfigurationComponent(
+    val properties: PathConfigurationProperties,
     val helper: MappingHelper,
     val objectMapper: ObjectMapper,
-     val basePath: String,
+    val basePath: String,
 ) {
     open val proxyConfig by lazy { getProxyConfig(properties.proxy).sortedBy { it.order ?: 0 }}
     open val securityConfig by lazy { getSecurityConfig(properties.security)}

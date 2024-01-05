@@ -14,10 +14,7 @@ common-lib:
   request_body_log:
     max:
       rest_template: "146800640"
-com:
-  github:
-    breninsul:
-      webfluxlogging:
-        logging:
-          max_body_size:
-            spring_cloud_gateway: "146800640"
+webflux:
+  logging:
+    gateway:
+      max-body-size: "146800640"
