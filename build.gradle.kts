@@ -171,7 +171,7 @@ dependencies {
 //    implementation("org.springframework.data:spring-boot-starter-data-r2dbc:3.2.1")
     implementation("org.postgresql:r2dbc-postgresql:1.0.3.RELEASE")
     implementation("io.r2dbc:r2dbc-pool:1.0.1.RELEASE")
-    implementation("com.github.breninsul:webflux-logging:1.1.00")
+    implementation("com.github.breninsul:webflux-logging:1.1.01")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:+")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:+")
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")

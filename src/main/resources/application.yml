@@ -18,3 +18,4 @@ webflux:
   logging:
     gateway:
       max-body-size: "146800640"
+      log-body: true
