@@ -1,30 +1,30 @@
 package com.alcosi.nft.apigateway.config.db.redis
 
+import com.alcosi.lib.executors.SchedulerTimer
 import org.apache.logging.log4j.kotlin.Logging
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
 import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import reactor.core.publisher.Mono
-import java.time.Duration
-import java.util.*
 
 @ConditionalOnProperty(prefix = "filter.config.path.security.type", name = ["method"], havingValue = "ETH_JWT", matchIfMissing = true)
 @Configuration
+@EnableConfigurationProperties(RedisCheckProperties::class)
 @Import(value=[RedisAutoConfiguration::class, RedisReactiveAutoConfiguration::class ])
 class RedisConfig:Logging{
     @Bean
-    @ConditionalOnProperty(prefix = "check.redis_status", name = ["disabled"], matchIfMissing = true, havingValue = "false")
+    @ConditionalOnProperty(prefix = "spring.data.redis.check", name = ["disabled"], matchIfMissing = true, havingValue = "false")
     fun getRedisCheckScheduler(
-        @Value("\${check.redis_status.delay:5s}") scheduleDelay: Duration,
+        props: RedisCheckProperties,
         redisTemplate: ReactiveStringRedisTemplate
-    ): Timer {
-        val task = object : TimerTask() {
-            override fun run() {
+    ): SchedulerTimer {
+        val scheduler = object : SchedulerTimer(props.delay,"Redis-Check") {
+            override fun startBatch() {
                 val connection = redisTemplate.connectionFactory.reactiveConnection
                 val resultMono = connection.ping()
                 resultMono.map {
@@ -37,9 +37,9 @@ class RedisConfig:Logging{
                     }
                 }.subscribe()
             }
+
         }
-        val timer = Timer()
-        timer.scheduleAtFixedRate(task, scheduleDelay.toMillis(), scheduleDelay.toMillis())
-        return timer
+        return scheduler
     }
+
 }

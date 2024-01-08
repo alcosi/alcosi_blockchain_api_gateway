@@ -33,6 +33,7 @@ import org.springframework.boot.WebApplicationType
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
 import org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
+import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcTransactionManagerAutoConfiguration
 import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration
@@ -49,7 +50,7 @@ import kotlin.io.path.Path
     ],exclude = [
         RedisAutoConfiguration::class,RedisReactiveAutoConfiguration::class,//Redis
         R2dbcAutoConfiguration::class, TransactionAutoConfiguration::class, R2dbcTransactionManagerAutoConfiguration::class,//R2DBC
-        JdbcTemplateConfig::class //JDBC - never used
+//        JdbcTemplateConfig::class, //JDBC - never used
     ],
 )
 class ApiGatewayApplication

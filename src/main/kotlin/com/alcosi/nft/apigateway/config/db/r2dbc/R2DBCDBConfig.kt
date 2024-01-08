@@ -1,6 +1,5 @@
 package com.alcosi.nft.apigateway.config.db.r2dbc
 
-import com.alcosi.nft.apigateway.config.path.PathConfigurationProperties
 import io.r2dbc.pool.ConnectionPool
 import io.r2dbc.pool.ConnectionPoolConfiguration
 import io.r2dbc.pool.PoolingConnectionFactoryProvider
@@ -9,36 +8,55 @@ import io.r2dbc.spi.ConnectionFactory
 import io.r2dbc.spi.ConnectionFactoryOptions
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcConnectionDetails
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcProperties
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcTransactionManagerAutoConfiguration
 import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration
-import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.r2dbc.ConnectionFactoryBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.r2dbc.core.DatabaseClient
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
 import java.time.Duration
 
 
 @Configuration
 @EnableConfigurationProperties(R2DBCConnectionFactoryOptionsProperties::class)
 @ConditionalOnProperty(prefix = "spring.r2dbc", name = ["url"], matchIfMissing = false)
-@Import(value = [R2dbcAutoConfiguration::class, TransactionAutoConfiguration::class, R2dbcTransactionManagerAutoConfiguration::class])
-class R2DBCDBConfig{
-//    @Bean
-//    fun getR2DBCConnectionFactoryOptionsProperties(): R2DBCConnectionFactoryOptionsProperties {
-//        return R2DBCConnectionFactoryOptionsProperties()
-//    }
+@Import(value = [R2dbcAutoConfiguration::class, TransactionAutoConfiguration::class, R2dbcTransactionManagerAutoConfiguration::class, DataSourceAutoConfiguration::class])
+class R2DBCDBConfig {
+    @Bean("r2DBCtoJDBCUriConverter")
+    @ConditionalOnMissingBean(R2DBCtoJDBCUriConverter::class)
+    fun getR2DBCtoJDBCUriConverter(): R2DBCtoJDBCUriConverter {
+        return R2DBCtoJDBCUriConverter()
+    }
+
+    @Bean("flywayR2DBCConfig")
+    @ConditionalOnMissingBean(FlywayR2DBCConfig::class)
+    fun getFlywayR2DBCConfig(converter: R2DBCtoJDBCUriConverter): FlywayR2DBCConfig {
+        return FlywayR2DBCConfig(converter)
+    }
+
+    @Bean("dataSourceR2DBCConfig")
+    @ConditionalOnMissingBean(DataSourceR2DBCConfig::class)
+    fun getDataSourceR2DBCConfig(converter: R2DBCtoJDBCUriConverter): DataSourceR2DBCConfig {
+        return DataSourceR2DBCConfig(converter)
+    }
+
+
 
     @Bean
-    fun getR2DBCConnectionFactoryOptionsBuilderCustomizer(props:R2DBCConnectionFactoryOptionsProperties): R2DBCConnectionFactoryOptionsBuilderCustomizer {
-        return R2DBCConnectionFactoryOptionsBuilderCustomizer(props.options.filter { it.value!=null } as Map<String,String>)
+    fun getR2DBCConnectionFactoryOptionsBuilderCustomizer(props: R2DBCConnectionFactoryOptionsProperties): R2DBCConnectionFactoryOptionsBuilderCustomizer {
+        return R2DBCConnectionFactoryOptionsBuilderCustomizer(props.options.filter { it.value != null } as Map<String, String>)
     }
+
     //    @Bean(initMethod = "migrate")
 //    fun flyway(
 //        flywayProperties: FlywayProperties,
@@ -112,11 +130,6 @@ class R2DBCDBConfig{
     }
 
     companion object {
-        val SQL_NAME_LIMITATIONS_REGEX = Regex("^(?!pg_)[a-z][a-z0-9).]{0,32}\$")
-
-        @JvmStatic
-        fun r2dbcURLToJdbcURL(value: String?): String? {
-            return value?.replace(":pool", "")?.replace("r2dbc", "jdbc")
-        }
+        val SQL_NAME_LIMITATIONS_REGEX = Regex("^(?!pg_)[a-z][_a-z0-9).]{0,32}\$")
     }
 }

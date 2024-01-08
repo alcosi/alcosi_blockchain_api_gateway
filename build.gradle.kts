@@ -12,7 +12,7 @@ plugins {
     id("com.github.jk1.dependency-license-report") version "2.5"
     kotlin("jvm") version "1.9.22"
     kotlin("plugin.spring") version "1.9.22"
-    id("org.jetbrains.kotlin.kapt") version "1.9.22"
+//    id("org.jetbrains.kotlin.kapt") version "1.9.22"
 }
 
 buildscript{
@@ -156,13 +156,20 @@ tasks.create("buildDockerImage", com.bmuschko.gradle.docker.tasks.image.DockerBu
 
 configurations {
     configureEach {
-        exclude("com.zaxxer", "HikariCP")
-        exclude("org.springframework.boot", "spring-boot-starter-jdbc")
-        exclude("org.postgresql", "postgresql")
-        exclude("org.flywaydb", "flyway-core")
+//        exclude("com.zaxxer", "HikariCP")
+//        exclude("org.springframework.boot", "spring-boot-starter-jdbc")
+//        exclude("org.postgresql", "postgresql")
+//        exclude("org.flywaydb", "flyway-core")
         exclude("org.springframework.boot", "spring-boot-starter-web")
         exclude("org.springframework.boot", "spring-boot-starter-jetty")
     }
+}
+tasks.compileJava{
+    val dependsOn = dependsOn
+    dependsOn.add(tasks.processResources)
+}
+tasks.compileKotlin{
+    dependsOn.add(tasks.processResources)
 }
 
 dependencies {
@@ -171,6 +178,10 @@ dependencies {
 //    implementation("org.springframework.data:spring-boot-starter-data-r2dbc:3.2.1")
     implementation("org.postgresql:r2dbc-postgresql:1.0.3.RELEASE")
     implementation("io.r2dbc:r2dbc-pool:1.0.1.RELEASE")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
+//    implementation("org.flywaydb:flyway-core:10.4.1")
+//    implementation("org.flywaydb:flyway-database-postgresql:10.4.1")
+//    implementation("org.postgresql:postgresql:42.7.1")
     implementation("com.github.breninsul:webflux-logging:1.1.01")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:+")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:+")
@@ -187,7 +198,10 @@ dependencies {
     implementation("commons-codec:commons-codec:1.16.0")
     implementation("org.apache.commons:commons-text:1.11.0")
     annotationProcessor("org.apache.logging.log4j:log4j-core")
-    kapt("org.apache.logging.log4j:log4j-core")
+    annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+//    kapt("org.springframework.boot:spring-boot-autoconfigure-processor")
+//    kapt("org.springframework.boot:spring-boot-configuration-processor")
 }
 configure<SourceSetContainer> {
     named("main") {
