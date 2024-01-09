@@ -59,25 +59,32 @@ open class SecurityGatewayFilter(
         if (!haveToAuth) {
             return chain.filter(exchange)
         } else {
-            val client = exchange.attributes[securityClientAttributeField]
-            val authorities = exchange.attributes[authoritiesAttributeField] as List<String>?
-            if (client == null) {
-                throw ApiSecurityException(
-                    4012,
-                    "This resource requires authentication. Please use Bearer token to access this resource"
-                )
-            } else if (client !is PrincipalDetails) {
-                throw ApiSecurityException(4013, "Wrong profile type! ${client.javaClass}")
-            } else if (!checkAllAuthority(authorities, client)) {
-                    throw ApiSecurityException(
-                        4014,
-                        "You don't have authority to access this resource ($authorities). You authorities (${
-                            client.authorities.joinToString(",")
-                        })"
-                    )
-                } else {
-                    return chain.filter(exchange)
-                }
+            return processAuth(exchange, chain)
+        }
+    }
+
+    protected open fun processAuth(
+        exchange: ServerWebExchange,
+        chain: GatewayFilterChain
+    ): Mono<Void> {
+        val client = exchange.attributes[securityClientAttributeField]
+        val authorities = exchange.attributes[authoritiesAttributeField] as List<String>?
+        if (client == null) {
+            throw ApiSecurityException(
+                4012,
+                "This resource requires authentication. Please use Bearer token to access this resource"
+            )
+        } else if (client !is PrincipalDetails) {
+            throw ApiSecurityException(4013, "Wrong profile type! ${client.javaClass}")
+        } else if (!checkAllAuthority(authorities, client)) {
+            throw ApiSecurityException(
+                4014,
+                "You don't have authority to access this resource ($authorities). You authorities (${
+                    client.authorities.joinToString(",")
+                })"
+            )
+        } else {
+            return chain.filter(exchange)
         }
     }
 

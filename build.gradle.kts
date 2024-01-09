@@ -156,7 +156,7 @@ tasks.create("buildDockerImage", com.bmuschko.gradle.docker.tasks.image.DockerBu
 
 configurations {
     configureEach {
-//        exclude("com.zaxxer", "HikariCP")
+        exclude("com.zaxxer", "HikariCP")
 //        exclude("org.springframework.boot", "spring-boot-starter-jdbc")
 //        exclude("org.postgresql", "postgresql")
 //        exclude("org.flywaydb", "flyway-core")
@@ -179,10 +179,7 @@ dependencies {
     implementation("org.postgresql:r2dbc-postgresql:1.0.3.RELEASE")
     implementation("io.r2dbc:r2dbc-pool:1.0.1.RELEASE")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
-//    implementation("org.flywaydb:flyway-core:10.4.1")
-//    implementation("org.flywaydb:flyway-database-postgresql:10.4.1")
-//    implementation("org.postgresql:postgresql:42.7.1")
-    implementation("com.github.breninsul:webflux-logging:1.1.01")
+    implementation("com.github.breninsul:webflux-logging:1.1.03")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:+")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:+")
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")

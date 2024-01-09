@@ -8,12 +8,12 @@ import org.reactivestreams.Publisher
 import org.springframework.cloud.gateway.filter.GatewayFilterChain
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.core.io.buffer.DataBufferUtils
-import org.springframework.http.server.reactive.ServerHttpResponse
+import org.springframework.http.HttpHeaders
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator
 import org.springframework.web.server.ServerWebExchange
-import org.springframework.web.server.ServerWebExchangeDecorator
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+private val TRANSFER_ENCODING_CHUNKED_VALUE = "chunked"
 
 open class DecryptGatewayFilter(
     val utils: CommonLoggingUtils,
@@ -22,6 +22,7 @@ open class DecryptGatewayFilter(
     private val order: Int = Int.MIN_VALUE,
 ) : MicroserviceGatewayFilter {
     override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {
+
         val decorated=exchange.mutate().response(DecryptResponseDecorator(exchange, utils, sensitiveComponent, keyProvider)).build()
 
         return chain.filter(decorated)
@@ -65,10 +66,12 @@ open class DecryptGatewayFilter(
                 }
                 .mapNotNull { decrypted ->
                     val dataBuffer = exchange.response.bufferFactory().wrap(decrypted!!)
+                        if ((headers[HttpHeaders.TRANSFER_ENCODING]?.firstOrNull()?:"")!=TRANSFER_ENCODING_CHUNKED_VALUE){
+                            this.headers.set(HttpHeaders.CONTENT_LENGTH, "${decrypted.size}");
+                        }
                     return@mapNotNull dataBuffer
                 }
             return super.writeWith(buffer)
         }
-
     }
 }

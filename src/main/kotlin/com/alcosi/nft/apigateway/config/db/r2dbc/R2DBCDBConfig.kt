@@ -6,10 +6,12 @@ import io.r2dbc.pool.PoolingConnectionFactoryProvider
 import io.r2dbc.postgresql.PostgresqlConnectionFactoryProvider
 import io.r2dbc.spi.ConnectionFactory
 import io.r2dbc.spi.ConnectionFactoryOptions
+import org.flywaydb.core.Flyway
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcConnectionDetails
@@ -43,7 +45,13 @@ class R2DBCDBConfig {
     fun getFlywayR2DBCConfig(converter: R2DBCtoJDBCUriConverter): FlywayR2DBCConfig {
         return FlywayR2DBCConfig(converter)
     }
-
+    @Bean
+    fun flywayMigrationStrategy(callbacks:List<FlywayMigrateCallback>): FlywayMigrationStrategy {
+        return FlywayMigrationStrategy { flyway ->
+            flyway.migrate()
+            callbacks.forEach {action-> action.call() }
+        }
+    }
     @Bean("dataSourceR2DBCConfig")
     @ConditionalOnMissingBean(DataSourceR2DBCConfig::class)
     fun getDataSourceR2DBCConfig(converter: R2DBCtoJDBCUriConverter): DataSourceR2DBCConfig {

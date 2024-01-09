@@ -30,14 +30,14 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import org.springframework.core.Ordered
 import org.springframework.http.HttpMethod
 
-open class FilterMatchConfigDTO @JsonCreator constructor(
+data class FilterMatchConfigDTO @JsonCreator constructor(
     val methods: List<HttpMethod>,
     val path: String,
     private val authorities: List<String>?,
     private val order: Int?
     ): Ordered,Comparable<FilterMatchConfigDTO> {
-    fun authorities():List<String>{
-        return authorities?: listOf("ALL")
+    fun authorities():List<String>?{
+        return authorities
     }
     override fun getOrder(): Int {
         return order?:0

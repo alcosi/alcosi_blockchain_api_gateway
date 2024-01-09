@@ -22,6 +22,8 @@ open class ContextHeadersGatewayFilter(
         if (apiKey!=null){
             builder.header(HeaderHelper.SERVICE_AUTH_HEADER,"Bearer $apiKey")
         }
+        exchange.attributes[HeaderHelper.ENV_HEADER]= environment
+        exchange.attributes[HeaderHelper.SERVICE_NAME]= serviceName
         val decorated = exchange.mutate().request(builder.build()).build()
         return chain.filter(decorated)
 

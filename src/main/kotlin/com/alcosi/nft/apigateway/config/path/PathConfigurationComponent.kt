@@ -40,9 +40,9 @@ open class PathConfigurationComponent(
     val objectMapper: ObjectMapper,
     val basePath: String,
 ) {
-    open val proxyConfig by lazy { getProxyConfig(properties.proxy).sortedBy { it.order ?: 0 }}
-    open val securityConfig by lazy { getSecurityConfig(properties.security)}
-    open val validationConfig by lazy {  getValidationConfig(properties.validation)}
+    open val proxyConfig by lazy { getProxyConfig(properties.proxy).sortedBy { it.order ?: 0 } }
+    open val securityConfig by lazy { getSecurityConfig(properties.security) }
+    open val validationConfig by lazy { getValidationConfig(properties.validation) }
 
     protected open fun getProxyConfig(map: Map<String, String?>): List<ProxyRouteConfigDTO> {
         val result = properties.proxy.flatMap {
@@ -65,20 +65,27 @@ open class PathConfigurationComponent(
         }
         return result
     }
+
     protected open fun getValidationConfig(map: Map<String, Any?>): SecurityRouteConfigDTO {
-        return getSecurityConfig(map, listOf(),PredicateMatcherType.MATCH_IF_CONTAINS_IN_LIST)
+        return getSecurityConfig(map, listOf(), PredicateMatcherType.MATCH_IF_CONTAINS_IN_LIST)
     }
+
     protected open fun getSecurityConfig(map: Map<String, Any?>): SecurityRouteConfigDTO {
-        val baseAuthorities=(map["base_authorities"] as String?)?.let { objectMapper.readTree(it)}?.let {
-            if (it.isArray){
-                (it as ArrayNode ).map {itt->itt.asText()  }
-            } else{
+        val baseAuthorities = (map["base_authorities"] as String?)?.let { objectMapper.readTree(it) }?.let {
+            if (it.isArray) {
+                (it as ArrayNode).map { itt -> itt.asText() }
+            } else {
                 listOf(it.asText())
             }
-        }?: listOf("ALL")
-        return getSecurityConfig(map,baseAuthorities,PredicateMatcherType.MATCH_IF_CONTAINS_IN_LIST)
+        } ?: listOf("ALL")
+        return getSecurityConfig(map, baseAuthorities, PredicateMatcherType.MATCH_IF_CONTAINS_IN_LIST)
     }
-    protected open fun getSecurityConfig(map: Map<String, Any?>,baseAuthorities:List<String>,defMatcherType:PredicateMatcherType): SecurityRouteConfigDTO {
+
+    protected open fun getSecurityConfig(
+        map: Map<String, Any?>,
+        baseAuthorities: List<String>,
+        defMatcherType: PredicateMatcherType
+    ): SecurityRouteConfigDTO {
         val addBasePath = (map["addBasePath"] as String?)?.let { it.toBoolean() } ?: false
         val any = map["type"]
         val typeMap = any as Map<String, String?>?
@@ -94,8 +101,9 @@ open class PathConfigurationComponent(
             )
         }
         val predicateType = (typeMap["predicate"])?.let { PREDICATE_TYPE.valueOf(it.uppercase()) }
-        val matchType = (typeMap["match"])?.let { PredicateMatcherType.valueOf(it.uppercase()) }?:defMatcherType
-        val methodType = (typeMap["method"])?.let { SecurityRouteConfigDTO.METHOD.valueOf(it.uppercase()) }?: SecurityRouteConfigDTO.METHOD.ETH_JWT
+        val matchType = (typeMap["match"])?.let { PredicateMatcherType.valueOf(it.uppercase()) } ?: defMatcherType
+        val methodType = (typeMap["method"])?.let { SecurityRouteConfigDTO.METHOD.valueOf(it.uppercase()) }
+            ?: SecurityRouteConfigDTO.METHOD.ETH_JWT
         val pathList = if (map["path"] is Map<*, *>) {
             map["path"] as Map<String, String?>
         } else {
@@ -114,8 +122,22 @@ open class PathConfigurationComponent(
                 )
             }
             return@flatMap list
+        }.map {
+            if (it.authorities() == null) {
+                return@map it.copy(authorities = baseAuthorities)
+            } else {
+                return@map it
+            }
         }
-        return SecurityRouteConfigDTO(methodType,matches, matchType, predicateType, basePath,baseAuthorities, addBasePath)
+        return SecurityRouteConfigDTO(
+            methodType,
+            matches,
+            matchType,
+            predicateType,
+            basePath,
+            baseAuthorities,
+            addBasePath
+        )
     }
 
     enum class PREDICATE_TYPE {
@@ -126,5 +148,7 @@ open class PathConfigurationComponent(
         val ATTRIBUTE_PROXY_CONFIG_FIELD: String = "ATTRIBUTES_PROXY_CONFIG"
         val ATTRIBUTE_SECURITY_CONFIG_FIELD: String = "ATTRIBUTE_SECURITY_CONFIG_FIELD"
         val ATTRIBUTE_REQ_AUTHORITIES_FIELD = "ATTRIBUTE_REQ_AUTHORITIES_FIELD"
+        val ATTRIBUTES_REQUEST_TIME = "ATTRIBUTES_REQUEST_TIME"
+        val ATTRIBUTES_REQUEST_HISTORY_ID_MONO = "ATTRIBUTES_REQUEST_HISTORY_ID_MONO"
     }
 }
