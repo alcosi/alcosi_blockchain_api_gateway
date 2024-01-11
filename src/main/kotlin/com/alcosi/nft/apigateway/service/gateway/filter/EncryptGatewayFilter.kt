@@ -42,6 +42,7 @@ open class EncryptGatewayFilter(
             val changedHeadersRequest = exchange.request.mutate()
                 .header(HttpHeaders.TRANSFER_ENCODING, TRANSFER_ENCODING_VALUE)
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("${HttpHeaders.CONTENT_LENGTH}_ORIGINAL", "${exchange.request.headers.contentLength}")
                 .header(HttpHeaders.CONTENT_LENGTH, null)
                 .build()
              exchange.mutate().request(changedHeadersRequest).build()

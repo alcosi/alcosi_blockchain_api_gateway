@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Scheduler
+import java.math.BigInteger
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -22,7 +23,6 @@ open class RequestHistoryDBComponent(
                  values (:rq_id,:rq_headers::jsonb,:ip,:uri,:method::${schemaName}.http_method_type,:rq_size,:rq_time,:routed_service,:matched_route_details::jsonb)
                  returning id"""
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun saveRequest(
         rqId:String,
         rqHeaders: HttpHeaders,
@@ -44,8 +44,9 @@ open class RequestHistoryDBComponent(
             .bindValueOrNull("rq_time", rqTime, LocalDateTime::class.java)
             .bindValueOrNull("matched_route_details", mappingHelper.serialize(routeDetails),String::class.java)
             .bindValueOrNull("routed_service", routedService,String::class.java)
-            .mapValue(Long::class.java)
+            .mapValue(BigInteger::class.java)
             .first()
+            .map { it.longValueExact() }
             .subscribeOn(flexScheduler)
     }
     protected open val sqlSaveAuth= """
@@ -53,7 +54,6 @@ open class RequestHistoryDBComponent(
         where id=:id and rq_time=:rq_time
         returning id
     """.trimIndent()
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun saveAuth(
         idMono:Mono<Long>,
         rqTime:LocalDateTime,
@@ -68,18 +68,18 @@ open class RequestHistoryDBComponent(
                 .bindValueOrNull("user_id", userId, UUID::class.java)
                 .bindValueOrNull("account_id", accountId, UUID::class.java)
                 .bindValueOrNull("auth_details", mappingHelper.serialize(authDetails), String::class.java)
-                .mapValue(Long::class.java)
+                .mapValue(BigInteger::class.java)
                 .first()
+                .map { it.longValueExact() }
                 .subscribeOn(flexScheduler)
         }
     }
 
     protected open val sqlSaveRs= """
-        update request_history.api_gateway_request_history set rs_time=:rs_time,rs_size=:rs_size,rs_code=:rs_code
+        update ${schemaName}.api_gateway_request_history set rs_time=:rs_time,rs_size=:rs_size,rs_code=:rs_code
         where id=:id and rq_time=:rq_time
         returning id
     """.trimIndent()
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun saveRs(
         idMono:Mono<Long>,
         rqTime:LocalDateTime,
@@ -94,8 +94,9 @@ open class RequestHistoryDBComponent(
                 .bindValueOrNull("rs_time", rsTime, LocalDateTime::class.java)
                 .bindValueOrNull("rs_size", rsSize, Long::class.java)
                 .bindValueOrNull("rs_code", rsCode, Int::class.java)
-                .mapValue(Long::class.java)
+                .mapValue(BigInteger::class.java)
                 .first()
+                .map { it.longValueExact() }
                 .subscribeOn(flexScheduler)
         }
     }
@@ -104,11 +105,11 @@ open class RequestHistoryDBComponent(
         value: Any?,
         valueClass: Class<*>
     ): DatabaseClient.GenericExecuteSpec {
-        if (value == null) {
+        val executeSpec = if (value == null) {
             bindNull(name, valueClass)
         } else {
             bind(name, value)
         }
-        return this
+        return executeSpec
     }
 }

@@ -28,7 +28,7 @@ BEGIN
     execute create_partition_sql;
     create_rq_id_index_sql:='create index if not exists '||new_partition_name||'_rq_id_index on '||scheme_name_val||'.'||new_partition_name ||' (rq_id)';
     execute create_rq_id_index_sql;
-    create_id_index_sql:='create index if not exists '||new_partition_name||'_id_index on '||scheme_name_val||'.'||new_partition_name ||' (id)';
+    create_id_index_sql:='create unique index if not exists '||new_partition_name||'_id_index on '||scheme_name_val||'.'||new_partition_name ||' (id)';
     execute create_rq_id_index_sql;
     return true;
 END;

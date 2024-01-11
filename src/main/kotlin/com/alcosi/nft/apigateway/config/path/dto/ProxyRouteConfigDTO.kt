@@ -27,6 +27,7 @@ data class ProxyRouteConfigDTO @JsonCreator constructor(
         val predicateType = type ?: PathConfigurationComponent.PREDICATE_TYPE.MVC
         val prefix = if (addBasePath == false) "" else (basePath ?: "")
         val filterPredicate = FilterMatchPredicate(
+            false,
             prefix,
             matches,
             predicateType,

@@ -42,30 +42,36 @@ class SecurityFiltersConfig {
     @ConditionalOnMissingBean(Oath2GetUserInfoService::class)
     @ConditionalOnProperty(matchIfMissing=false, prefix = "filter.config.path.security.type", value= ["method"],havingValue = "IDENTITY_SERVER")
     fun getOath2GetUserInfoService(
+        @Value("\${filter.config.path.security.identity_server.claim-client-id:clientId}") claimClientId: String,
+        @Value("\${filter.config.path.security.identity_server.claim-type:type}") claimType: String,
+        @Value("\${filter.config.path.security.identity_server.claim-authorities:authorities}") claimAuthorities: String,
         oath2GetUserInfoComponent: Oath2GetUserInfoComponent,
         oath2APIGetUserInfoComponent: Oath2APIGetUserInfoComponent
     ): Oath2GetUserInfoService {
-        return Oath2GetUserInfoService(oath2GetUserInfoComponent, oath2APIGetUserInfoComponent)
+        return Oath2GetUserInfoService(claimClientId,claimType,claimAuthorities,oath2GetUserInfoComponent, oath2APIGetUserInfoComponent)
     }
     @Bean
     @ConditionalOnMissingBean(Oath2GetUserInfoComponent::class)
     @ConditionalOnProperty(matchIfMissing=false, prefix = "filter.config.path.security.type", value= ["method"],havingValue = "IDENTITY_SERVER")
     fun getOath2GetUserInfoComponent(
+        mappingHelper: MappingHelper,
         webClient: WebClient,
         objectMapper: ObjectMapper,
         @Value("\${filter.config.path.security.identity_server.uri}") idServerUri: String,
     ): Oath2GetUserInfoComponent {
-        return Oath2GetUserInfoComponent(webClient, objectMapper,idServerUri)
+        return Oath2GetUserInfoComponent(mappingHelper,webClient, objectMapper,idServerUri)
     }
     @Bean
     @ConditionalOnMissingBean(Oath2APIGetUserInfoComponent::class)
     @ConditionalOnProperty(matchIfMissing=false, prefix = "filter.config.path.security.type", value= ["method"],havingValue = "IDENTITY_SERVER")
     fun getOath2APIGetUserInfoComponent(
+        mappingHelper: MappingHelper,
         webClient: WebClient,
         oath2AuthComponent: Oath2AuthComponent,
         @Value("\${filter.config.path.security.identity_server.uri}") idServerUri: String,
-    ): Oath2APIGetUserInfoComponent {
-        return Oath2APIGetUserInfoComponent(webClient, oath2AuthComponent,idServerUri)
+        @Value("\${filter.config.path.security.identity_server.api_version:2.0}") idServerXApiVersion: String,
+        ): Oath2APIGetUserInfoComponent {
+        return Oath2APIGetUserInfoComponent(mappingHelper,webClient, oath2AuthComponent,idServerXApiVersion,idServerUri)
     }
     @Bean
     @ConditionalOnMissingBean(Oath2AuthComponent::class)

@@ -23,6 +23,7 @@ data class SecurityRouteConfigDTO @JsonCreator constructor(
         val predicateType = type ?: PathConfigurationComponent.PREDICATE_TYPE.REGEX
         val prefix = if (addBasePath) basePath else ""
         val filterPredicate = FilterMatchPredicate(
+            true,
             prefix,
             matches,
             predicateType,

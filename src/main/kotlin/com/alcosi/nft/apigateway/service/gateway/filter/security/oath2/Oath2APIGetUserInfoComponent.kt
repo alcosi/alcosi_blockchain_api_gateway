@@ -1,28 +1,30 @@
 package com.alcosi.nft.apigateway.service.gateway.filter.security.oath2
 
+import com.alcosi.lib.object_mapper.MappingHelper
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiException
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.http.HttpStatusCode
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
 open class Oath2APIGetUserInfoComponent(
+    protected val mappingHelper: MappingHelper,
     protected val webClient: WebClient,
     protected val oath2AuthComponent: Oath2AuthComponent,
-    idServerUri: String,
+    protected val apiVersion:String = "2.0",
+    idServerUri: String ,
     relativePath: String = "/api/user/{id}"
 ) {
     open protected val getUserInfoUri = "${idServerUri}${relativePath}"
 
     @JvmRecord
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class User @JsonCreator constructor(
         @JsonProperty("id")
         val id: String,
         @JsonProperty("fullName")
-        val fullName: FullName,
+        val fullName: FullName?,
         @JsonProperty("email")
         val email: String?,
         @JsonProperty("phoneNumber")
@@ -31,13 +33,14 @@ open class Oath2APIGetUserInfoComponent(
         val photo: String?
     ) {
         @JvmRecord
+        @JsonIgnoreProperties(ignoreUnknown = true)
         data class FullName @JsonCreator constructor(
             @JsonProperty("firstName")
-            val firstName: String,
+            val firstName: String?,
             @JsonProperty("lastName")
-            val lastName: String,
+            val lastName: String?,
             @JsonProperty("JsonProperty")
-            val middleName: String
+            val middleName: String?
         )
 
         @JvmRecord
@@ -49,16 +52,23 @@ open class Oath2APIGetUserInfoComponent(
 
     fun getInfo(id: String): Mono<User> {
         return webClient
-            .post()
+            .get()
             .uri(getUserInfoUri.replace("{id}",id))
             .header("Authorization", "Bearer ${oath2AuthComponent.getAccessToken()}")
+            .header("x-api-version",apiVersion)
             .exchangeToMono { rs ->
                 if (!rs.statusCode().is2xxSuccessful) {
-                   return@exchangeToMono rs.bodyToMono(String::class.java).map {
-                        throw ApiException(500000,"Error retrieving account info Code:${rs.statusCode().value()} Msg:${it}")
+                   return@exchangeToMono rs.bodyToMono(String::class.java)
+                       .defaultIfEmpty("")
+                       .map {
+                           throw ApiException(500000,"Error retrieving account info Code:${rs.statusCode().value()} Msg:${it}")
                     }
                 }
-                rs.bodyToMono(User::class.java)
+               return@exchangeToMono rs.bodyToMono(String::class.java)
+                    .mapNotNull { string->
+                        val user = mappingHelper.mapOne(string, User::class.java)
+                        return@mapNotNull user
+                    } .switchIfEmpty(Mono.error( ApiException(500000,"Error retrieving API account info. Empty body")))
             }
 
     }

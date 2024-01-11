@@ -9,12 +9,13 @@ import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.web.server.ServerWebExchange
 import java.util.function.Predicate
 open class FilterMatchPredicate(
+    val isSecured:Boolean,
     prefix: String,
     pathMethods: List<FilterMatchConfigDTO>,
     val type: PathConfigurationComponent.PREDICATE_TYPE,
     val matchType:PredicateMatcherType,
     val attrReqAuthoritiesField:String,
-    val baseAuthorities:List<String>,
+    val baseAuthorities:List<String>?,
     ) : Logging, Predicate<ServerWebExchange> {
    open val matchers: List<HttpFilterMatcher<*>> = when (type) {
         PathConfigurationComponent.PREDICATE_TYPE.REGEX -> pathMethods.map { HttpFilterMatcherRegex(prefix, it) }
@@ -32,11 +33,13 @@ open class FilterMatchPredicate(
         matcher: HttpFilterMatcher<*>?,
         exchange: ServerWebExchange
     ) {
-        if (matcher != null) {
-            exchange.attributes[attrReqAuthoritiesField] = matcher.config.authorities()
-        } else{
-            if (matchType== PredicateMatcherType.MATCH_IF_NOT_CONTAINS_IN_LIST){
-                exchange.attributes[attrReqAuthoritiesField] = baseAuthorities
+        if (isSecured) {
+            if (matcher != null) {
+                exchange.attributes[attrReqAuthoritiesField] = matcher.config.authorities() ?: baseAuthorities
+            } else {
+                if (matchType == PredicateMatcherType.MATCH_IF_NOT_CONTAINS_IN_LIST) {
+                    exchange.attributes[attrReqAuthoritiesField] = baseAuthorities
+                }
             }
         }
     }
