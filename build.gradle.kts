@@ -103,10 +103,10 @@ val dockerRegistry = "harbor.esas.by/"
 
 val imageVersion = "9.0"
 val dockerBuildDir = "build/docker/"
-val appName = "nft/nft-api-gateway"
-
+val dockerHubProject="nft/"
+val appName = "nft-api-gateway"
 val profile = (project.properties["profile"] as String?) ?: "dev"
-val uniqueContainerName = "$dockerRegistry$appName:${imageVersion}_$profile"
+val uniqueContainerName = "$dockerRegistry$dockerHubProject$appName:${imageVersion}_$profile"
 
 
 docker {
