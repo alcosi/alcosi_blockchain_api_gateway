@@ -93,18 +93,25 @@ publishing {
     }
 }
 
+val gitUsername = System.getenv()["GIHUB_PACKAGE_USERNAME"]
+val gitToken = System.getenv()["GIHUB_PACKAGE_TOKEN"]
+
+val dockerUsername = System.getenv()["DOCKER_ESAS_USERNAME"]
+val dockerPass = System.getenv()["DOCKER_ESAS_PASSWORD"]
+val dockerRegistry = "harbor.esas.by/"
+
 
 val imageVersion = "9.0"
 val dockerBuildDir = "build/docker/"
-val appName = "nft-api-gateway"
-val profile = (project.properties["profile"] as String?) ?: "dev"
-val uniqueContainerName = "dockerhub.esas.by/$appName:${imageVersion}_$profile"
+val appName = "nft/nft-api-gateway"
 
+val profile = (project.properties["profile"] as String?) ?: "dev"
+val uniqueContainerName = "$dockerRegistry$appName:${imageVersion}_$profile"
 
 
 docker {
     registryCredentials {
-        url.set("https://dockerhub.esas.by/")
+        url.set("https://$dockerRegistry")
         username.set("${System.getenv()["DOCKER_ESAS_USERNAME"]}")
         password.set("${System.getenv()["DOCKER_ESAS_PASSWORD"]}")
     }
