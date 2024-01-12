@@ -40,7 +40,7 @@ times as(
 truncated as(
          select date_trunc('month',t.time)::timestamp as trunc from times t
 )
-select ${schemaName}.create_partition_by_interval(t.trunc,'1 month'::interval ,'api_gateway_request_history'::text,'request_history'::text ) from truncated t;
+select t.trunc as time ,${schemaName}.create_partition_by_interval(t.trunc,'1 month'::interval ,'api_gateway_request_history'::text,'request_history'::text ) as result from truncated t;
 
 """
     protected open val scheduler = object : SchedulerTimer(schedulerDelay, "PartitionsDBInitializer", Level.INFO) {

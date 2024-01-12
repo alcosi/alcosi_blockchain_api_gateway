@@ -180,7 +180,7 @@ tasks.compileKotlin{
 }
 
 dependencies {
-    implementation("com.alcosi:commons-library-basic-dependency:3.2.1.3.0")
+    implementation("com.alcosi:commons-library-basic-dependency:3.2.1.3.0.4")
     implementation("org.springframework.data:spring-data-r2dbc:3.2.1")
 //    implementation("org.springframework.data:spring-boot-starter-data-r2dbc:3.2.1")
     implementation("org.postgresql:r2dbc-postgresql:1.0.3.RELEASE")
