@@ -25,11 +25,6 @@ BEGIN
     create_partition_sql:= 'CREATE TABLE '||scheme_name_val||'.'||new_partition_name||' PARTITION OF '||scheme_name_val||'.'||table_name_val||
                  ' FOR VALUES FROM ('''||period_start::text||''') TO ('''||period_end::text||''');';
     raise notice 'Created partition for % %-%',table_name_val,period_start,period_end;
-    execute create_partition_sql;
-    create_rq_id_index_sql:='create index if not exists '||new_partition_name||'_rq_id_index on '||scheme_name_val||'.'||new_partition_name ||' (rq_id)';
-    execute create_rq_id_index_sql;
-    create_id_index_sql:='create unique index if not exists '||new_partition_name||'_id_index on '||scheme_name_val||'.'||new_partition_name ||' (id)';
-    execute create_rq_id_index_sql;
     return true;
 END;
 $$ LANGUAGE plpgsql;
