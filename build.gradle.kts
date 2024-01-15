@@ -101,7 +101,7 @@ val dockerPass = System.getenv()["DOCKER_ESAS_PASSWORD"]
 val dockerRegistry = "harbor.esas.by/"
 
 
-val imageVersion = "9.0"
+val imageVersion = "10.0"
 val dockerBuildDir = "build/docker/"
 val dockerHubProject="nft/"
 val appName = "nft-api-gateway"
