@@ -1,4 +1,5 @@
 import com.alcosi.lib.license_report.GroupedJsonReport
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 import com.github.jk1.license.LicenseReportExtension
 import io.spring.gradle.dependencymanagement.org.codehaus.plexus.interpolation.os.Os
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -149,16 +150,15 @@ tasks.create("buildDockerImage", com.bmuschko.gradle.docker.tasks.image.DockerBu
     platform.set("linux/amd64")
     inputDir.set(project.file(dockerBuildDir))
     images.add(uniqueContainerName)
-    doLast {
-        exec {
-            executable("docker")
-            args("push", uniqueContainerName)
-        }
-        println("Executed!")
-    }
 }
 
-
+tasks.create<DockerPushImage>("pushDockerImage") {
+    dependsOn("buildDockerImage")
+    images.add(uniqueContainerName)
+    doLast {
+        println("Image pushed: $uniqueContainerName")
+    }
+}
 
 
 configurations {
