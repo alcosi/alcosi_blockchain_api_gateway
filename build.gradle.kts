@@ -32,7 +32,7 @@ buildscript{
 }
 
 group = "com.alcosi.nft"
-version = "1.0"
+version = "10.0"
 java.sourceCompatibility = JavaVersion.VERSION_21
 val web3jVersion = "4.10.3"
 val jjwtVersion = "0.12.3"
@@ -101,7 +101,7 @@ val dockerPass = System.getenv()["DOCKER_ESAS_PASSWORD"]
 val dockerRegistry = "harbor.esas.by/"
 
 
-val imageVersion = "10.0"
+val imageVersion = version
 val dockerBuildDir = "build/docker/"
 val dockerHubProject="nft/"
 val appName = "nft-api-gateway"
@@ -123,7 +123,7 @@ tasks.create("createDockerfile", com.bmuschko.gradle.docker.tasks.image.Dockerfi
 //    runCommand("apk add --update npm")
 //    runCommand("npm i -g @redocly/cli@1.2.0")
     runCommand("mkdir /opt/app && mkdir /opt/app/logs")
-    addFile("api-gateway-1.0.jar", "/opt/app/app.jar")
+    addFile("api-gateway-${version}.jar", "/opt/app/app.jar")
     entryPoint("java")
     defaultCommand(
         "-jar",
