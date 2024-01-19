@@ -25,7 +25,7 @@ services:
     networks:
       - external-network
   nft-api-back:
-    image: dockerhub.esas.by/nft-api-gateway:9.0_dev
+    image: harbor.esas.by/nft-api-gateway:9.0
     container_name: nft-api-back
     hostname: nft-api-back
     environment:

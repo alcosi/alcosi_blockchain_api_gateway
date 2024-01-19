@@ -1,4 +1,5 @@
 import com.alcosi.lib.license_report.GroupedJsonReport
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 import com.github.jk1.license.LicenseReportExtension
 import io.spring.gradle.dependencymanagement.org.codehaus.plexus.interpolation.os.Os
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -31,7 +32,9 @@ buildscript{
 }
 
 group = "com.alcosi.nft"
-version = "1.0"
+version = "9.0"
+val imageVersion = project.version
+
 java.sourceCompatibility = JavaVersion.VERSION_19
 val web3jVersion = "4.10.3"
 val jjwtVersion = "0.12.3"
@@ -93,19 +96,23 @@ publishing {
 }
 
 
-val imageVersion = "9.0"
+val dockerUsername = System.getenv()["DOCKER_USERNAME"]
+val dockerPass = System.getenv()["DOCKER_PASSWORD"]
+val dockerRegistry = System.getenv()["DOCKER_HUB_URL"]
+
+val dockerHubProject= System.getenv()["DOCKER_HUB_PROJECT"]?:"nft/"
+
+
 val dockerBuildDir = "build/docker/"
 val appName = "nft-api-gateway"
-val profile = (project.properties["profile"] as String?) ?: "dev"
-val uniqueContainerName = "dockerhub.esas.by/$appName:${imageVersion}_$profile"
-
+val uniqueContainerName = "$dockerRegistry$dockerHubProject$appName:${imageVersion}"
 
 
 docker {
     registryCredentials {
-        url.set("https://dockerhub.esas.by/")
-        username.set("${System.getenv()["DOCKER_ESAS_USERNAME"]}")
-        password.set("${System.getenv()["DOCKER_ESAS_PASSWORD"]}")
+        url.set("https://$dockerRegistry")
+        username.set(dockerUsername)
+        password.set(dockerPass)
     }
 }
 tasks.create("createDockerfile", com.bmuschko.gradle.docker.tasks.image.Dockerfile::class) {
@@ -115,7 +122,7 @@ tasks.create("createDockerfile", com.bmuschko.gradle.docker.tasks.image.Dockerfi
 //    runCommand("apk add --update npm")
 //    runCommand("npm i -g @redocly/cli@1.2.0")
     runCommand("mkdir /opt/app && mkdir /opt/app/logs")
-    addFile("api-gateway-1.0.jar", "/opt/app/app.jar")
+    addFile("api-gateway-${imageVersion}.jar", "/opt/app/app.jar")
     entryPoint("java")
     defaultCommand(
         "-jar",
@@ -141,16 +148,15 @@ tasks.create("buildDockerImage", com.bmuschko.gradle.docker.tasks.image.DockerBu
     platform.set("linux/amd64")
     inputDir.set(project.file(dockerBuildDir))
     images.add(uniqueContainerName)
-    doLast {
-        exec {
-            executable("docker")
-            args("push", uniqueContainerName)
-        }
-        println("Executed!")
-    }
 }
 
-
+tasks.create<DockerPushImage>("pushDockerImage") {
+    dependsOn("buildDockerImage")
+    images.add(uniqueContainerName)
+    doLast {
+        println("Image pushed: $uniqueContainerName")
+    }
+}
 
 
 configurations {
@@ -166,7 +172,7 @@ configurations {
 
 dependencies {
     implementation("com.alcosi:commons-library-basic-dependency:3.2.0.1.10")
-    implementation("com.github.breninsul:webflux-logging:+")
+    implementation("com.github.breninsul:webflux-logging:1.0.12")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:+")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:+")
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
