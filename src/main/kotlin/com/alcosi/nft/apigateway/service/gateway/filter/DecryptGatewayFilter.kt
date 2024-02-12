@@ -2,7 +2,7 @@ package com.alcosi.nft.apigateway.service.gateway.filter
 
 import com.alcosi.lib.secured.encrypt.SensitiveComponent
 import com.alcosi.lib.secured.encrypt.key.KeyProvider
-import com.github.breninsul.webfluxlogging.CommonLoggingUtils
+import io.github.breninsul.webfluxlogging.CommonLoggingUtils
 import org.apache.logging.log4j.kotlin.Logging
 import org.reactivestreams.Publisher
 import org.springframework.cloud.gateway.filter.GatewayFilterChain

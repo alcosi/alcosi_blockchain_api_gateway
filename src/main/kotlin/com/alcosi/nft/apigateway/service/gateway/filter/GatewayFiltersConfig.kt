@@ -34,10 +34,10 @@ import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
 import com.alcosi.nft.apigateway.service.gateway.filter.security.ValidationGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.FilterValidationService
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.breninsul.webfluxlogging.CommonLoggingUtils
-import com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingAutoConfig
-import com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingFilter
-import com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingUtils
+import io.github.breninsul.webfluxlogging.CommonLoggingUtils
+import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingAutoConfig
+import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingFilter
+import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingUtils
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureBefore

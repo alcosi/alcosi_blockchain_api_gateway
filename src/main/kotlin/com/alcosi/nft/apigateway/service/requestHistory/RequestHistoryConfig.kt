@@ -8,8 +8,8 @@ import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGateway
 import com.alcosi.nft.apigateway.service.requestHistory.filter.RequestHistoryGatewayFilterRq
 import com.alcosi.nft.apigateway.service.requestHistory.filter.RequestHistoryGatewayFilterSecurity
 import com.alcosi.nft.apigateway.service.requestHistory.partitions.RequestHistoryPartitionsDBInitializer
-import com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingProperties
-import com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingUtils
+import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingProperties
+import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingUtils
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean

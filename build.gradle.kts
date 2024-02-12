@@ -32,7 +32,7 @@ buildscript {
 }
 
 group = "com.alcosi.nft"
-version = "11.33"
+version = "11.34"
 java.sourceCompatibility = JavaVersion.VERSION_21
 val web3jVersion = "4.10.3"
 val jjwtVersion = "0.12.3"
@@ -45,7 +45,9 @@ val gitToken = System.getenv()["GIHUB_PACKAGE_TOKEN"]
 repositories {
     mavenCentral()
     gradlePluginPortal()
-
+    maven{
+        url=uri("https://repo1.maven.org/maven2")
+    }
     maven {
         name = "GitHub"
         url = uri("https://maven.pkg.github.com/alcosi/alcosi_commons_library")
@@ -54,12 +56,7 @@ repositories {
             password = gitToken
         }
     }
-    maven {
-        name = "GitHub"
-        url = uri("https://maven.pkg.github.com/BreninSul/webflux-request-logging")
-    }
     maven { url = uri("https://jitpack.io") }
-
     maven {
         name = "sonatype"
         url = uri("https://oss.sonatype.org/content/repositories/snapshots")
@@ -170,7 +167,7 @@ dependencies {
     api("org.postgresql:r2dbc-postgresql:1.0.3.RELEASE")
     api("io.r2dbc:r2dbc-pool:1.0.1.RELEASE")
     api("org.springframework.boot:spring-boot-starter-jdbc")
-    api("com.github.breninsul:webflux-logging:1.1.03")
+    api("io.github.breninsul:webflux-logging:1.1.0.6")
     api("io.projectreactor.kotlin:reactor-kotlin-extensions:+")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:+")
     api("org.springframework.boot:spring-boot-starter-data-redis-reactive")

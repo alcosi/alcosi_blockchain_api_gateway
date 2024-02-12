@@ -1,8 +1,8 @@
 package com.alcosi.nft.apigateway.service.requestHistory
 
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
-import com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingErrorWebExceptionHandler
-import com.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingUtils
+import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingErrorWebExceptionHandler
+import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingUtils
 import org.reactivestreams.Publisher
 import org.springframework.boot.autoconfigure.web.ErrorProperties
 import org.springframework.boot.autoconfigure.web.WebProperties
