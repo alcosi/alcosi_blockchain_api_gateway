@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
-    id("com.bmuschko.docker-remote-api") version "9.3.2"
+    id("com.bmuschko.docker-remote-api") version "9.4.0"
     id("org.springframework.boot") version "3.2.2"
     id("io.spring.dependency-management") version "1.1.4"
     id("maven-publish")
@@ -32,7 +32,7 @@ buildscript {
 }
 
 group = "com.alcosi.nft"
-version = "11.34"
+version = "11.35"
 java.sourceCompatibility = JavaVersion.VERSION_21
 val web3jVersion = "4.10.3"
 val jjwtVersion = "0.12.3"
@@ -162,7 +162,7 @@ tasks.compileKotlin {
 }
 
 dependencies {
-    api("com.alcosi:commons-library-basic-dependency:3.2.2.3.2.8")
+    api("com.alcosi:commons-library-basic-dependency:3.2.2.3.2.10")
     api("org.springframework.data:spring-data-r2dbc:3.2.1")
     api("org.postgresql:r2dbc-postgresql:1.0.3.RELEASE")
     api("io.r2dbc:r2dbc-pool:1.0.1.RELEASE")
