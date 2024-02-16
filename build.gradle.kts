@@ -32,7 +32,7 @@ buildscript {
 }
 
 group = "com.alcosi.nft"
-version = "11.35"
+version = "11.36"
 java.sourceCompatibility = JavaVersion.VERSION_21
 val web3jVersion = "4.10.3"
 val jjwtVersion = "0.12.3"
@@ -162,7 +162,7 @@ tasks.compileKotlin {
 }
 
 dependencies {
-    api("com.alcosi:commons-library-basic-dependency:3.2.2.3.2.10")
+    api("com.alcosi:commons-library-basic-dependency:3.2.2.3.2.12")
     api("org.springframework.data:spring-data-r2dbc:3.2.1")
     api("org.postgresql:r2dbc-postgresql:1.0.3.RELEASE")
     api("io.r2dbc:r2dbc-pool:1.0.1.RELEASE")
@@ -173,8 +173,7 @@ dependencies {
     api("org.springframework.boot:spring-boot-starter-data-redis-reactive")
     api("org.springframework.cloud:spring-cloud-starter-gateway:4.1.0")
     api("org.apache.commons:commons-pool2:2.12.0")
-    api("com.google.api-client:google-api-client:2.2.0")
-    api("com.google.guava:guava:33.0.0-jre") // TODO to avoid Vulnerabilities in google api 2.2.0. Delete after update google-api-client
+    api("com.google.api-client:google-api-client:2.3.0")
     api("jakarta.servlet:jakarta.servlet-api:5.0.0")
     api("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     api("io.jsonwebtoken:jjwt-impl:$jjwtVersion")

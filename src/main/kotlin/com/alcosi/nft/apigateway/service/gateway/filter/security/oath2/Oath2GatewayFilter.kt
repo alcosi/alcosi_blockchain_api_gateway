@@ -28,6 +28,7 @@ package com.alcosi.nft.apigateway.service.gateway.filter.security.oath2
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.ACCOUNT_DETAILS
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.ACCOUNT_ID
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.CLIENT_ID
+import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.ORIGINAL_AUTHORISATION
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.USER_DETAILS
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.USER_ID
 import com.alcosi.lib.objectMapper.MappingHelper
@@ -42,9 +43,9 @@ import reactor.core.publisher.Mono
 
 open class Oath2GatewayFilter(
     securityGatewayFilter: SecurityGatewayFilter,
-    val getUserInfoService: Oath2UserInfoProvider,
-    val mappingHelper: MappingHelper,
-    authHeaders: List<String> = listOf(USER_ID, ACCOUNT_ID, USER_ID, CLIENT_ID, USER_DETAILS, ACCOUNT_DETAILS),
+    protected open val getUserInfoService: Oath2UserInfoProvider,
+    protected open val mappingHelper: MappingHelper,
+    authHeaders: List<String> = listOf(USER_ID, ACCOUNT_ID, USER_ID, CLIENT_ID, USER_DETAILS, ACCOUNT_DETAILS, ORIGINAL_AUTHORISATION),
     order: Int = JWT_LOG_ORDER,
 ) : JwtGatewayFilter(securityGatewayFilter, authHeaders, order) {
     override fun mutateExchange(
@@ -57,6 +58,7 @@ open class Oath2GatewayFilter(
                 val rqBuilder =
                     exchange.request
                         .mutate()
+                    rqBuilder.header(ORIGINAL_AUTHORISATION,token)
                 when (account) {
                     is ClientAccountDetails -> {
                         rqBuilder
