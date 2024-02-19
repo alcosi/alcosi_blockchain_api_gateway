@@ -17,7 +17,7 @@ open class FilterMatchPredicate(
     val type: PathConfigurationComponent.PredicateType,
     val matchType: PredicateMatcherType,
     val baseAuthorities: PathAuthorities,
-    ) : Logging, Predicate<ServerWebExchange> {
+) : Logging, Predicate<ServerWebExchange> {
     open val matchers: List<HttpFilterMatcher<*>> =
         when (type) {
             PathConfigurationComponent.PredicateType.REGEX -> pathMethods.map { HttpFilterMatcherRegex(prefix, it) }
@@ -34,12 +34,12 @@ open class FilterMatchPredicate(
         matcher: HttpFilterMatcher<*>?,
         exchange: ServerWebExchange,
     ) {
-        if (matcher?.config?.authorities()?.haveAuth()==true) {
+        if (matcher?.config?.authorities()?.haveAuth() == true) {
             exchange.attributes[PathConfigurationComponent.ATTRIBUTE_REQ_AUTHORITIES_FIELD] = matcher.config.authorities()
         } else {
             if (isSecured) {
-                if (matcher != null ||matchType == PredicateMatcherType.MATCH_IF_NOT_CONTAINS_IN_LIST) {
-                    exchange.attributes[PathConfigurationComponent.ATTRIBUTE_REQ_AUTHORITIES_FIELD] =  baseAuthorities
+                if (matcher != null || matchType == PredicateMatcherType.MATCH_IF_NOT_CONTAINS_IN_LIST) {
+                    exchange.attributes[PathConfigurationComponent.ATTRIBUTE_REQ_AUTHORITIES_FIELD] = baseAuthorities
                 }
             }
         }

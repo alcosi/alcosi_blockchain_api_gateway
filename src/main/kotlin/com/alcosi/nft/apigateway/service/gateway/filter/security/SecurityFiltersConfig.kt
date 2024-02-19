@@ -1,7 +1,6 @@
 package com.alcosi.nft.apigateway.service.gateway.filter.security
 
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
-import com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.*
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean

@@ -5,7 +5,6 @@ import com.alcosi.nft.apigateway.auth.service.CheckJWTService
 import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityFiltersConfig
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
-import com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.*
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

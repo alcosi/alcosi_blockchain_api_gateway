@@ -4,7 +4,6 @@ import com.alcosi.nft.apigateway.config.path.dto.PathAuthority;
 import com.alcosi.nft.apigateway.service.predicate.PredicateMatcherType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.List;
 import java.util.Map;
 
 @ConfigurationProperties("filter.config.path")

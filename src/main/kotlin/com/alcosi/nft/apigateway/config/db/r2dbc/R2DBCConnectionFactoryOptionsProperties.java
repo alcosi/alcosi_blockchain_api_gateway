@@ -1,6 +1,5 @@
 package com.alcosi.nft.apigateway.config.db.r2dbc;
 
-import org.springframework.boot.autoconfigure.r2dbc.R2dbcProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;

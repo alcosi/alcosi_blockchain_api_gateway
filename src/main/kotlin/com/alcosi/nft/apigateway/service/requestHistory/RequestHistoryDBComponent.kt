@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono
 import reactor.core.scheduler.Scheduler
 import java.math.BigInteger
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 open class RequestHistoryDBComponent(
     protected val flexScheduler: Scheduler,

@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import org.springframework.data.redis.core.RedisHash
 import java.io.Serializable
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 @JvmRecord
 @RedisHash("LoginRefreshToken")

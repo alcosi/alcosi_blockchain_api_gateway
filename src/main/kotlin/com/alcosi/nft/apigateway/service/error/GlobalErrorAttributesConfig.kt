@@ -28,7 +28,6 @@ package com.alcosi.nft.apigateway.service.error
 
 import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.autoconfigure.condition.SearchStrategy
 import org.springframework.boot.web.reactive.error.DefaultErrorAttributes
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

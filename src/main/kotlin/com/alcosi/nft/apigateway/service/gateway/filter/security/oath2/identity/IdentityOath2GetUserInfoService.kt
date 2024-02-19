@@ -1,22 +1,23 @@
 package com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.identity
 
 import com.alcosi.lib.objectMapper.MappingHelper
-import com.alcosi.lib.security.AccountDetails
-import com.alcosi.lib.security.ClientAccountDetails
-import com.alcosi.lib.security.PrincipalDetails
-import com.alcosi.lib.security.UserDetails
+import com.alcosi.lib.objectMapper.mapOne
+import com.alcosi.lib.security.*
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiSecurityException
 import com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.Oath2UserInfoProvider
+import com.fasterxml.jackson.databind.JsonNode
 import reactor.core.publisher.Mono
 
 open class IdentityOath2GetUserInfoService(
     protected val claimClientId: String,
+    protected val claimOrganisationId: String,
     protected val claimType: String,
     protected val claimAuthorities: String,
     protected val oath2GetUserInfoComponent: IdentityOath2GetUserInfoComponent,
     protected val oath2APIGetUserInfoComponent: IdentityOath2APIGetUserInfoComponent,
     protected val mappingHelper: MappingHelper,
 ) : Oath2UserInfoProvider {
+    protected open val emptyNode=mappingHelper.mapOne<JsonNode>("{}")!!
     override fun getInfo(token: String): Mono<PrincipalDetails> {
         val timeStart = System.currentTimeMillis()
         var time = timeStart
@@ -41,20 +42,27 @@ open class IdentityOath2GetUserInfoService(
                 val type = getType(claims)
                 return@map when (type) {
                     "ACCOUNT" -> {
+                        val organisationId = getOrganisationId(claims)
+                        if (organisationId != null) {
+                            return@map OrganisationAccountDetails(account.id, getAuthorities(claims), organisationId,  OrganisationAccountDetails::class.java.name, emptyNode)
+                        }
                         val clientId = getClientId(claims)
-                        if (clientId == null) {
-                            AccountDetails(account.id, getAuthorities(claims))
+                        if (clientId != null) {
+                            return@map ClientAccountDetails(account.id, getAuthorities(claims), clientId, ClientAccountDetails::class.java.name, emptyNode)
                         } else {
-                            ClientAccountDetails(account.id, getAuthorities(claims), clientId)
+                            return@map AccountDetails(account.id, getAuthorities(claims), AccountDetails::class.java.name, emptyNode)
                         }
                     }
-                    "USER" -> UserDetails(account.id)
+
+                    "USER" -> UserDetails(account.id,UserDetails::class.java.name,  emptyNode)
                     else -> throw ApiSecurityException("Account have bad type $type", 401201)
                 }
             }
     }
 
     protected open fun getClientId(claims: List<IdentityOath2APIGetUserInfoComponent.User.Claim>) = claims.firstOrNull { it.type.equals(claimClientId, true) }?.value
+
+    protected open fun getOrganisationId(claims: List<IdentityOath2APIGetUserInfoComponent.User.Claim>) = claims.firstOrNull { it.type.equals(claimOrganisationId, true) }?.value
 
     protected open fun getType(claims: List<IdentityOath2APIGetUserInfoComponent.User.Claim>) = (claims.firstOrNull { it.type.equals(claimType, true) }?.value) ?: "USER"
 

@@ -30,10 +30,10 @@ import com.alcosi.lib.objectMapper.MappingHelper
 import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityFiltersConfig
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
-import com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.identity.IdentityServerProperties
 import com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.identity.IdentityOath2APIGetUserInfoComponent
 import com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.identity.IdentityOath2GetUserInfoComponent
 import com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.identity.IdentityOath2GetUserInfoService
+import com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.identity.IdentityServerProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -70,7 +70,7 @@ class Oath2FiltersConfig {
         oath2APIGetUserInfoComponent: IdentityOath2APIGetUserInfoComponent,
         mappingHelper: MappingHelper,
     ): Oath2UserInfoProvider {
-        return IdentityOath2GetUserInfoService(properties.claimClientId, properties.claimType, properties.claimAuthorities, oath2GetUserInfoComponent, oath2APIGetUserInfoComponent, mappingHelper)
+        return IdentityOath2GetUserInfoService(properties.claimClientId, properties.claimOrganisationId, properties.claimType, properties.claimAuthorities, oath2GetUserInfoComponent, oath2APIGetUserInfoComponent, mappingHelper)
     }
 
     @Bean

@@ -30,6 +30,7 @@ import com.alcosi.nft.apigateway.auth.dto.EthClient
 import com.alcosi.nft.apigateway.auth.service.CheckJWTService
 import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
+import com.fasterxml.jackson.module.kotlin.jsonMapper
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
@@ -41,6 +42,7 @@ open class EthJwtGatewayFilter(
     val clientWalletsHeader: String = CLIENT_WALLETS_HEADER,
     val clientIdHeader: String = CLIENT_ID_HEADER,
 ) : JwtGatewayFilter(securityGatewayFilter, listOf(clientIdHeader, clientWalletHeader, clientWalletsHeader), order) {
+    protected open val emptyNode = jsonMapper().createObjectNode()
     override fun mutateExchange(
         jwt: String,
         exchange: ServerWebExchange,
@@ -50,7 +52,7 @@ open class EthJwtGatewayFilter(
         val currentWallet = claims.get("currentWallet", String::class.java)
         val profileWallets = claims.get("profileWallets", List::class.java) as List<String>
         val profileId = claims.get("profileId", String::class.java)
-        exchange.attributes[clientAttribute] = EthClient(currentWallet, profileWallets, profileId)
+        exchange.attributes[clientAttribute] = EthClient(currentWallet, profileWallets, profileId, emptyNode)
         val withWallet =
             exchange.request
                 .mutate()

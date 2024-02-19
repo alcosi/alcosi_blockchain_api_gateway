@@ -27,17 +27,14 @@
 package com.alcosi.nft.apigateway.service.gateway.filter.security.oath2
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.ACCOUNT_DETAILS
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.ACCOUNT_ID
-import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.CLIENT_ID
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.ORIGINAL_AUTHORISATION
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.USER_DETAILS
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.USER_ID
 import com.alcosi.lib.objectMapper.MappingHelper
 import com.alcosi.lib.security.AccountDetails
-import com.alcosi.lib.security.ClientAccountDetails
 import com.alcosi.lib.security.UserDetails
 import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
-import com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.identity.IdentityOath2GetUserInfoService
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
@@ -45,7 +42,7 @@ open class Oath2GatewayFilter(
     securityGatewayFilter: SecurityGatewayFilter,
     protected open val getUserInfoService: Oath2UserInfoProvider,
     protected open val mappingHelper: MappingHelper,
-    authHeaders: List<String> = listOf(USER_ID, ACCOUNT_ID, USER_ID, CLIENT_ID, USER_DETAILS, ACCOUNT_DETAILS, ORIGINAL_AUTHORISATION),
+    authHeaders: List<String> = listOf(USER_ID, ACCOUNT_ID, USER_ID, USER_DETAILS, ACCOUNT_DETAILS, ORIGINAL_AUTHORISATION),
     order: Int = JWT_LOG_ORDER,
 ) : JwtGatewayFilter(securityGatewayFilter, authHeaders, order) {
     override fun mutateExchange(
@@ -58,14 +55,8 @@ open class Oath2GatewayFilter(
                 val rqBuilder =
                     exchange.request
                         .mutate()
-                    rqBuilder.header(ORIGINAL_AUTHORISATION,token)
+                rqBuilder.header(ORIGINAL_AUTHORISATION, token)
                 when (account) {
-                    is ClientAccountDetails -> {
-                        rqBuilder
-                            .header(ACCOUNT_ID, account.id)
-                            .header(CLIENT_ID, account.clientId)
-                            .header(ACCOUNT_DETAILS, mappingHelper.serialize(account))
-                    }
                     is AccountDetails -> {
                         rqBuilder
                             .header(ACCOUNT_ID, account.id)

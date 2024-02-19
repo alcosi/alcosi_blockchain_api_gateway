@@ -26,14 +26,15 @@
 
 package com.alcosi.nft.apigateway.auth.dto
 
-import com.alcosi.lib.security.AccountDetails
+import com.alcosi.lib.security.OneAuthorityPrincipal
+import com.fasterxml.jackson.databind.JsonNode
 
 class EthClient(
     val currentWallet: String,
     val profileWallets: List<String>,
     val profileId: String,
-    authorities: List<String> = listOf("ALL"),
-) : AccountDetails(profileId, authorities) {
+    originalJsonNode: JsonNode,
+) : OneAuthorityPrincipal(profileId, "ALL",EthClient::class.java.name,"ETH",originalJsonNode) {
     override fun getName(): String {
         return profileId
     }

@@ -26,7 +26,7 @@
 
 package com.alcosi.nft.apigateway.auth.dto
 
-import java.util.UUID
+import java.util.*
 
 @JvmRecord
 data class JWTAndRefreshToken(val rt: UUID, val jwt: String)
