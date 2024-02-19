@@ -31,6 +31,7 @@ import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.ORIGINAL_AUTHORISAT
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.USER_DETAILS
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.USER_ID
 import com.alcosi.lib.objectMapper.MappingHelper
+import com.alcosi.lib.secured.encrypt.SensitiveComponent
 import com.alcosi.lib.security.AccountDetails
 import com.alcosi.lib.security.UserDetails
 import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilter
@@ -43,6 +44,7 @@ open class Oath2GatewayFilter(
     protected open val getUserInfoService: Oath2UserInfoProvider,
     protected open val mappingHelper: MappingHelper,
     authHeaders: List<String> = listOf(USER_ID, ACCOUNT_ID, USER_ID, USER_DETAILS, ACCOUNT_DETAILS, ORIGINAL_AUTHORISATION),
+    sensitiveComponent: SensitiveComponent,
     order: Int = JWT_LOG_ORDER,
 ) : JwtGatewayFilter(securityGatewayFilter, authHeaders, order) {
     override fun mutateExchange(

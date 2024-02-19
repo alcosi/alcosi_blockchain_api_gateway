@@ -27,6 +27,7 @@
 package com.alcosi.nft.apigateway.service.gateway.filter.security.oath2
 
 import com.alcosi.lib.objectMapper.MappingHelper
+import com.alcosi.lib.secured.encrypt.SensitiveComponent
 import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityFiltersConfig
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
@@ -79,8 +80,9 @@ class Oath2FiltersConfig {
         securityGatewayFilter: SecurityGatewayFilter,
         getInfoService: Oath2UserInfoProvider,
         mappingHelper: MappingHelper,
+        sensitiveComponent: SensitiveComponent
     ): JwtGatewayFilter {
-        return Oath2GatewayFilter(securityGatewayFilter, getInfoService, mappingHelper)
+        return Oath2GatewayFilter(securityGatewayFilter, getInfoService, mappingHelper, sensitiveComponent = sensitiveComponent)
     }
 
     @Bean
