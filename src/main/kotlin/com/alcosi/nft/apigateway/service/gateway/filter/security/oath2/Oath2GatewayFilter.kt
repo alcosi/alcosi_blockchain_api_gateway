@@ -44,7 +44,7 @@ open class Oath2GatewayFilter(
     protected open val getUserInfoService: Oath2UserInfoProvider,
     protected open val mappingHelper: MappingHelper,
     authHeaders: List<String> = listOf(USER_ID, ACCOUNT_ID, USER_ID, USER_DETAILS, ACCOUNT_DETAILS, ORIGINAL_AUTHORISATION),
-    sensitiveComponent: SensitiveComponent,
+    val sensitiveComponent: SensitiveComponent,
     order: Int = JWT_LOG_ORDER,
 ) : JwtGatewayFilter(securityGatewayFilter, authHeaders, order) {
     override fun mutateExchange(
@@ -57,7 +57,7 @@ open class Oath2GatewayFilter(
                 val rqBuilder =
                     exchange.request
                         .mutate()
-                rqBuilder.header(ORIGINAL_AUTHORISATION, token)
+                rqBuilder.header(ORIGINAL_AUTHORISATION, sensitiveComponent.serialize( token.toByteArray()))
                 when (account) {
                     is AccountDetails -> {
                         rqBuilder

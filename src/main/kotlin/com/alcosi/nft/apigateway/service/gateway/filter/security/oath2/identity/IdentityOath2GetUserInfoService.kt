@@ -17,7 +17,6 @@ open class IdentityOath2GetUserInfoService(
     protected val oath2APIGetUserInfoComponent: IdentityOath2APIGetUserInfoComponent,
     protected val mappingHelper: MappingHelper,
 ) : Oath2UserInfoProvider {
-    protected open val emptyNode=mappingHelper.mapOne<JsonNode>("{}")!!
     override fun getInfo(token: String): Mono<PrincipalDetails> {
         val timeStart = System.currentTimeMillis()
         var time = timeStart
@@ -44,17 +43,17 @@ open class IdentityOath2GetUserInfoService(
                     "ACCOUNT" -> {
                         val organisationId = getOrganisationId(claims)
                         if (organisationId != null) {
-                            return@map OrganisationAccountDetails(account.id, getAuthorities(claims), organisationId,  OrganisationAccountDetails::class.java.name, emptyNode)
+                            return@map OrganisationAccountDetails(account.id, getAuthorities(claims), organisationId,  OrganisationAccountDetails::class.java.name)
                         }
                         val clientId = getClientId(claims)
                         if (clientId != null) {
-                            return@map ClientAccountDetails(account.id, getAuthorities(claims), clientId, ClientAccountDetails::class.java.name, emptyNode)
+                            return@map ClientAccountDetails(account.id, getAuthorities(claims), clientId, ClientAccountDetails::class.java.name)
                         } else {
-                            return@map AccountDetails(account.id, getAuthorities(claims), AccountDetails::class.java.name, emptyNode)
+                            return@map AccountDetails(account.id, getAuthorities(claims), AccountDetails::class.java.name)
                         }
                     }
 
-                    "USER" -> UserDetails(account.id,UserDetails::class.java.name,  emptyNode)
+                    "USER" -> UserDetails(account.id,UserDetails::class.java.name)
                     else -> throw ApiSecurityException("Account have bad type $type", 401201)
                 }
             }
