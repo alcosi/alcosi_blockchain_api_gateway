@@ -32,7 +32,7 @@ buildscript {
 }
 
 group = "com.alcosi.nft"
-version = "12.07"
+version = "12.09"
 java.sourceCompatibility = JavaVersion.VERSION_21
 val web3jVersion = "4.10.3"
 val jjwtVersion = "0.12.3"
@@ -162,7 +162,7 @@ tasks.compileKotlin {
 }
 
 dependencies {
-    api("com.alcosi:commons-library-basic-dependency:3.2.2.3.3.04")
+    api("com.alcosi:commons-library-basic-dependency:3.2.2.3.3.14")
     api("org.springframework.data:spring-data-r2dbc:3.2.1")
     api("io.grpc:grpc-netty:1.61.1")
     api("org.postgresql:r2dbc-postgresql:1.0.3.RELEASE")
