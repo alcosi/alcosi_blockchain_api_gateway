@@ -80,7 +80,7 @@ open class PathConfigurationComponent(
     ): SecurityRouteConfigDTO {
         val addBasePath = (map["addBasePath"] as String?)?.let { it.toBoolean() } ?: false
         val typeMap = map["type"] as Map<String, String?>?
-        val baseAuthorities = objectMapper.readValue(properties.baseAuthorities,PathAuthority::class.java.arrayType()) as Array<PathAuthority>?
+        val baseAuthorities = objectMapper.readValue(properties.baseAuthorities, PathAuthority::class.java.arrayType()) as Array<PathAuthority>?
         val pathAuthorities = PathAuthorities(baseAuthorities?.toList() ?: listOf())
         if (typeMap == null) {
             return SecurityRouteConfigDTO(

@@ -4,7 +4,6 @@ import com.alcosi.lib.objectMapper.MappingHelper
 import com.alcosi.nft.apigateway.config.db.r2dbc.R2DBCConnectionFactoryOptionsProperties
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
 import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilter
-import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
 import com.alcosi.nft.apigateway.service.requestHistory.filter.RequestHistoryGatewayFilterRq
 import com.alcosi.nft.apigateway.service.requestHistory.filter.RequestHistoryGatewayFilterSecurity
 import com.alcosi.nft.apigateway.service.requestHistory.partitions.RequestHistoryPartitionsDBInitializer
@@ -92,7 +91,7 @@ open class RequestHistoryConfig() {
     ): RequestHistoryDBService {
         return RequestHistoryDBService(
             component,
-            props.requestHistoryIpHeader
+            props.requestHistoryIpHeader,
         )
     }
 

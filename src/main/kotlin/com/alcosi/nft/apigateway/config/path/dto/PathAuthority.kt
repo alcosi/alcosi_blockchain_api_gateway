@@ -1,8 +1,9 @@
 package com.alcosi.nft.apigateway.config.path.dto
 
-data class PathAuthority(val list: List<String>, val checkMode: AuthoritiesCheck=AuthoritiesCheck.ANY) {
+data class PathAuthority(val list: List<String>, val checkMode: AuthoritiesCheck = AuthoritiesCheck.ANY) {
     enum class AuthoritiesCheck {
-        ANY, ALL
+        ANY,
+        ALL,
     }
 
     fun noAuth(): Boolean {
@@ -19,7 +20,7 @@ data class PathAuthority(val list: List<String>, val checkMode: AuthoritiesCheck
         } else if (profileAuth.isNullOrEmpty()) {
             return false
         } else {
-           return when (checkMode) {
+            return when (checkMode) {
                 AuthoritiesCheck.ALL -> list.all { profileAuth.contains(it) }
                 AuthoritiesCheck.ANY -> list.any { profileAuth.contains(it) }
             }

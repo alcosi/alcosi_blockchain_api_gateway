@@ -1,16 +1,14 @@
 package com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.identity
 
 import com.alcosi.lib.objectMapper.MappingHelper
-import com.alcosi.lib.security.AccountDetails
-import com.alcosi.lib.security.ClientAccountDetails
-import com.alcosi.lib.security.PrincipalDetails
-import com.alcosi.lib.security.UserDetails
+import com.alcosi.lib.security.*
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiSecurityException
 import com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.Oath2UserInfoProvider
 import reactor.core.publisher.Mono
 
 open class IdentityOath2GetUserInfoService(
     protected val claimClientId: String,
+    protected val claimOrganisationId: String,
     protected val claimType: String,
     protected val claimAuthorities: String,
     protected val oath2GetUserInfoComponent: IdentityOath2GetUserInfoComponent,
@@ -41,13 +39,18 @@ open class IdentityOath2GetUserInfoService(
                 val type = getType(claims)
                 return@map when (type) {
                     "ACCOUNT" -> {
+                        val organisationId = getClientId(claims)
+                        if (organisationId != null) {
+                            return@map OrganisationAccountDetails(account.id, getAuthorities(claims), organisationId)
+                        }
                         val clientId = getClientId(claims)
-                        if (clientId == null) {
-                            AccountDetails(account.id, getAuthorities(claims))
+                        if (clientId != null) {
+                            return@map ClientAccountDetails(account.id, getAuthorities(claims), clientId)
                         } else {
-                            ClientAccountDetails(account.id, getAuthorities(claims), clientId)
+                            return@map AccountDetails(account.id, getAuthorities(claims))
                         }
                     }
+
                     "USER" -> UserDetails(account.id)
                     else -> throw ApiSecurityException("Account have bad type $type", 401201)
                 }
@@ -55,6 +58,8 @@ open class IdentityOath2GetUserInfoService(
     }
 
     protected open fun getClientId(claims: List<IdentityOath2APIGetUserInfoComponent.User.Claim>) = claims.firstOrNull { it.type.equals(claimClientId, true) }?.value
+
+    protected open fun getOrganisationId(claims: List<IdentityOath2APIGetUserInfoComponent.User.Claim>) = claims.firstOrNull { it.type.equals(claimOrganisationId, true) }?.value
 
     protected open fun getType(claims: List<IdentityOath2APIGetUserInfoComponent.User.Claim>) = (claims.firstOrNull { it.type.equals(claimType, true) }?.value) ?: "USER"
 

@@ -137,7 +137,7 @@ open class EncryptGatewayFilter(
                                                 key.flatMap { k ->
                                                     Mono.fromCallable {
                                                         val time = System.currentTimeMillis()
-                                                        val encrypted = SecuredDataByteArray.create(utils.getContentBytes(it)?:"".toByteArray(), k)
+                                                        val encrypted = SecuredDataByteArray.create(utils.getContentBytes(it) ?: "".toByteArray(), k)
                                                         logger.debug("Encrypt took ${System.currentTimeMillis() - time} for multipart file rq $field ${encrypted.originalLength} bytes")
                                                         return@fromCallable encrypted
                                                     }.subscribeOn(Schedulers.boundedElastic())
@@ -146,7 +146,7 @@ open class EncryptGatewayFilter(
                                                 key.flatMap { k ->
                                                     Mono.fromCallable {
                                                         val time = System.currentTimeMillis()
-                                                        val encrypted = SecuredDataString.create(utils.getContent(it, Int.MAX_VALUE)?:"", k)
+                                                        val encrypted = SecuredDataString.create(utils.getContent(it, Int.MAX_VALUE) ?: "", k)
                                                         logger.debug("Encrypt took ${System.currentTimeMillis() - time} for multipart string rq $field ${encrypted.originalLength} bytes")
                                                         return@fromCallable encrypted
                                                     }.subscribeOn(Schedulers.boundedElastic())

@@ -31,23 +31,22 @@ import org.springframework.core.Ordered
 import org.springframework.http.HttpMethod
 
 data class FilterMatchConfigDTO
-@JsonCreator
-constructor(
-    val methods: List<HttpMethod>,
-    val path: String,
-    private val authorities: List<PathAuthority>?,
-    private val order: Int?,
-) : Ordered, Comparable<FilterMatchConfigDTO> {
+    @JsonCreator
+    constructor(
+        val methods: List<HttpMethod>,
+        val path: String,
+        private val authorities: List<PathAuthority>?,
+        private val order: Int?,
+    ) : Ordered, Comparable<FilterMatchConfigDTO> {
+        fun authorities(): PathAuthorities {
+            return if (authorities == null) PathAuthorities(listOf()) else PathAuthorities(authorities)
+        }
 
-    fun authorities(): PathAuthorities {
-        return if (authorities==null) PathAuthorities(listOf()) else PathAuthorities(authorities)
-    }
+        override fun getOrder(): Int {
+            return order ?: 0
+        }
 
-    override fun getOrder(): Int {
-        return order ?: 0
+        override fun compareTo(other: FilterMatchConfigDTO): Int {
+            return getOrder().compareTo(other.getOrder())
+        }
     }
-
-    override fun compareTo(other: FilterMatchConfigDTO): Int {
-        return getOrder().compareTo(other.getOrder())
-    }
-}

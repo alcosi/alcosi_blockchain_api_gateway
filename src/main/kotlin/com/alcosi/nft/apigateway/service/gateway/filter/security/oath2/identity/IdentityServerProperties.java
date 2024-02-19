@@ -7,6 +7,8 @@ public class IdentityServerProperties {
     private String uri;
     private String idApiVersion = "2.0";
     private String claimClientId = "clientId";
+    private String claimOrganisationId = "organisationId";
+
     private String claimType= "type";
     private String claimAuthorities= "authorities";
     private String clientId;
@@ -16,6 +18,13 @@ public class IdentityServerProperties {
     private String password;
     private String username;
 
+    public String getClaimOrganisationId() {
+        return claimOrganisationId;
+    }
+
+    public void setClaimOrganisationId(String claimOrganisationId) {
+        this.claimOrganisationId = claimOrganisationId;
+    }
 
     public String getUri() {
         return uri;

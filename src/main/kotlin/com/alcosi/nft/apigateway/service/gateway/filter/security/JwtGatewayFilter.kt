@@ -29,7 +29,6 @@ package com.alcosi.nft.apigateway.service.gateway.filter.security
 import com.alcosi.nft.apigateway.config.WebfluxHeadersHelper
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
 import com.alcosi.nft.apigateway.config.path.dto.PathAuthorities
-import com.alcosi.nft.apigateway.config.path.dto.PathAuthority
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter.Companion.SECURITY_CLIENT_ATTRIBUTE
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter.Companion.SECURITY_LOG_ORDER
@@ -75,9 +74,9 @@ abstract class JwtGatewayFilter(
         }
     }
 
-    protected open fun getIsSecurityRequest(exchange: ServerWebExchange) :Boolean{
-        val authorities=exchange.attributes[PathConfigurationComponent.ATTRIBUTE_REQ_AUTHORITIES_FIELD] as PathAuthorities?
-        return authorities?.haveAuth()==true||securityGatewayFilter.predicate.test(exchange)
+    protected open fun getIsSecurityRequest(exchange: ServerWebExchange): Boolean {
+        val authorities = exchange.attributes[PathConfigurationComponent.ATTRIBUTE_REQ_AUTHORITIES_FIELD] as PathAuthorities?
+        return authorities?.haveAuth() == true || securityGatewayFilter.predicate.test(exchange)
     }
 
     protected fun clearExchange(exchange: ServerWebExchange): ServerWebExchange {

@@ -1,11 +1,10 @@
 package com.alcosi.nft.apigateway.service.requestHistory
 
-import com.alcosi.lib.security.ClientAccountDetails
+import com.alcosi.lib.security.AccountDetails
 import com.alcosi.lib.security.PrincipalDetails
 import com.alcosi.lib.security.UserDetails
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
 import com.alcosi.nft.apigateway.config.path.dto.PathAuthorities
-import com.alcosi.nft.apigateway.config.path.dto.PathAuthority
 import com.alcosi.nft.apigateway.config.path.dto.ProxyRouteConfigDTO
 import com.alcosi.nft.apigateway.config.path.dto.SecurityRouteConfigDTO
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
@@ -78,7 +77,7 @@ open class RequestHistoryDBService(
         val requestHistoryInfo = exchange.attributes[PathConfigurationComponent.ATTRIBUTES_REQUEST_HISTORY_INFO] as HistoryRqInfo?
         if (client != null && client is PrincipalDetails) {
             val userId = if (client is UserDetails) UUID.fromString(client.id) else null
-            val accountId = if (client is ClientAccountDetails) UUID.fromString(client.id) else null
+            val accountId = if (client is AccountDetails) UUID.fromString(client.id) else null
             val updatedHistoryIdMono = component.saveAuth(requestHistoryInfo!!.idMono, requestHistoryInfo.rqTime, userId, accountId, client).cache()
             updatedHistoryIdMono.subscribe()
             return HistoryRqInfo(updatedHistoryIdMono, requestHistoryInfo.rqTime)

@@ -34,7 +34,7 @@ data class ProxyRouteConfigDTO
                     matches,
                     predicateType,
                     matchType ?: PredicateMatcherType.MATCH_IF_CONTAINS_IN_LIST,
-                    PathAuthorities(listOf( PathAuthority(listOf(),PathAuthority.AuthoritiesCheck.ANY))),
+                    PathAuthorities(listOf(PathAuthority(listOf(), PathAuthority.AuthoritiesCheck.ANY))),
                 )
             return RouteConfigGatewayPredicate(filterPredicate, this)
         }

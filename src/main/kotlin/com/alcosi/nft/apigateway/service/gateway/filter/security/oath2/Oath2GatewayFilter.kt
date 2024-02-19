@@ -28,16 +28,17 @@ package com.alcosi.nft.apigateway.service.gateway.filter.security.oath2
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.ACCOUNT_DETAILS
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.ACCOUNT_ID
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.CLIENT_ID
+import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.ORGANISATION_ID
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.ORIGINAL_AUTHORISATION
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.USER_DETAILS
 import com.alcosi.lib.filters.servlet.HeaderHelper.Companion.USER_ID
 import com.alcosi.lib.objectMapper.MappingHelper
 import com.alcosi.lib.security.AccountDetails
 import com.alcosi.lib.security.ClientAccountDetails
+import com.alcosi.lib.security.OrganisationAccountDetails
 import com.alcosi.lib.security.UserDetails
 import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
-import com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.identity.IdentityOath2GetUserInfoService
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
@@ -58,8 +59,14 @@ open class Oath2GatewayFilter(
                 val rqBuilder =
                     exchange.request
                         .mutate()
-                    rqBuilder.header(ORIGINAL_AUTHORISATION,token)
+                rqBuilder.header(ORIGINAL_AUTHORISATION, token)
                 when (account) {
+                    is OrganisationAccountDetails -> {
+                        rqBuilder
+                            .header(ACCOUNT_ID, account.id)
+                            .header(ORGANISATION_ID, account.organisationId)
+                            .header(ACCOUNT_DETAILS, mappingHelper.serialize(account))
+                    }
                     is ClientAccountDetails -> {
                         rqBuilder
                             .header(ACCOUNT_ID, account.id)

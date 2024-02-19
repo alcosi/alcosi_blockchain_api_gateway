@@ -29,7 +29,6 @@ package com.alcosi.nft.apigateway.service.gateway.filter.security
 import com.alcosi.lib.security.PrincipalDetails
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
 import com.alcosi.nft.apigateway.config.path.dto.PathAuthorities
-import com.alcosi.nft.apigateway.config.path.dto.PathAuthority
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiSecurityException
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
 import com.alcosi.nft.apigateway.service.predicate.SecurityConfigGatewayPredicate
@@ -67,16 +66,17 @@ open class SecurityGatewayFilter(
         }
     }
 
-    protected open fun getIsSecurityRequest(exchange: ServerWebExchange) :Boolean{
-        val authorities=exchange.attributes[PathConfigurationComponent.ATTRIBUTE_REQ_AUTHORITIES_FIELD] as PathAuthorities?
-        return authorities?.haveAuth()==true||predicate.test(exchange)
+    protected open fun getIsSecurityRequest(exchange: ServerWebExchange): Boolean {
+        val authorities = exchange.attributes[PathConfigurationComponent.ATTRIBUTE_REQ_AUTHORITIES_FIELD] as PathAuthorities?
+        return authorities?.haveAuth() == true || predicate.test(exchange)
     }
+
     protected open fun processAuth(
         exchange: ServerWebExchange,
         chain: GatewayFilterChain,
     ): Mono<Void> {
         val client = exchange.attributes[securityClientAttributeField]
-        val authorities = exchange.attributes[authoritiesAttributeField] as  PathAuthorities?
+        val authorities = exchange.attributes[authoritiesAttributeField] as PathAuthorities?
         if (client == null) {
             throw ApiSecurityException(
                 4012,
@@ -99,7 +99,7 @@ open class SecurityGatewayFilter(
         haveToHave: PathAuthorities?,
         client: PrincipalDetails,
     ): Boolean {
-        if (haveToHave==null||haveToHave.noAuth()) {
+        if (haveToHave == null || haveToHave.noAuth()) {
             return true
         }
         return haveToHave.checkHaveAuthorities(client.authorities)
