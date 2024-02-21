@@ -116,7 +116,7 @@ open class PathConfigurationComponent(
                 return@flatMap list
             }.map {
                 if (it.authorities().noAuth()) {
-                    return@map it.copy(authorities = pathAuthorities.pathAuthorityList)
+                    return@map it.copy(authoritiesGroups = pathAuthorities.pathAuthorityList)
                 } else {
                     return@map it
                 }

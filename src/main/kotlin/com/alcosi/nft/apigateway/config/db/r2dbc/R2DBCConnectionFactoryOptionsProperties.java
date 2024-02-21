@@ -15,7 +15,7 @@ public class R2DBCConnectionFactoryOptionsProperties  {
     private Duration partitionsInitSchedulerDelay = Duration.ofDays(1);
     private Integer partitionsInitMonthDelta = 2;
 
-    private List<String > requestHistoryMaskHeaders = List.of("AUTHORISATION");
+    private List<String > requestHistoryMaskHeaders = List.of("AUTHORISATION","ValidationToken");
 
     public List<String> getRequestHistoryMaskHeaders() {
         return requestHistoryMaskHeaders;
