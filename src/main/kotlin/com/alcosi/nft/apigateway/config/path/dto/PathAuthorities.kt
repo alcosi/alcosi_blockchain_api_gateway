@@ -1,12 +1,20 @@
 package com.alcosi.nft.apigateway.config.path.dto
 
-class PathAuthorities(val list: List<PathAuthority>) {
+class PathAuthorities(val pathAuthorityList: List<PathAuthority>,
+                      val checkMode: AuthoritiesCheck = AuthoritiesCheck.ALL) {
+    enum class AuthoritiesCheck {
+        ANY,
+        ALL,
+    }
     fun checkHaveAuthorities(profileAuth: List<String>?): Boolean {
-        return list.all { it.checkHaveAuthorities(profileAuth) }
+        return when(checkMode){
+            AuthoritiesCheck.ANY ->pathAuthorityList.any { it.checkHaveAuthorities(profileAuth) }
+            AuthoritiesCheck.ALL ->pathAuthorityList.all { it.checkHaveAuthorities(profileAuth) }
+        }
     }
 
     fun haveAuth(): Boolean {
-        return list.any { it.haveAuth() }
+        return pathAuthorityList.any { it.haveAuth() }
     }
 
     fun noAuth(): Boolean {

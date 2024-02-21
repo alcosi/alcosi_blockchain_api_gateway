@@ -3,6 +3,7 @@ package com.alcosi.nft.apigateway.config.db.r2dbc;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 @ConfigurationProperties(prefix = "spring.r2dbc")
 public class R2DBCConnectionFactoryOptionsProperties  {
@@ -13,6 +14,16 @@ public class R2DBCConnectionFactoryOptionsProperties  {
     private String requestHistoryIpHeader = "x-real-ip";
     private Duration partitionsInitSchedulerDelay = Duration.ofDays(1);
     private Integer partitionsInitMonthDelta = 2;
+
+    private List<String > requestHistoryMaskHeaders = List.of("AUTHORISATION");
+
+    public List<String> getRequestHistoryMaskHeaders() {
+        return requestHistoryMaskHeaders;
+    }
+
+    public void setRequestHistoryMaskHeaders(List<String> requestHistoryMaskHeaders) {
+        this.requestHistoryMaskHeaders = requestHistoryMaskHeaders;
+    }
 
     public Duration getPartitionsInitSchedulerDelay() {
         return partitionsInitSchedulerDelay;

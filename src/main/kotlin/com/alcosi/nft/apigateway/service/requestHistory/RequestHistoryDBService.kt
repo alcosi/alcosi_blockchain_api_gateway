@@ -21,6 +21,7 @@ import java.util.*
 open class RequestHistoryDBService(
     protected val component: RequestHistoryDBComponent,
     protected val ipHeader: String = "x-real-ip",
+    protected val maskHeaders :List<String>
 ) {
     data class RouteDetails(
         val proxyConfig: ProxyRouteConfigDTO?,
@@ -42,7 +43,11 @@ open class RequestHistoryDBService(
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun saveRequest(exchange: ServerWebExchange): HistoryRqInfo {
         val request = exchange.request
-        val rqHeaders = request.headers
+        val rqHeaders=request.headers
+        val rqHeadersMap = request.headers
+            .toMap()
+            .mapValues { it.value?.joinToString("\n") }
+            .mapValues { if(maskHeaders.any { mh->mh.equals(it.key,true) }) it.value?.let { v->"*".repeat(v.length) } else it.value  }
         val routeDetails =
             RouteDetails(
                 exchange.attributes[PathConfigurationComponent.ATTRIBUTE_PROXY_CONFIG_FIELD] as ProxyRouteConfigDTO?,
@@ -55,7 +60,7 @@ open class RequestHistoryDBService(
         val historyIdMono =
             component.saveRequest(
                 request.id,
-                rqHeaders,
+                rqHeadersMap,
                 request.getIp(),
                 request.getUri(),
                 request.method,

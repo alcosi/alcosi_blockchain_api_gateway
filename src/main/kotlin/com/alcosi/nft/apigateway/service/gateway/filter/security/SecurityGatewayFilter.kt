@@ -85,7 +85,7 @@ open class SecurityGatewayFilter(
         } else if (client !is PrincipalDetails) {
             throw ApiSecurityException(4013, "Wrong profile type! ${client.javaClass}")
         } else if (!checkAllAuthority(authorities, client)) {
-            val reqAuthString = authorities?.list?.joinToString("&&") { "(${it.checkMode}:${it.list.joinToString(",")}})" }
+            val reqAuthString = authorities?.pathAuthorityList?.joinToString("&&") { "(${it.checkMode}:${it.list.joinToString(",")}})" }
             throw ApiSecurityException(
                 4014,
                 "You don't have authority to access this resource ($reqAuthString). You authorities (${client.authorities.joinToString(",")})",

@@ -22,7 +22,7 @@ open class RequestHistoryDBComponent(
 
     open fun saveRequest(
         rqId: String,
-        rqHeaders: HttpHeaders,
+        rqHeaders: Map<String,String?>,
         ip: String?,
         uri: String,
         method: HttpMethod,

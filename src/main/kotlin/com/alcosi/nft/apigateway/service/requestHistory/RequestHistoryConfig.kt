@@ -92,6 +92,7 @@ open class RequestHistoryConfig() {
         return RequestHistoryDBService(
             component,
             props.requestHistoryIpHeader,
+            props.requestHistoryMaskHeaders
         )
     }
 

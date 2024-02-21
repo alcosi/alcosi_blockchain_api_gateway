@@ -26,20 +26,25 @@
 
 package com.alcosi.nft.apigateway.config.path.dto
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import org.springframework.core.Ordered
 import org.springframework.http.HttpMethod
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class FilterMatchConfigDTO
     @JsonCreator
     constructor(
         val methods: List<HttpMethod>,
         val path: String,
+        @JsonAlias("authoritiesGroupsCheckMode","authorities")
         private val authorities: List<PathAuthority>?,
+        @JsonAlias("authoritiesGroupsCheckMode","authoritiesCheckMode")
+        private val authoritiesGroupsCheckMode: PathAuthorities.AuthoritiesCheck?,
         private val order: Int?,
     ) : Ordered, Comparable<FilterMatchConfigDTO> {
         fun authorities(): PathAuthorities {
-            return if (authorities == null) PathAuthorities(listOf()) else PathAuthorities(authorities)
+            return if (authorities == null) PathAuthorities(listOf()) else PathAuthorities(authorities,authoritiesGroupsCheckMode?:PathAuthorities.AuthoritiesCheck.ALL)
         }
 
         override fun getOrder(): Int {
