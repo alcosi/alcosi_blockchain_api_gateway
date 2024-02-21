@@ -37,7 +37,7 @@ data class FilterMatchConfigDTO
     constructor(
         val methods: List<HttpMethod>,
         val path: String,
-        @JsonAlias("authoritiesGroupsCheckMode","authorities")
+        @JsonAlias("authoritiesGroups","authorities")
         private val authorities: List<PathAuthority>?,
         @JsonAlias("authoritiesGroupsCheckMode","authoritiesCheckMode")
         private val authoritiesGroupsCheckMode: PathAuthorities.AuthoritiesCheck?,
