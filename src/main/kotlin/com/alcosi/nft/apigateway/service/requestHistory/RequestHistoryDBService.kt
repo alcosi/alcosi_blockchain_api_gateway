@@ -47,7 +47,7 @@ open class RequestHistoryDBService(
         val rqHeadersMap = request.headers
             .toMap()
             .mapValues { it.value?.joinToString("\n") }
-            .mapValues { if(maskHeaders.any { mh->mh.equals(it.key,true) }) it.value?.let { v->"*".repeat(v.length) } else it.value  }
+            .mapValues { if(maskHeaders.any { mh->mh.equals(it.key,true) }) it.value?.let { _->"<masked>" } else it.value  }
         val routeDetails =
             RouteDetails(
                 exchange.attributes[PathConfigurationComponent.ATTRIBUTE_PROXY_CONFIG_FIELD] as ProxyRouteConfigDTO?,
