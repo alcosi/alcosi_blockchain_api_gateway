@@ -21,7 +21,7 @@ import java.util.*
 open class RequestHistoryDBService(
     protected val component: RequestHistoryDBComponent,
     protected val ipHeader: String = "x-real-ip",
-    protected val maskHeaders :List<String>
+    protected val maskHeaders: List<String>
 ) {
     data class RouteDetails(
         val proxyConfig: ProxyRouteConfigDTO?,
@@ -43,20 +43,23 @@ open class RequestHistoryDBService(
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun saveRequest(exchange: ServerWebExchange): HistoryRqInfo {
         val request = exchange.request
-        val rqHeaders=request.headers
+        val rqHeaders = request.headers
         val rqHeadersMap = request.headers
             .toMap()
             .mapValues { it.value?.joinToString("\n") }
-            .mapValues { if(maskHeaders.any { mh->mh.equals(it.key,true) }) it.value?.let { _->"<masked>" } else it.value  }
+            .mapValues { if (maskHeaders.any { mh -> mh.equals(it.key, true) }) it.value?.let { _ -> "<masked>" } else it.value }
+        val securityConfig = exchange.attributes[PathConfigurationComponent.ATTRIBUTE_SECURITY_CONFIG_FIELD] as SecurityRouteConfigDTO?
+        val proxyConfig = exchange.attributes[PathConfigurationComponent.ATTRIBUTE_PROXY_CONFIG_FIELD] as ProxyRouteConfigDTO?
+        val requiredAuthorities = exchange.attributes[PathConfigurationComponent.ATTRIBUTE_REQ_AUTHORITIES_FIELD] as PathAuthorities?
         val routeDetails =
             RouteDetails(
-                exchange.attributes[PathConfigurationComponent.ATTRIBUTE_PROXY_CONFIG_FIELD] as ProxyRouteConfigDTO?,
-                exchange.attributes[PathConfigurationComponent.ATTRIBUTE_SECURITY_CONFIG_FIELD] as SecurityRouteConfigDTO?,
-                exchange.attributes[PathConfigurationComponent.ATTRIBUTE_REQ_AUTHORITIES_FIELD] as PathAuthorities?,
+                proxyConfig?.copy(apiKey = proxyConfig.apiKey?.let { "<masked>" }),
+                securityConfig,
+                requiredAuthorities,
             )
         val rqSize = (rqHeaders[HttpHeaders.CONTENT_LENGTH] ?: rqHeaders["${HttpHeaders.CONTENT_LENGTH}_ORIGINAL"])?.first()?.toLongOrNull() ?: rqHeaders.contentLength
         val rqTime = LocalDateTime.now()
-        exchange.attributes[ PathConfigurationComponent.ATTRIBUTES_REQUEST_TIME] = rqTime
+        exchange.attributes[PathConfigurationComponent.ATTRIBUTES_REQUEST_TIME] = rqTime
         val historyIdMono =
             component.saveRequest(
                 request.id,
