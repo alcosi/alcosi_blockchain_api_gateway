@@ -7,20 +7,16 @@ import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilte
 import com.alcosi.nft.apigateway.service.requestHistory.filter.RequestHistoryGatewayFilterRq
 import com.alcosi.nft.apigateway.service.requestHistory.filter.RequestHistoryGatewayFilterSecurity
 import com.alcosi.nft.apigateway.service.requestHistory.partitions.RequestHistoryPartitionsDBInitializer
-import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingAutoConfig
 import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingProperties
 import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingUtils
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.r2dbc.R2dbcProperties
 import org.springframework.boot.autoconfigure.web.ServerProperties
 import org.springframework.boot.autoconfigure.web.WebProperties
-import org.springframework.boot.autoconfigure.web.reactive.error.ErrorWebFluxAutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.reactive.context.AnnotationConfigReactiveWebServerApplicationContext
 import org.springframework.boot.web.reactive.error.ErrorAttributes
@@ -34,8 +30,7 @@ import org.springframework.web.reactive.result.view.ViewResolver
 import reactor.core.scheduler.Scheduler
 import reactor.core.scheduler.Schedulers
 
-@AutoConfiguration
-@AutoConfigureBefore(value=[SpringCloudGatewayLoggingAutoConfig::class,ErrorWebFluxAutoConfiguration::class])
+@Configuration
 @ConditionalOnBean(DatabaseClient::class)
 @EnableConfigurationProperties(R2DBCConnectionFactoryOptionsProperties::class)
 @ConditionalOnProperty(prefix = "spring.r2dbc", name = ["enabled"], matchIfMissing = false, havingValue = "true")
