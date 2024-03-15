@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Apache 2.0 Licensed Files:
+Apache 2.0 Licensed Files: (src/main/resources/com/alcosi/nft/apigateway/service/gateway/filter/openapi/swagger/html)
 - favicon-16x16.png
 - favicon-32x32.png
 - index.css
