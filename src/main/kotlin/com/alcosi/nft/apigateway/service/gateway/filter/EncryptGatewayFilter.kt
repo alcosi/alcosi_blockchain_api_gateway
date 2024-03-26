@@ -229,10 +229,10 @@ open class EncryptGatewayFilter(
 
         private fun encryptPath(currentNode: JsonNode, path: List<String>, encryptionKey: ByteArray) {
             var node: JsonNode = currentNode
-            var parentNode=node
+            var parentNode = node
             for ((index, part) in path.withIndex()) {
                 if (node.isObject) {
-                    parentNode=node
+                    parentNode = node
                     node = node.get(part) ?: return  // Path not found
                 } else if (node.isArray) {
                     for (element in node) {
@@ -241,18 +241,24 @@ open class EncryptGatewayFilter(
                         }
                     }
                     return
-                } else{
+                } else {
                     return
                 }
             }
-            if (node.isValueNode&&parentNode is ObjectNode) {
-                // Assume we have a method encryptValue that does the encryption
-                val time = System.currentTimeMillis()
-                val encrypted = SecuredDataString.create(node.asText(), encryptionKey)
-                logger.debug("Encrypt took ${System.currentTimeMillis() - time} for rq ${encrypted.originalLength} bytes")
-                val encryptedNode = objectMapper.valueToTree<JsonNode>(encrypted)
-                parentNode.replace(path.last(), encryptedNode)
+            if (node.isValueNode && parentNode is ObjectNode) {
+                node = objectMapper.valueToTree<JsonNode>(encodeNode(node, encryptionKey))
+                parentNode.replace(path.last(), node)
             }
+        }
+
+        protected open fun encodeNode(
+            node: JsonNode,
+            encryptionKey: ByteArray
+        ): SecuredDataString {
+            val time = System.currentTimeMillis()
+            val encrypted= SecuredDataString.create(node.asText(), encryptionKey)
+            logger.debug("Encrypt took ${System.currentTimeMillis() - time} for rq ${encrypted.originalLength} bytes")
+            return encrypted
         }
 
     }

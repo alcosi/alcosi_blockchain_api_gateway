@@ -32,7 +32,7 @@ buildscript {
 }
 
 group = "com.alcosi.nft"
-version = "14.0-dev-2"
+version = "14.0"
 java.sourceCompatibility = JavaVersion.VERSION_21
 val web3jVersion = "4.10.3"
 val jjwtVersion = "0.12.3"
