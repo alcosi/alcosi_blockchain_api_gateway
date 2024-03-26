@@ -204,48 +204,52 @@ open class EncryptGatewayFilter(
             if (isMultipart || !isJson) {
                 return super.getBody()
             } else {
-                val key =
-                    Mono.fromCallable { keyProvider.key(KeyProvider.MODE.ENCRYPT) }
-                        .subscribeOn(Schedulers.boundedElastic())
-                val encryptedRq =
-                    DataBufferUtils.join(super.getBody())
-                        .flatMap { data ->
-                            key.flatMap { k ->
-                                Mono.fromCallable {
-                                    val contentBytes = utils.getContentBytes(data)
-                                    val nodeTree = objectMapper.readTree(contentBytes)
-                                    configFields.forEach { field ->
-                                        val path = field.split(".")
-                                        val nodePair =
-                                            path.fold(nodeTree to nodeTree) { a, b ->
-                                                val parentNode = a.second
-                                                val currentNode = a.second.get(b)
-                                                if (currentNode == null || currentNode.isNull) {
-                                                    return@forEach
-                                                }
-                                                return@fold parentNode to currentNode
-                                            }
-                                        val currentNode = nodePair.second
-                                        val parentNode = nodePair.first as ObjectNode
-                                        if (!currentNode.isValueNode) {
-                                            throw IllegalArgumentException("Field $field that have to be decrypted is not Value ${currentNode.nodeType.name} ")
-                                        }
-                                        val textVal = currentNode.asText()
-                                        val time = System.currentTimeMillis()
-                                        val encrypted = SecuredDataString.create(textVal, k)
-                                        logger.debug("Encrypt took ${System.currentTimeMillis() - time} for rq ${encrypted.originalLength} bytes")
-                                        val encryptedNode = objectMapper.valueToTree<JsonNode>(encrypted)
-                                        parentNode.set<JsonNode>(field, encryptedNode)
-                                    }
-                                    return@fromCallable nodeTree
+                val key = Mono.fromCallable { keyProvider.key(KeyProvider.MODE.ENCRYPT) }
+                    .subscribeOn(Schedulers.boundedElastic())
+                val encryptedRq = DataBufferUtils.join(super.getBody())
+                    .flatMap { data ->
+                        key.flatMap { k ->
+                            Mono.fromCallable {
+                                val contentBytes = utils.getContentBytes(data)
+                                val nodeTree = objectMapper.readTree(contentBytes)
+                                configFields.forEach { field ->
+                                    val path = field.split(".")
+                                    encryptPath(nodeTree, path, k)
                                 }
-                            }.subscribeOn(Schedulers.boundedElastic())
-                        }
-                        .mapNotNull { node -> objectMapper.writeValueAsBytes(node) }
-                        .map { bytes -> exchange.response.bufferFactory().wrap(bytes) }
-                        .flux()
+                                return@fromCallable nodeTree
+                            }
+                        }.subscribeOn(Schedulers.boundedElastic())
+                    }
+                    .mapNotNull { node -> objectMapper.writeValueAsBytes(node) }
+                    .map { bytes -> exchange.response.bufferFactory().wrap(bytes) }
+                    .flux()
                 return encryptedRq
             }
         }
+
+        private fun encryptPath(currentNode: JsonNode, path: List<String>, encryptionKey: ByteArray) {
+            var node: JsonNode = currentNode
+            for ((index, part) in path.withIndex()) {
+                if (node.isObject) {
+                    node = node.get(part) ?: return  // Path not found
+                } else if (node.isArray) {
+                    for (element in node) {
+                        if (element.isObject || element.isArray) {
+                            encryptPath(element, path.subList(index, path.size), encryptionKey)
+                        }
+                    }
+                    return
+                }
+            }
+            if (node.isValueNode) {
+                // Assume we have a method encryptValue that does the encryption
+                val time = System.currentTimeMillis()
+                val encrypted = SecuredDataString.create(node.asText(), encryptionKey)
+                logger.debug("Encrypt took ${System.currentTimeMillis() - time} for rq ${encrypted.originalLength} bytes")
+                val encryptedNode = objectMapper.valueToTree<JsonNode>(encrypted)
+                (node as ObjectNode).put(path.last(), encryptedNode)
+            }
+        }
+
     }
 }
