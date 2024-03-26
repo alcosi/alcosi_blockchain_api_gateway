@@ -229,8 +229,10 @@ open class EncryptGatewayFilter(
 
         private fun encryptPath(currentNode: JsonNode, path: List<String>, encryptionKey: ByteArray) {
             var node: JsonNode = currentNode
+            var parentNode=node
             for ((index, part) in path.withIndex()) {
                 if (node.isObject) {
+                    parentNode=node
                     node = node.get(part) ?: return  // Path not found
                 } else if (node.isArray) {
                     for (element in node) {
@@ -239,15 +241,17 @@ open class EncryptGatewayFilter(
                         }
                     }
                     return
+                } else{
+                    return
                 }
             }
-            if (node.isValueNode) {
+            if (node.isValueNode&&parentNode is ObjectNode) {
                 // Assume we have a method encryptValue that does the encryption
                 val time = System.currentTimeMillis()
                 val encrypted = SecuredDataString.create(node.asText(), encryptionKey)
                 logger.debug("Encrypt took ${System.currentTimeMillis() - time} for rq ${encrypted.originalLength} bytes")
                 val encryptedNode = objectMapper.valueToTree<JsonNode>(encrypted)
-                (node as ObjectNode).put(path.last(), encryptedNode)
+                parentNode.replace(path.last(), encryptedNode)
             }
         }
 
