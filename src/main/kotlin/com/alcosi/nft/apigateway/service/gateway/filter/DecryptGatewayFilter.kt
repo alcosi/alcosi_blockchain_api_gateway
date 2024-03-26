@@ -74,6 +74,7 @@ open class DecryptGatewayFilter(
                                 return@fromCallable k
                             }
                                 .subscribeOn(Schedulers.boundedElastic())
+                                .cache()
                         val decrypted =
                             key.mapNotNull { k ->
                                 val time = System.currentTimeMillis()

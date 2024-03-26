@@ -102,6 +102,7 @@ open class EncryptGatewayFilter(
                 val key =
                     Mono.fromCallable { keyProvider.key(KeyProvider.MODE.ENCRYPT) }
                         .subscribeOn(Schedulers.boundedElastic())
+                        .cache()
                 return delegate.multipartData.map { multipartData ->
                     val fieldsToEncrypt =
                         multipartData.keys.filter { key ->
@@ -206,6 +207,7 @@ open class EncryptGatewayFilter(
             } else {
                 val key = Mono.fromCallable { keyProvider.key(KeyProvider.MODE.ENCRYPT) }
                     .subscribeOn(Schedulers.boundedElastic())
+                    .cache()
                 val encryptedRq = DataBufferUtils.join(super.getBody())
                     .flatMap { data ->
                         key.flatMap { k ->
