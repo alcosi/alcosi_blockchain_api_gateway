@@ -102,7 +102,7 @@ open class EncryptGatewayFilter(
             val isMultipart = contentType?.includes(MediaType.MULTIPART_FORM_DATA) ?: false
             if (isMultipart) {
                 val key =
-                    Mono.fromCallable { keyProvider.key(KeyProvider.MODE.ENCRYPT) }
+                    Mono.fromFuture(CompletableFuture.supplyAsync({ keyProvider.key(KeyProvider.MODE.ENCRYPT) }, executor))
                         .subscribeOn(Schedulers.boundedElastic())
                         .cache()
                 return delegate.multipartData.map { multipartData ->
@@ -212,7 +212,7 @@ open class EncryptGatewayFilter(
             if (isMultipart || !isJson) {
                 return super.getBody()
             } else {
-                val key = Mono.fromCallable { keyProvider.key(KeyProvider.MODE.ENCRYPT) }
+                val key = Mono.fromFuture(CompletableFuture.supplyAsync({ keyProvider.key(KeyProvider.MODE.ENCRYPT) }, executor))
                     .subscribeOn(Schedulers.boundedElastic())
                     .cache()
                 val encryptedRq = DataBufferUtils.join(super.getBody())
