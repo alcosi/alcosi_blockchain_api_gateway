@@ -41,6 +41,8 @@ import org.springframework.web.server.ServerWebExchangeDecorator
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
 
 private val TRANSFER_ENCODING_VALUE = "chunked"
 
@@ -152,21 +154,26 @@ open class EncryptGatewayFilter(
                                         val container =
                                             if (part is FilePart) {
                                                 key.flatMap { k ->
-                                                    Mono.fromCallable {
-                                                        val time = System.currentTimeMillis()
-                                                        val encrypted = SecuredDataByteArray.create(utils.getContentBytes(it) ?: "".toByteArray(), k)
-                                                        logger.debug("Encrypt took ${System.currentTimeMillis() - time} for multipart file rq $field ${encrypted.originalLength} bytes")
-                                                        return@fromCallable encrypted
-                                                    }.subscribeOn(Schedulers.boundedElastic())
+                                                    Mono.fromFuture(
+                                                        CompletableFuture.supplyAsync({
+                                                            val time = System.currentTimeMillis()
+                                                            val encrypted = SecuredDataByteArray.create(utils.getContentBytes(it) ?: "".toByteArray(), k)
+                                                            logger.debug("Encrypt took ${System.currentTimeMillis() - time} for multipart file rq $field ${encrypted.originalLength} bytes")
+                                                            return@supplyAsync encrypted
+                                                        }, executor)
+                                                    ).subscribeOn(Schedulers.boundedElastic())
                                                 }
                                             } else {
                                                 key.flatMap { k ->
-                                                    Mono.fromCallable {
-                                                        val time = System.currentTimeMillis()
-                                                        val encrypted = SecuredDataString.create(utils.getContent(it, Int.MAX_VALUE) ?: "", k)
-                                                        logger.debug("Encrypt took ${System.currentTimeMillis() - time} for multipart string rq $field ${encrypted.originalLength} bytes")
-                                                        return@fromCallable encrypted
-                                                    }.subscribeOn(Schedulers.boundedElastic())
+                                                    Mono.fromFuture(
+                                                        CompletableFuture.supplyAsync({
+                                                            val time = System.currentTimeMillis()
+                                                            val encrypted = SecuredDataString.create(utils.getContent(it, Int.MAX_VALUE) ?: "", k)
+                                                            logger.debug("Encrypt took ${System.currentTimeMillis() - time} for multipart string rq $field ${encrypted.originalLength} bytes")
+                                                            return@supplyAsync encrypted
+                                                        }, executor)
+                                                    )
+                                                        .subscribeOn(Schedulers.boundedElastic())
                                                 }
                                             }
                                         val bytes =
@@ -211,15 +218,17 @@ open class EncryptGatewayFilter(
                 val encryptedRq = DataBufferUtils.join(super.getBody())
                     .flatMap { data ->
                         key.flatMap { k ->
-                            Mono.fromCallable {
-                                val contentBytes = utils.getContentBytes(data)
-                                val nodeTree = objectMapper.readTree(contentBytes)
-                                configFields.forEach { field ->
-                                    val path = field.split(".")
-                                    encryptPath(nodeTree, path, k)
-                                }
-                                return@fromCallable nodeTree
-                            }
+                            Mono.fromFuture(
+                                CompletableFuture.supplyAsync({
+                                    val contentBytes = utils.getContentBytes(data)
+                                    val nodeTree = objectMapper.readTree(contentBytes)
+                                    configFields.forEach { field ->
+                                        val path = field.split(".")
+                                        encryptPath(nodeTree, path, k)
+                                    }
+                                    return@supplyAsync nodeTree
+                                }, executor)
+                            )
                         }.subscribeOn(Schedulers.boundedElastic())
                     }
                     .mapNotNull { node -> objectMapper.writeValueAsBytes(node) }
@@ -258,10 +267,14 @@ open class EncryptGatewayFilter(
             encryptionKey: ByteArray
         ): SecuredDataString {
             val time = System.currentTimeMillis()
-            val encrypted= SecuredDataString.create(node.asText(), encryptionKey)
+            val encrypted = SecuredDataString.create(node.asText(), encryptionKey)
             logger.debug("Encrypt took ${System.currentTimeMillis() - time} for rq ${encrypted.originalLength} bytes")
             return encrypted
         }
 
+    }
+
+    companion object {
+        protected open val executor = Executors.newVirtualThreadPerTaskExecutor()
     }
 }

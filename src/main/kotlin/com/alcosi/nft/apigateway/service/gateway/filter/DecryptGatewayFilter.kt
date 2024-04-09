@@ -29,6 +29,8 @@ import org.springframework.http.server.reactive.ServerHttpResponseDecorator
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
 
 private val TRANSFER_ENCODING_CHUNKED_VALUE = "chunked"
 
@@ -58,6 +60,7 @@ open class DecryptGatewayFilter(
         val keyProvider: KeyProvider,
     ) :
         ServerHttpResponseDecorator(exchange.response), Logging {
+
         override fun writeWith(body: Publisher<out DataBuffer>): Mono<Void> {
             val buffer =
                 DataBufferUtils.join(body)
@@ -67,21 +70,25 @@ open class DecryptGatewayFilter(
                             return@flatMap Mono.empty()
                         }
                         val key =
-                            Mono.fromCallable {
+                            Mono.fromFuture {
                                 val time = System.currentTimeMillis()
-                                val k = keyProvider.key(KeyProvider.MODE.DECRYPT)
+                                val k = CompletableFuture.supplyAsync({ keyProvider.key(KeyProvider.MODE.DECRYPT) }, executor)
                                 logger.debug("Key getting took ${System.currentTimeMillis() - time}")
-                                return@fromCallable k
+                                return@fromFuture k
                             }
                                 .subscribeOn(Schedulers.boundedElastic())
                                 .cache()
                         val decrypted =
                             key.mapNotNull { k ->
-                                val time = System.currentTimeMillis()
-                                val d = sensitiveComponent.decrypt(content, k)
-                                logger.debug("Decrypt took ${System.currentTimeMillis() - time} for rs ${d?.length} bytes")
-                                return@mapNotNull d?.toByteArray()
+                                val d = Mono.fromFuture(CompletableFuture.supplyAsync({
+                                    val time = System.currentTimeMillis()
+                                    val decrypted = sensitiveComponent.decrypt(content, k)
+                                    logger.debug("Decrypt took ${System.currentTimeMillis() - time} for rs ${decrypted?.length} bytes")
+                                    return@supplyAsync decrypted
+                                }, executor))
+                                return@mapNotNull d.mapNotNull { dd -> dd?.toByteArray() }
                             }
+                                .flatMap { d -> d }
                                 .subscribeOn(Schedulers.boundedElastic())
                         return@flatMap decrypted
                     }
@@ -94,5 +101,9 @@ open class DecryptGatewayFilter(
                     }
             return super.writeWith(buffer)
         }
+    }
+
+    companion object {
+        protected open val executor = Executors.newVirtualThreadPerTaskExecutor()
     }
 }
