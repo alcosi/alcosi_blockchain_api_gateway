@@ -73,7 +73,7 @@ open class DecryptGatewayFilter(
                             Mono.fromFuture {
                                 val time = System.currentTimeMillis()
                                 val k = CompletableFuture.supplyAsync({ keyProvider.key(KeyProvider.MODE.DECRYPT) }, executor)
-                                logger.debug("Key getting took ${System.currentTimeMillis() - time}")
+                                logger.info("Key getting took ${System.currentTimeMillis() - time}")
                                 return@fromFuture k
                             }
                                 .subscribeOn(Schedulers.boundedElastic())
@@ -83,7 +83,7 @@ open class DecryptGatewayFilter(
                                 val d = Mono.fromFuture(CompletableFuture.supplyAsync({
                                     val time = System.currentTimeMillis()
                                     val decrypted = sensitiveComponent.decrypt(content, k)
-                                    logger.debug("Decrypt took ${System.currentTimeMillis() - time} for rs ${decrypted?.length} bytes")
+                                    logger.info("Decrypt took ${System.currentTimeMillis() - time} for rs ${decrypted?.length} bytes")
                                     return@supplyAsync decrypted
                                 }, executor))
                                 return@mapNotNull d.mapNotNull { dd -> dd?.toByteArray() }

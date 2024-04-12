@@ -158,7 +158,7 @@ open class EncryptGatewayFilter(
                                                         CompletableFuture.supplyAsync({
                                                             val time = System.currentTimeMillis()
                                                             val encrypted = SecuredDataByteArray.create(utils.getContentBytes(it) ?: "".toByteArray(), k)
-                                                            logger.debug("Encrypt took ${System.currentTimeMillis() - time} for multipart file rq $field ${encrypted.originalLength} bytes")
+                                                            logger.info("Encrypt took ${System.currentTimeMillis() - time} for multipart file rq $field ${encrypted.originalLength} bytes")
                                                             return@supplyAsync encrypted
                                                         }, executor)
                                                     ).subscribeOn(Schedulers.boundedElastic())
@@ -169,7 +169,7 @@ open class EncryptGatewayFilter(
                                                         CompletableFuture.supplyAsync({
                                                             val time = System.currentTimeMillis()
                                                             val encrypted = SecuredDataString.create(utils.getContent(it, Int.MAX_VALUE) ?: "", k)
-                                                            logger.debug("Encrypt took ${System.currentTimeMillis() - time} for multipart string rq $field ${encrypted.originalLength} bytes")
+                                                            logger.info("Encrypt took ${System.currentTimeMillis() - time} for multipart string rq $field ${encrypted.originalLength} bytes")
                                                             return@supplyAsync encrypted
                                                         }, executor)
                                                     )
@@ -268,7 +268,7 @@ open class EncryptGatewayFilter(
         ): SecuredDataString {
             val time = System.currentTimeMillis()
             val encrypted = SecuredDataString.create(node.asText(), encryptionKey)
-            logger.debug("Encrypt took ${System.currentTimeMillis() - time} for rq ${encrypted.originalLength} bytes")
+            logger.info("Encrypt took ${System.currentTimeMillis() - time} for rq ${encrypted.originalLength} bytes")
             return encrypted
         }
 
