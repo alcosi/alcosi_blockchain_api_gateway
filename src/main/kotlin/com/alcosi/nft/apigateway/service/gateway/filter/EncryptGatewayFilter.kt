@@ -150,39 +150,40 @@ open class EncryptGatewayFilter(
                             }
                             val filePartEncrypted =
                                 DataBufferUtils.join(part.content())
-                                    .flatMap {
-                                        val container =
-                                            if (part is FilePart) {
-                                                key.flatMap { k ->
-                                                    Mono.fromFuture(
-                                                        CompletableFuture.supplyAsync({
-                                                            val time = System.currentTimeMillis()
-                                                            val encrypted = SecuredDataByteArray.create(utils.getContentBytes(it) ?: "".toByteArray(), k)
-                                                            logger.info("Encrypt took ${System.currentTimeMillis() - time} for multipart file rq $field ${encrypted.originalLength} bytes")
-                                                            return@supplyAsync encrypted
-                                                        }, executor)
-                                                    ).subscribeOn(Schedulers.boundedElastic())
-                                                }
-                                            } else {
-                                                key.flatMap { k ->
-                                                    Mono.fromFuture(
-                                                        CompletableFuture.supplyAsync({
-                                                            val time = System.currentTimeMillis()
-                                                            val encrypted = SecuredDataString.create(utils.getContent(it, Int.MAX_VALUE) ?: "", k)
-                                                            logger.info("Encrypt took ${System.currentTimeMillis() - time} for multipart string rq $field ${encrypted.originalLength} bytes")
-                                                            return@supplyAsync encrypted
-                                                        }, executor)
-                                                    )
-                                                        .subscribeOn(Schedulers.boundedElastic())
-                                                }
-                                            }
-                                        val bytes =
-                                            container.map { b ->
-                                                objectMapper.writeValueAsBytes(b)
-                                            }
-                                        bytes
+                                    .flatMap { dataBuffer ->
+                                        Mono.using(
+                                            { dataBuffer },
+                                            { buffer ->
+                                                val container =
+                                                    if (part is FilePart) {
+                                                        key.flatMap { k ->
+                                                            Mono.fromFuture(
+                                                                CompletableFuture.supplyAsync({
+                                                                    val time = System.currentTimeMillis()
+                                                                    val encrypted = SecuredDataByteArray.create(utils.getContentBytes(buffer) ?: "".toByteArray(), k)
+                                                                    logger.info("Encrypt took ${System.currentTimeMillis() - time} for multipart file rq $field ${encrypted.originalLength} bytes")
+                                                                    return@supplyAsync encrypted
+                                                                }, executor)
+                                                            ).subscribeOn(Schedulers.boundedElastic())
+                                                        }
+                                                    } else {
+                                                        key.flatMap { k ->
+                                                            Mono.fromFuture(
+                                                                CompletableFuture.supplyAsync({
+                                                                    val time = System.currentTimeMillis()
+                                                                    val encrypted = SecuredDataString.create(utils.getContent(buffer, Int.MAX_VALUE) ?: "", k)
+                                                                    logger.info("Encrypt took ${System.currentTimeMillis() - time} for multipart string rq $field ${encrypted.originalLength} bytes")
+                                                                    return@supplyAsync encrypted
+                                                                }, executor)
+                                                            ).subscribeOn(Schedulers.boundedElastic())
+                                                        }
+                                                    }
+                                                val bytes = container.map { b -> objectMapper.writeValueAsBytes(b) }
+                                                bytes.map { byteArray -> delegate.response.bufferFactory().wrap(byteArray) }
+                                            },
+                                            { buffer -> DataBufferUtils.release(buffer) } // Ensure buffer is released
+                                        )
                                     }
-                                    .map { bytes -> delegate.response.bufferFactory().wrap(bytes) }
                                     .flux()
                             EncryptedDefaultParts.create(part.headers(), filePartEncrypted)
                         }
@@ -216,20 +217,26 @@ open class EncryptGatewayFilter(
                     .subscribeOn(Schedulers.boundedElastic())
                     .cache()
                 val encryptedRq = DataBufferUtils.join(super.getBody())
-                    .flatMap { data ->
-                        key.flatMap { k ->
-                            Mono.fromFuture(
-                                CompletableFuture.supplyAsync({
-                                    val contentBytes = utils.getContentBytes(data)
-                                    val nodeTree = objectMapper.readTree(contentBytes)
-                                    configFields.forEach { field ->
-                                        val path = field.split(".")
-                                        encryptPath(nodeTree, path, k)
-                                    }
-                                    return@supplyAsync nodeTree
-                                }, executor)
-                            )
-                        }.subscribeOn(Schedulers.boundedElastic())
+                    .flatMap { dataBuffer ->
+                        Mono.using(
+                            { dataBuffer },
+                            { buffer ->
+                                key.flatMap { k ->
+                                    Mono.fromFuture(
+                                        CompletableFuture.supplyAsync({
+                                            val contentBytes = utils.getContentBytes(buffer)
+                                            val nodeTree = objectMapper.readTree(contentBytes)
+                                            configFields.forEach { field ->
+                                                val path = field.split(".")
+                                                encryptPath(nodeTree, path, k)
+                                            }
+                                            return@supplyAsync nodeTree
+                                        }, executor)
+                                    )
+                                }.subscribeOn(Schedulers.boundedElastic())
+                            },
+                            { buffer -> DataBufferUtils.release(buffer) }// Ensure buffer is released
+                        )
                     }
                     .mapNotNull { node -> objectMapper.writeValueAsBytes(node) }
                     .map { bytes -> exchange.response.bufferFactory().wrap(bytes) }
@@ -257,7 +264,7 @@ open class EncryptGatewayFilter(
                 }
             }
             if (node.isValueNode && parentNode is ObjectNode) {
-                node = objectMapper.valueToTree<JsonNode>(encodeNode(node, encryptionKey))
+                node = objectMapper.valueToTree(encodeNode(node, encryptionKey))
                 parentNode.replace(path.last(), node)
             }
         }

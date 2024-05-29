@@ -62,44 +62,49 @@ open class DecryptGatewayFilter(
         ServerHttpResponseDecorator(exchange.response), Logging {
 
         override fun writeWith(body: Publisher<out DataBuffer>): Mono<Void> {
-            val buffer =
-                DataBufferUtils.join(body)
-                    .flatMap {
-                        val content = utils.getContentBytes(it)?.let { dt -> String(dt) }
-                        if (content == null) {
-                            return@flatMap Mono.empty()
-                        }
-                        val key =
-                            Mono.fromFuture {
-                                val time = System.currentTimeMillis()
-                                val k = CompletableFuture.supplyAsync({ keyProvider.key(KeyProvider.MODE.DECRYPT) }, executor)
-                                logger.info("Key getting took ${System.currentTimeMillis() - time}")
-                                return@fromFuture k
-                            }
-                                .subscribeOn(Schedulers.boundedElastic())
-                                .cache()
-                        val decrypted =
-                            key.mapNotNull { k ->
-                                val d = Mono.fromFuture(CompletableFuture.supplyAsync({
-                                    val time = System.currentTimeMillis()
-                                    val decrypted = sensitiveComponent.decrypt(content, k)
-                                    logger.info("Decrypt took ${System.currentTimeMillis() - time} for rs ${decrypted?.length} bytes")
-                                    return@supplyAsync decrypted
-                                }, executor))
-                                return@mapNotNull d.mapNotNull { dd -> dd?.toByteArray() }
-                            }
-                                .flatMap { d -> d }
-                                .subscribeOn(Schedulers.boundedElastic())
-                        return@flatMap decrypted
+            return DataBufferUtils.join(body)
+                .flatMap { dataBuffer ->
+                    val content = utils.getContentBytes(dataBuffer)?.let { dt -> String(dt) }
+                    DataBufferUtils.release(dataBuffer) // Ensure buffer is released
+                    if (content == null) {
+                        return@flatMap Mono.empty()
                     }
-                    .mapNotNull { decrypted ->
-                        val dataBuffer = exchange.response.bufferFactory().wrap(decrypted!!)
-                        if ((headers[HttpHeaders.TRANSFER_ENCODING]?.firstOrNull() ?: "") != TRANSFER_ENCODING_CHUNKED_VALUE) {
-                            this.headers.set(HttpHeaders.CONTENT_LENGTH, "${decrypted.size}")
-                        }
-                        return@mapNotNull dataBuffer
+                    val key = Mono.fromFuture {
+                        val time = System.currentTimeMillis()
+                        val k = CompletableFuture.supplyAsync({ keyProvider.key(KeyProvider.MODE.DECRYPT) }, executor)
+                        logger.info("Key getting took ${System.currentTimeMillis() - time}")
+                        return@fromFuture k
                     }
-            return super.writeWith(buffer)
+                        .subscribeOn(Schedulers.boundedElastic())
+                        .cache()
+                    val decrypted = key.mapNotNull { k ->
+                        val d = Mono.fromFuture(CompletableFuture.supplyAsync({
+                            val time = System.currentTimeMillis()
+                            val decrypted = sensitiveComponent.decrypt(content, k)
+                            logger.info("Decrypt took ${System.currentTimeMillis() - time} for rs ${decrypted?.length} bytes")
+                            return@supplyAsync decrypted
+                        }, executor))
+                        return@mapNotNull d.mapNotNull { dd -> dd?.toByteArray() }
+                    }
+                        .flatMap { d -> d }
+                        .subscribeOn(Schedulers.boundedElastic())
+                    return@flatMap decrypted
+                }
+                .mapNotNull { decrypted ->
+                    if ((headers[HttpHeaders.TRANSFER_ENCODING]?.firstOrNull() ?: "") != TRANSFER_ENCODING_CHUNKED_VALUE) {
+                        this.headers.set(HttpHeaders.CONTENT_LENGTH, "${decrypted!!.size}")
+                    }
+                    return@mapNotNull exchange.response.bufferFactory().wrap(decrypted!!)
+                }
+                .flatMap { dataBuffer ->
+                    Mono.using(
+                        { dataBuffer },
+                        { buffer ->
+                            super.writeWith(Mono.just(buffer))
+                                .doFinally { DataBufferUtils.release(buffer) }
+                        },
+                        { buffer -> DataBufferUtils.release(buffer) })// Ensure buffer is released/
+                }
         }
     }
 

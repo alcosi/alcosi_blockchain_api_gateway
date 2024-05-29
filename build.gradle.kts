@@ -32,9 +32,9 @@ buildscript {
 }
 
 group = "com.alcosi.nft"
-version = "14.8"
+version = "15.0"
 java.sourceCompatibility = JavaVersion.VERSION_21
-val web3jVersion = "4.10.3"
+val web3jVersion = "4.12.0"
 val jjwtVersion = "0.12.3"
 val openApiJoinedFile = "openapi.yaml"
 val openApiFile = "MarketGatewayAPI.yaml"
