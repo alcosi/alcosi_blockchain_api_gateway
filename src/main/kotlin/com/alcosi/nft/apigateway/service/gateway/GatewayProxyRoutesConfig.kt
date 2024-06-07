@@ -24,8 +24,22 @@ import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
+/**
+ * This class is responsible for configuring the dynamic route locator for the GatewayProxyRoutes.
+ * The dynamic route locator is used to dynamically configure and manage proxy routes for the gateway.
+ *
+ * @Configuration annotation indicates that this class is a configuration class.
+ */
 @Configuration
 class GatewayProxyRoutesConfig {
+    /**
+     * Configures the dynamic route locator for the GatewayProxyRoutes.
+     *
+     * @param props The PathConfigurationComponent containing the proxy configuration properties.
+     * @param filtersList The list of MicroserviceGatewayFilter objects to be applied to the routes.
+     * @param routesBuilder The RouteLocatorBuilder used for building the routes.
+     * @return The configured DynamicRouteLocator object.
+     */
     @Bean
     @ConditionalOnMissingBean(DynamicRouteLocator::class)
     fun configDynamicRouteLocator(

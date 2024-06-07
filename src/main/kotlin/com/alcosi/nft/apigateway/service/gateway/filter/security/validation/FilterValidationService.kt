@@ -21,11 +21,26 @@ import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 
+/**
+ * This class represents a Filter Validation Service that is responsible for validating requests using a list of
+ * RequestValidators. It provides a method to check the validation of a ServerWebExchange and returns a Mono object
+ * containing a ValidationResult.
+ *
+ * @param validationServices The list of RequestValidators to use for validation.
+ * @param alwaysPassed Flag indicating whether the validation should always pass.
+ * @param typeHeader The header name to use for determining the type of validation to perform.
+ */
 open class FilterValidationService(
     protected val validationServices: List<RequestValidator>,
     protected val alwaysPassed: Boolean,
     protected val typeHeader: String,
 ) : Logging {
+    /**
+     * Checks the validation of a ServerWebExchange and returns a Mono object containing a ValidationResult.
+     *
+     * @param exchange The ServerWebExchange object representing the incoming HTTP request.
+     * @return A Mono object containing a ValidationResult.
+     */
     fun check(exchange: ServerWebExchange): Mono<ValidationResult> {
         if (alwaysPassed) {
             return Mono.just(ValidationResult(false, BigDecimal.ONE, "Always passed mode for FilterValidationService"))

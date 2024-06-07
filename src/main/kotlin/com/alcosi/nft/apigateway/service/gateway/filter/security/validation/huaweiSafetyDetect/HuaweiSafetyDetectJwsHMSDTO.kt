@@ -16,17 +16,32 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.huaweiSafetyDetect
 
-import com.alcosi.lib.objectMapper.MappingHelper
+import com.alcosi.lib.objectMapper.mapOne
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.databind.ObjectMapper
 import java.util.*
 
-class HuaweiSafetyDetectJwsHMSDTO(jwsStr: String, mappingHelper: MappingHelper) {
+/**
+ * Represents a Huawei Safety Detect Jws HMS DTO.
+ *
+ * @property jwsStr The JWS string.
+ * @property mappingHelper The mapping helper.
+ * @property header The JWS header.
+ * @property payload The JWS payload.
+ * @property signContent The sign content.
+ * @property signature The signature.
+ */
+open class HuaweiSafetyDetectJwsHMSDTO(jwsStr: String, mappingHelper: ObjectMapper) {
     val header: JwsHeader
     val payload: JwsPayload
     val signContent: String
     val signature: ByteArray
 
+    /**
+     * Initializes the properties by splitting the JWS string and mapping
+     * the components to the corresponding properties using the MappingHelper
+     */
     init {
         val jwsSplit = jwsStr.split(".").map { Base64.getUrlDecoder().decode(it) }
         header = mappingHelper.mapOne(String(jwsSplit[0]), JwsHeader::class.java)!!
@@ -36,13 +51,28 @@ class HuaweiSafetyDetectJwsHMSDTO(jwsStr: String, mappingHelper: MappingHelper) 
         signature = jwsSplit[2]
     }
 
-    @JvmRecord
+    /**
+     * Represents the header section of a JWS (JSON Web Signature).
+     *
+     * @property alg The algorithm used for signing the JWS.
+     * @property x5c A list of base64-encoded X.509 certificates.
+     */
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class JwsHeader
         @JsonCreator
         constructor(val alg: String?, val x5c: List<String>?)
 
-    @JvmRecord
+    /**
+     * Represents the payload section of a JWS (JSON Web Signature).
+     *
+     * @property nonce The nonce value.
+     * @property apkPackageName The package name of the APK.
+     * @property apkDigestSha256 The SHA-256 digest of the APK.
+     * @property apkCertificateDigestSha256 The list of SHA-256 digests of the APK certificates.
+     * @property isBasicIntegrity A boolean indicating the basic integrity of the APK.
+     * @property timestampMs The timestamp in milliseconds.
+     * @property advice The advice message.
+     */
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class JwsPayload
         @JsonCreator

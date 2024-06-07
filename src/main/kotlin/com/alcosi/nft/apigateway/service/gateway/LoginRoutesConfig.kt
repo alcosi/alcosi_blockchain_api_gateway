@@ -26,10 +26,24 @@ import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
+/**
+ * The LoginRoutesConfig class is a configuration class that defines routes for login-related endpoints.
+ *
+ * @param gatewayBasePathProperties The configuration properties for the base path of the gateway.
+ */
 @Configuration
 @EnableConfigurationProperties(GatewayBasePathProperties::class)
 @ConditionalOnProperty(prefix = "filter.config.path.security.type", name = ["method"], havingValue = "ETH_JWT", matchIfMissing = true)
 class LoginRoutesConfig {
+    /**
+     * Returns a RouteLocator object for the authorities GET route.
+     *
+     * @param filtersList The list of MicroserviceGatewayFilters to apply to the route.
+     * @param builder The RouteLocatorBuilder used to create the route.
+     * @param filter The AuthoritiesGetGatewayFilter used for filtering GET requests and retrieving authorities.
+     * @param properties The GatewayBasePathProperties used for configuring the base path of the gateway.
+     * @return The created RouteLocator object.
+     */
     @Bean
     fun getAuthoritiesRoute(
         filtersList: List<MicroserviceGatewayFilter>,
@@ -49,6 +63,15 @@ class LoginRoutesConfig {
             .build()
     }
 
+    /**
+     * Returns a RouteLocator object for the login GET route.
+     *
+     * @param filter The LoginGetGatewayFilter used to filter GET requests.
+     * @param filtersList The list of MicroserviceGatewayFilters to apply to the route.
+     * @param builder The RouteLocatorBuilder used to create the route.
+     * @param properties The GatewayBasePathProperties used for configuring the base path of the gateway.
+     * @return The created RouteLocator object.
+     */
     @Bean
     fun getLoginRoute(
         filter: LoginGetGatewayFilter,
@@ -68,6 +91,15 @@ class LoginRoutesConfig {
             .build()
     }
 
+    /**
+     * Creates a RouteLocator object for the post login route.
+     *
+     * @param filter The LoginPostGatewayFilter used for handling POST requests related to login operations.
+     * @param filtersList The list of MicroserviceGatewayFilters to apply to the route.
+     * @param builder The RouteLocatorBuilder used to create the route.
+     * @param properties The GatewayBasePathProperties used for configuring the base path of the gateway.
+     * @return The created RouteLocator object.
+     */
     @Bean
     fun postLoginRoute(
         filter: LoginPostGatewayFilter,
@@ -87,6 +119,15 @@ class LoginRoutesConfig {
             .build()
     }
 
+    /**
+     * Creates a RouteLocator object for the login PUT route.
+     *
+     * @param filter The LoginPutGatewayFilter used for handling PUT requests related to login operations.
+     * @param filtersList The list of MicroserviceGatewayFilters to apply to the route.
+     * @param builder The RouteLocatorBuilder used to create the route.
+     * @param properties The GatewayBasePathProperties used for configuring the base path of the gateway.
+     * @return The created RouteLocator object.
+     */
     @Bean
     fun putLoginRoute(
         filter: LoginPutGatewayFilter,
@@ -106,6 +147,15 @@ class LoginRoutesConfig {
             .build()
     }
 
+    /**
+     * Creates a RouteLocator object for the put bound route.
+     *
+     * @param filter The AuthBoundWalletsPutGatewayFilter used for handling PUT requests to authenticate and bind wallets.
+     * @param filtersList The list of MicroserviceGatewayFilters to apply to the route.
+     * @param builder The RouteLocatorBuilder used to create the route.
+     * @param properties The GatewayBasePathProperties used for configuring the base path of the gateway.
+     * @return The created RouteLocator object.
+     */
     @Bean
     @ConditionalOnBean(AuthBoundWalletsPutGatewayFilter::class)
     fun putBoundRoute(

@@ -16,20 +16,42 @@
 
 package com.alcosi.nft.apigateway.config.path.dto
 
+/**
+ * The `PathAuthority` class represents a path authority and provides
+ * methods for checking the authority against a given profile.
+ *
+ * @param list The list of authorities.
+ * @param checkMode The authorities check mode.
+ * @constructor Creates a new instance of the `PathAuthority` class.
+ */
 data class PathAuthority(val list: List<String>, val checkMode: AuthoritiesCheck = AuthoritiesCheck.ANY) {
+    /** The `AuthoritiesCheck` enum represents the check mode for authorities. */
     enum class AuthoritiesCheck {
         ANY,
         ALL,
     }
 
+    /**
+     * Determines*/
     fun noAuth(): Boolean {
         return list.isNullOrEmpty()
     }
 
+    /**
+     * Determines whether the path authorities have authentication.
+     *
+     * @return true if the path authorities have authentication, false otherwise.
+     */
     fun haveAuth(): Boolean {
         return !noAuth()
     }
 
+    /**
+     * Checks whether the given profile authorities satisfy the path authorities based on the check mode.
+     *
+     * @param profileAuth The list of profile authorities.
+     * @return true if the profile authorities satisfy the path authorities, false otherwise.
+     */
     fun checkHaveAuthorities(profileAuth: List<String>?): Boolean {
         if (noAuth()) {
             return true

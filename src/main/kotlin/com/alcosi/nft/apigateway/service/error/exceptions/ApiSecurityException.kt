@@ -16,6 +16,21 @@
 
 package com.alcosi.nft.apigateway.service.error.exceptions
 
+/**
+ * ApiSecurityException is an open class for representing API security exceptions.
+ * It extends the ApiException class.
+ *
+ * @property code The code associated with the exception.
+ * @property message The error message associated with the exception.
+ *
+ * @constructor Creates an ApiSecurityException instance with the given code and message.
+ * @param code The code associated with the exception.
+ * @param message The error message associated with the exception.
+ *
+ * @constructor Creates an ApiSecurityException instance with the given message and code.
+ * @param message The error message associated with the exception.
+ * @param code The code associated with the exception.
+ */
 open class ApiSecurityException(code: Long, message: String) : ApiException(code, message, 401) {
     constructor(message: String, code: Int) : this(code.toLong(), message)
 }

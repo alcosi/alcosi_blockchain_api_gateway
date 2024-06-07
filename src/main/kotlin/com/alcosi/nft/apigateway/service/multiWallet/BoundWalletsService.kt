@@ -19,7 +19,17 @@ package com.alcosi.nft.apigateway.service.multiWallet
 import com.alcosi.nft.apigateway.auth.dto.EthClient
 import reactor.core.publisher.Mono
 
+/**
+ * Represents a service for binding wallets in the Ethereum client.
+ */
 interface BoundWalletsService {
+    /**
+     * Binds a wallet in the Ethereum client.
+     *
+     * @param client The instance of EthClient representing the Ethereum client.
+     * @param walletSecond The wallet address to be bound.
+     * @return A Mono emitting a String representing the result of the binding operation.
+     */
     fun bound(
         client: EthClient,
         walletSecond: String,

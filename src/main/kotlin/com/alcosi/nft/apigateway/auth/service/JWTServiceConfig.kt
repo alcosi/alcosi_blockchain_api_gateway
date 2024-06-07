@@ -23,6 +23,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
+/**
+ * Configuration class for JWT Service.
+ */
 @Configuration
 @EnableConfigurationProperties(EthJwtProperties::class)
 @ConditionalOnProperty(
@@ -32,12 +35,27 @@ import org.springframework.context.annotation.Configuration
     matchIfMissing = true,
 )
 class JWTServiceConfig {
+    /**
+     * Retrieves an instance of the CheckJWTService.
+     *
+     * @param properties The EthJwtProperties object containing the configuration properties for EthJwt.
+     * @return An instance of the CheckJWTService initialized with the private key from the EthJwtProperties.
+     * @see CheckJWTService
+     */
     @Bean
     @ConditionalOnMissingBean(CheckJWTService::class)
     fun getCheckJWTService(properties: EthJwtProperties): CheckJWTService {
-        return CheckJWTService(properties.key.privateKey)
+        return CheckJWTService(properties.key.privateKey!!)
     }
 
+    /**
+     * Retrieves an instance of the CreateJWTService.
+     *
+     * @param properties The EthJwtProperties object containing the configuration properties for EthJwt.
+     * @param multiWalletProvider The MultiWalletProvider object for retrieving wallet information.
+     * @return An instance of the CreateJWTService initialized with the specified properties.
+     * @see CreateJWTService
+     */
     @Bean
     @ConditionalOnMissingBean(CreateJWTService::class)
     fun getCreateJWTService(
@@ -47,7 +65,7 @@ class JWTServiceConfig {
         return CreateJWTService(
             properties.token.lifetime,
             properties.token.issuer,
-            properties.key.private,
+            properties.key.private!!,
             multiWalletProvider,
         )
     }

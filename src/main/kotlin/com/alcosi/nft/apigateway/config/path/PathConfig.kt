@@ -16,13 +16,19 @@
 
 package com.alcosi.nft.apigateway.config.path
 
-import com.alcosi.lib.objectMapper.MappingHelper
 import com.alcosi.nft.apigateway.service.gateway.GatewayBasePathProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
+/**
+ * Class that represents the configuration for the PathConfig.
+ *
+ * This class is responsible for providing the necessary beans and configurations for the PathConfig component.
+ *
+ * @constructor Creates an instance of PathConfig.
+ */
 @Configuration
 @EnableConfigurationProperties(
     PathConfigurationProperties::class,
@@ -30,11 +36,22 @@ import org.springframework.context.annotation.Configuration
     GatewayBasePathProperties::class,
 )
 open class PathConfig {
+    /**
+     * Retrieves the path configuration component based on the provided properties, security routes properties,
+     * mapping helper, object mapper, and gateway base path properties.
+     *
+     * @param properties The path configuration properties.
+     * @param securityRoutesProperties The security routes properties.
+     * @param helper The mapping helper.
+     * @param objectMapper The object mapper.
+     * @param gatewayBasePathProperties The gateway base path properties.
+     * @return The path configuration component.
+     */
     @Bean
     fun getPathConfig(
         properties: PathConfigurationProperties,
         securityRoutesProperties: SecurityRoutesProperties,
-        helper: MappingHelper,
+        helper: ObjectMapper,
         objectMapper: ObjectMapper,
         gatewayBasePathProperties: GatewayBasePathProperties,
     ): PathConfigurationComponent {

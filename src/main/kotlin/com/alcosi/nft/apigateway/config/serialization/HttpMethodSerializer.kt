@@ -21,7 +21,18 @@ import com.fasterxml.jackson.databind.JsonSerializer
 import com.fasterxml.jackson.databind.SerializerProvider
 import org.springframework.http.HttpMethod
 
+/**
+ * This class is responsible for serializing a HttpMethod object into a JSON string.
+ * It extends the JsonSerializer class from the Jackson library.
+ */
 open class HttpMethodSerializer : JsonSerializer<HttpMethod?>() {
+    /**
+     * Serializes a HttpMethod object into a JSON string.
+     *
+     * @param value the HttpMethod object to be serialized
+     * @param jsonGenerator the JsonGenerator used to write JSON content
+     * @param serializerProvider the SerializerProvider used for obtaining serializers for serializing nested objects
+     */
     override fun serialize(
         value: HttpMethod?,
         jsonGenerator: JsonGenerator,

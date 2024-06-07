@@ -16,34 +16,71 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.security.validation
 
-import com.alcosi.lib.executors.SchedulerTimer
-import com.alcosi.lib.synchronisation.SynchronizationService
+import io.github.breninsul.javatimerscheduler.registry.SchedulerType
+import io.github.breninsul.javatimerscheduler.registry.TaskSchedulerRegistry
+import io.github.breninsul.synchronizationstarter.service.SynchronizationService
+import org.apache.logging.log4j.kotlin.Logging
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.logging.Level
 
-open class ValidationUniqueTokenChecker(val synchronizationService: SynchronizationService) {
+/**
+ * The ValidationUniqueTokenChecker class is responsible for checking
+ * the uniqueness of tokens. It uses a synchronization service for token
+ * synchronization and a token map to manage tokens and their expiration.
+ *
+ * @property synchronizationService The synchronization service used for
+ *     token synchronization.
+ * @property uniqueTokenSchedulerDelay The delay between clearing expired
+ *     tokens from the token map.
+ * @property tokenMap The map that stores tokens and their expiration
+ *     times.
+ */
+open class ValidationUniqueTokenChecker(
+    val synchronizationService: SynchronizationService,
+    val uniqueTokenSchedulerDelay: Duration = Duration.ofSeconds(1)
+) : Logging {
+    /**
+     * The `tokenMap` property is a protected open mutable map that stores
+     * integer keys and LocalDateTime values. It is used within the
+     * `ValidationUniqueTokenChecker` class to manage tokens and their
+     * expiration.
+     *
+     * @see ValidationUniqueTokenChecker
+     */
     protected open val tokenMap: MutableMap<Int, LocalDateTime> = mutableMapOf()
-    protected open val scheduler =
-        object : SchedulerTimer(Duration.ofSeconds(1), "SchedulerUniqueToken", Level.FINE) {
-            override fun startBatch() {
-                val currTime = LocalDateTime.now()
-                val expired = tokenMap.filter { it.value.isBefore(currTime) }.keys
-                expired.forEach { tokenMap.remove(it) }
-                if (expired.size > 0) {
-                    logger.info("ValidationUniqueTokenChecker cleared ${expired.size} tokens")
-                }
-            }
-        }
 
+    /**
+     * Initialization block for `ValidationUniqueTokenChecker` class. This
+     * section is responsible for setting up a scheduler task that periodically
+     * clears the expired tokens from the `tokenMap`. /
+     */
+    init {
+        TaskSchedulerRegistry.registerTypeTask(SchedulerType.VIRTUAL_WAIT, "SchedulerUniqueToken", uniqueTokenSchedulerDelay, loggingLevel = Level.FINE, runnable = Runnable {
+            val currTime = LocalDateTime.now()
+            val expired = tokenMap.filter { it.value.isBefore(currTime) }.keys
+            expired.forEach { tokenMap.remove(it) }
+            if (expired.size > 0) {
+                logger.info("ValidationUniqueTokenChecker cleared ${expired.size} tokens")
+            }
+        })
+    }
+
+    /**
+     * Checks if the token is unique based on its hash code.
+     *
+     * @param token The token to check for uniqueness.
+     * @param ttl The time-to-live value in seconds for the token expiration.
+     * @return A Mono emitting a boolean value indicating if the token is not unique.
+     */
     open fun isNotUnique(
         token: String,
         ttl: Long,
     ): Mono<Boolean> {
         return Mono.fromCallable { token.hashCode() }
-            .subscribeOn(Schedulers.boundedElastic())
+            .subscribeOn(com.alcosi.nft.apigateway.config.VirtualWebFluxScheduler)
             .map { hashCode ->
                 val syncId = "VALIDATION_UNIQUE_$hashCode"
                 synchronizationService.before(syncId)

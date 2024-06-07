@@ -24,9 +24,35 @@ import java.security.cert.Certificate
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 
+/**
+ * This class implements the logic for verifying the signature of a JWS (JSON Web Signature)
+ * using the Huawei Safety Detect API.
+ *
+ * @param certString The certificate string used for signature verification.
+ * @param certType The type of the certificate. Default is "X.509".
+ */
 open class HuaweiSafetyVerifySignatureComponent(certString: String, val certType: String = "X.509") : Logging {
+    /**
+     * Represents the CA (Certificate Authority) certificate.
+     *
+     * The `caCert` variable is a lazy property that represents the CA certificate used for verification
+     * in the TLS (Transport Layer Security) communication.
+     *
+     *
+     * @see Certificate
+     * @see readCert
+     * @see certString
+     * @see certType
+     */
     protected open val caCert: Certificate by lazy { readCert(certString, certType) }
 
+    /**
+     * Reads a certificate from a string representation.
+     *
+     * @param certString The string representation of the certificate.
+     * @param certType The type of the certificate (e.g., "X.509").
+     * @return The parsed certificate object.
+     */
     protected open fun readCert(
         certString: String,
         certType: String,
@@ -38,6 +64,12 @@ open class HuaweiSafetyVerifySignatureComponent(certString: String, val certType
             }
     }
 
+    /**
+     * Verifies the signature of a HuaweiSafetyDetectJwsHMSDTO object.
+     *
+     * @param jws The HuaweiSafetyDetectJwsHMSDTO object to verify the signature.
+     * @return true if the signature is valid, false otherwise.
+     */
     open fun verifySignature(jws: HuaweiSafetyDetectJwsHMSDTO): Boolean {
         val algorithm = jws.header.alg
         if ("RS256" == algorithm) {
@@ -49,6 +81,13 @@ open class HuaweiSafetyVerifySignatureComponent(certString: String, val certType
         }
     }
 
+    /**
+     * Verifies the signature of a HuaweiSafetyDetectJwsHMSDTO using the given Signature algorithm.
+     *
+     * @param signatureAlgorithm The Signature algorithm to use for verification.
+     * @param jws The HuaweiSafetyDetectJwsHMSDTO object containing the signature and x5c header.
+     * @return true if the signature is valid, false otherwise.
+     */
     protected open fun verify(
         signatureAlgorithm: Signature,
         jws: HuaweiSafetyDetectJwsHMSDTO,
@@ -67,6 +106,12 @@ open class HuaweiSafetyVerifySignatureComponent(certString: String, val certType
         }
     }
 
+    /**
+     * Verifies the certificate chain provided.
+     *
+     * @param certs The list of certificates in the chain to be verified.
+     * @throws CertificateException if any of the certificates in the chain are invalid or the chain is broken.
+     */
     protected open fun verifyCertChain(certs: List<Certificate>) {
         for (i in 0 until certs.size - 1) {
             val certificate = certs[i]

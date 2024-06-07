@@ -16,11 +16,23 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.attestation
 
-import com.alcosi.lib.objectMapper.MappingHelper
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiValidationException
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.RequestValidationComponent
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationUniqueTokenChecker
+import com.fasterxml.jackson.databind.ObjectMapper
 
+/**
+ * This class represents a component for validating Google Attestation requests.
+ *
+ * @param alwaysPassed A boolean indicating if the validation always passes.
+ * @param superTokenEnabled A boolean indicating if the super token is enabled.
+ * @param superUserToken The super user token string.
+ * @param key The key string.
+ * @param packageName The package name string.
+ * @param ttl The time-to-live value in milliseconds.
+ * @param mappingHelper The MappingHelper instance.
+ * @param uniqueTokenChecker The ValidationUniqueTokenChecker instance.
+ */
 abstract class GoogleAttestationRequestValidationComponent(
     alwaysPassed: Boolean,
     superTokenEnabled: Boolean,
@@ -28,7 +40,7 @@ abstract class GoogleAttestationRequestValidationComponent(
     val key: String,
     val packageName: String,
     val ttl: Long,
-    val mappingHelper: MappingHelper,
+    val mappingHelper: ObjectMapper,
     uniqueTokenChecker: ValidationUniqueTokenChecker,
 ) : RequestValidationComponent(alwaysPassed, superTokenEnabled, superUserToken, ttl, uniqueTokenChecker) {
     data class AttestationValidationException(var s: String) : ApiValidationException(s, 2)

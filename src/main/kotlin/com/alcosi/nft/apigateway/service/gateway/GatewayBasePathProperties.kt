@@ -13,29 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alcosi.nft.apigateway.service.gateway
 
-package com.alcosi.nft.apigateway.service.gateway;
+import org.springframework.boot.context.properties.ConfigurationProperties
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
+/**
+ * The GatewayBasePathProperties class represents the configuration properties for the base path of a gateway.
+ *
+ * @property path The base path for the gateway.
+ * @property fakeUri The fake URI to be used for testing purposes.
+ */
 @ConfigurationProperties("gateway.base")
-public class GatewayBasePathProperties {
-    private String path="/api";
-    private String fakeUri="http://127.0.200.1:87787";
+open class GatewayBasePathProperties {
+    /**
+     * Represents the base path for the gateway.
+     *
+     * @property path The base path for the gateway.
+     */
+    var path: String = "/api"
 
-    public String getFakeUri() {
-        return fakeUri;
-    }
-
-    public void setFakeUri(String fakeUri) {
-        this.fakeUri = fakeUri;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
+    /**
+     * Represents the fake URI to be used for testing purposes.
+     */
+    var fakeUri: String = "http://127.0.200.1:87787"
 }

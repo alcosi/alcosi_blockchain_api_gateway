@@ -16,4 +16,11 @@
 
 package com.alcosi.nft.apigateway.service.error.exceptions
 
+/**
+ * ApiValidationException is an open class that represents API validation exceptions.
+ * It extends the ApiException class.
+ *
+ * @param msg The error message associated with the exception.
+ * @param num The numeric value associated with the exception.
+ */
 open class ApiValidationException(msg: String? = "", num: Int = 0) : ApiException("40111$num".toLong(), "Validation error:$msg")

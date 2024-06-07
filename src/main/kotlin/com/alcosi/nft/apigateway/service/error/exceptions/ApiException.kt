@@ -19,4 +19,12 @@ package com.alcosi.nft.apigateway.service.error.exceptions
 import org.springframework.http.HttpStatusCode
 import org.springframework.web.server.ResponseStatusException
 
+/**
+ * ApiException is an open class for representing API exceptions.
+ * It extends the ResponseStatusException class from the kotlinx.coroutines.spring.boot module.
+ *
+ * @property code The code associated with the exception.
+ * @property message The error message associated with the exception.
+ * @property httpCode The HTTP status code associated with the exception.
+ */
 open class ApiException(val code: Long, message: String, val httpCode: Int = code.toString().substring(0, 3).toInt()) : ResponseStatusException(HttpStatusCode.valueOf(httpCode), message)

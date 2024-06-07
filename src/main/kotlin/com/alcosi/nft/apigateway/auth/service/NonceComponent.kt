@@ -32,15 +32,43 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
+/**
+ * Represents a component for generating and managing nonces.
+ *
+ * @property prepareArgsService The service for preparing wallet addresses.
+ * @property prepareMsgComponent The component for preparing login messages.
+ * @property nonceDBComponent The component for managing nonces in a database.
+ * @property lifetime The duration for which the nonce is valid.
+ * @property dateTimeFormatter The formatter for DateTime objects.
+ * @property random The random number generator.
+ */
 open class NonceComponent(
     protected val prepareArgsService: PrepareHexService,
     protected val prepareMsgComponent: PrepareLoginMsgComponent,
     protected val nonceDBComponent: NonceDBComponent,
     protected val lifetime: Duration,
 ) : Logging {
+    /**
+     * Represents a date-time formatter used to format and parse date-time objects.
+     * It is used to format the date-time in the [getNewNonce] function.
+     *
+     * @property dateTimeFormatter The instance of [DateTimeFormatter] with the specified pattern "uuuu-MM-dd HH:mm:ss".
+     */
     protected open val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
+
+    /**
+     * Represents a random number generator.
+     *
+     * @property random The random number generator implementation.
+     */
     protected open val random: Random = SecureRandom()
 
+    /**
+     * Retrieves a new nonce associated with the specified wallet.
+     *
+     * @param wallet The wallet for which to retrieve the nonce.
+     * @return A [Mono] emitting the new [ClientNonce].
+     */
     open fun getNewNonce(wallet: String?): Mono<ClientNonce> {
         return mono {
             logger.info("Get new nonce for wallet - $wallet")
@@ -58,6 +86,13 @@ open class NonceComponent(
             .flatMap { nonceDBComponent.saveNew(it.wallet, it).thenReturn(it) }
     }
 
+    /**
+     * Retrieves the saved nonce associated with the specified wallet.
+     *
+     * @param wallet The wallet for which to retrieve the nonce.
+     * @return A [Mono] emitting the [ClientNonce].
+     * @throws NoNonceException if no nonce is found for the specified wallet.
+     */
     open fun getSavedNonce(wallet: String): Mono<ClientNonce> {
         return (
             nonceDBComponent.get(wallet)
@@ -66,6 +101,11 @@ open class NonceComponent(
             as Mono<ClientNonce>
     }
 
+    /**
+     * Generates a new nonce as a [BigInteger].
+     *
+     * @return The generated nonce.
+     */
     open fun nonce(): BigInteger {
         val id = UUID.randomUUID()
         return BigInteger(

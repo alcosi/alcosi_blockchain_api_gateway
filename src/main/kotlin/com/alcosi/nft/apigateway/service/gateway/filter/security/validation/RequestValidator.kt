@@ -19,12 +19,30 @@ package com.alcosi.nft.apigateway.service.gateway.filter.security.validation
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
+/**
+ * The RequestValidator interface defines the contract for validating requests.
+ */
 interface RequestValidator {
+    /**
+     * Represents the type of validation to be performed.
+     */
     val type: String
 
+    /**
+     * The Attributes object contains constant values representing different attributes used in the codebase.
+     */
     object Attributes {
+        /**
+         * Represents the validation status after performing validation checks.
+         */
         val VALIDATION_IS_PASSED = "ValidationIsPassed"
     }
 
+    /**
+     * Validates a ServerWebExchange object and returns a Mono object containing a ValidationResult.
+     *
+     * @param exchange The ServerWebExchange object representing the incoming HTTP request.
+     * @return A Mono object containing a ValidationResult.
+     */
     fun validate(exchange: ServerWebExchange): Mono<ValidationResult>
 }

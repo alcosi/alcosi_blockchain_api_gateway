@@ -13,103 +13,117 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alcosi.nft.apigateway.config.path
 
-package com.alcosi.nft.apigateway.config.path;
+import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent.PredicateType
+import com.alcosi.nft.apigateway.config.path.dto.PathAuthority
+import com.alcosi.nft.apigateway.service.predicate.PredicateMatcherType
+import org.springframework.boot.context.properties.ConfigurationProperties
 
-import com.alcosi.nft.apigateway.config.path.dto.PathAuthority;
-import com.alcosi.nft.apigateway.service.predicate.PredicateMatcherType;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.util.Map;
-
+/**
+ * The SecurityRoutesProperties class represents a configuration properties for security routes in the application.
+ *
+ * @constructor Creates an instance of SecurityRoutesProperties class.
+ */
 @ConfigurationProperties("filter.config.path")
-public class SecurityRoutesProperties {
-    private SecurityRouteConfig security = new SecurityRouteConfig();
-    private SecurityRouteConfig validation = new SecurityRouteConfig();
+open class SecurityRoutesProperties {
+    /**
+     * The SecurityRoutesProperties class represents a configuration properties for security routes in the application.
+     */
+    var security: SecurityRouteConfig = SecurityRouteConfig()
 
-    public SecurityRouteConfig getSecurity() {
-        return security;
+    /**
+     * The `validation` variable represents the configuration for validating security routes in the application.
+     * It is an instance of the `SecurityRouteConfig` class defined in the `SecurityRoutesProperties` class.
+     *
+     * @see SecurityRoutesProperties
+     * @see SecurityRouteConfig
+     */
+    var validation: SecurityRouteConfig = SecurityRouteConfig()
+
+    /**
+     * The Type class represents a type with method, match, and predicate properties.
+     */
+    open class Type {
+        /**
+         * The method variable represents the selected method in the PathConfigurationComponent class.
+         *
+         * @property method The selected method.
+         * @see PathConfigurationComponent
+         */
+        var method: PathConfigurationComponent.Method = PathConfigurationComponent.Method.ETH_JWT
+
+        /**
+         * The `match` variable is of type `PredicateMatcherType`. It represents the type of predicate matcher used in the `PathConfigurationComponent` class.
+         *
+         * Available options for `PredicateMatcherType`:
+         *  - MATCH_IF_NOT_CONTAINS_IN_LIST: Matches if the value does not contain in the list.
+         *  - MATCH_IF_CONTAINS_IN_LIST: Matches if the value contains in the list.
+         *
+         * The default value of `match` is `MATCH_IF_CONTAINS_IN_LIST`.
+         *
+         * Example usage:
+         *
+         * ```kotlin
+         * var match: PredicateMatcherType = PredicateMatcherType.MATCH_IF_CONTAINS_IN_LIST
+         * ```
+         */
+        var match: PredicateMatcherType = PredicateMatcherType.MATCH_IF_CONTAINS_IN_LIST
+
+        /**
+         * The type of predicate used in the PathConfigurationComponent class.
+         *
+         * The PredicateType enum defines the possible types of predicates that can be used to match routes
+         * in the PathConfigurationComponent class.
+         */
+        var predicate: PredicateType = PredicateType.MVC
     }
 
-    public void setSecurity(SecurityRouteConfig security) {
-        this.security = security;
-    }
+    /**
+     * The SecurityRouteConfig class represents the configuration for security routes.
+     */
+    open class SecurityRouteConfig {
+        /**
+         * The `path` variable represents a mutable map of string keys to string (json) values.
+         *
+         * @property path The path represented as a mutable map of string keys to string values.
+         *
+         * Note: The variable is declared in the containing class `SecurityRouteConfig`.
+         *
+         * @see SecurityRouteConfig
+         */
+        var path: MutableMap<String, String> = mutableMapOf()
 
-    public SecurityRouteConfig getValidation() {
-        return validation;
-    }
+        /**
+         * The `type` variable represents an instance of the `Type` class.
+         *
+         * @property method The selected method in the `PathConfigurationComponent` class.
+         * @property match The type of predicate matcher used in the `PathConfigurationComponent` class.
+         * @property predicate The type of predicate used in the `PathConfigurationComponent` class.
+         *
+         * Note: The variable is declared in the `SecurityRouteConfig` class.
+         *
+         * @see Type
+         * @see PathConfigurationComponent
+         */
+        var type: Type = Type()
 
-    public void setValidation(SecurityRouteConfig validation) {
-        this.validation = validation;
-    }
+        /**
+         * The baseAuthorities variable represents the base authorities for security routes.
+         *
+         * @property baseAuthorities The base authorities as a JSON string in the format: [{"list":["ALL"],"checkMode":"ALL"}]
+         *
+         * @see PathAuthority
+         */
+        var baseAuthorities: String = "[{\"list\":[\"ALL\"],\"checkMode\":\"ALL\"}]"
 
-    public static class Type {
-        private PathConfigurationComponent.Method method = PathConfigurationComponent.Method.ETH_JWT;
-        private PredicateMatcherType match = PredicateMatcherType.MATCH_IF_CONTAINS_IN_LIST;
-        private PathConfigurationComponent.PredicateType predicate = PathConfigurationComponent.PredicateType.MVC;
-
-        public PredicateMatcherType getMatch() {
-            return match;
-        }
-
-        public void setMatch(PredicateMatcherType match) {
-            this.match = match;
-        }
-
-        public PathConfigurationComponent.PredicateType getPredicate() {
-            return predicate;
-        }
-
-        public void setPredicate(PathConfigurationComponent.PredicateType predicate) {
-            this.predicate = predicate;
-        }
-
-        public PathConfigurationComponent.Method getMethod() {
-            return method;
-        }
-
-        public void setMethod(PathConfigurationComponent.Method method) {
-            this.method = method;
-        }
-
-    }
-
-    public class SecurityRouteConfig {
-        private Map<String,String> path=Map.of();
-
-        public Map<String, String> getPath() {
-            return path;
-        }
-
-        public void setPath(Map<String, String> path) {
-            this.path = path;
-        }
-
-        private SecurityRoutesProperties.Type type = new SecurityRoutesProperties.Type();
-        private String baseAuthorities = "[{\"list\":[\"ALL\"],\"checkMode\":\"ALL\"}]";
-        private PathAuthority.AuthoritiesCheck baseAuthoritiesCheckType = PathAuthority.AuthoritiesCheck.ANY;
-        public SecurityRoutesProperties.Type getType() {
-            return type;
-        }
-
-        public void setType(SecurityRoutesProperties.Type type) {
-            this.type = type;
-        }
-
-        public String getBaseAuthorities() {
-            return baseAuthorities;
-        }//PathAuthority
-
-        public void setBaseAuthorities(String baseAuthorities) {
-            this.baseAuthorities = baseAuthorities;
-        }
-
-        public PathAuthority.AuthoritiesCheck getBaseAuthoritiesCheckType() {
-            return baseAuthoritiesCheckType;
-        }
-
-        public void setBaseAuthoritiesCheckType(PathAuthority.AuthoritiesCheck baseAuthoritiesCheckType) {
-            this.baseAuthoritiesCheckType = baseAuthoritiesCheckType;
-        }
+        /**
+         * The `baseAuthoritiesCheckType` variable represents the check mode for the base authorities in security routes.
+         *
+         * @property baseAuthoritiesCheckType The check mode for the base authorities.
+         *
+         * @see PathAuthority.AuthoritiesCheck
+         */
+        var baseAuthoritiesCheckType: PathAuthority.AuthoritiesCheck = PathAuthority.AuthoritiesCheck.ANY
     }
 }

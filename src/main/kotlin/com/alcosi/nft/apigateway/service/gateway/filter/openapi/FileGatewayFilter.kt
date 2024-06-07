@@ -26,27 +26,55 @@ import reactor.core.publisher.Mono
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
+/**
+ * Abstract class for filtering requests based on file paths in the URL.
+ *
+ * @property filePath The base path of the file.
+ * @property writer The response writer for sending the HTTP response.
+ * @property urlPath The URL path to match against.
+ */
 abstract class FileGatewayFilter(
     val filePath: String,
     val writer: GatewayFilterResponseWriter,
     urlPath: String,
-) : ControllerGatewayFilter,
-    Logging {
-    protected val error404 =
-        """
-        {"errorCode":4040,"message":"no such file"}
-        """.trimIndent().toByteArray()
+) : ControllerGatewayFilter, Logging {
+    /**
+     * Represents the error response in case of a file not found (404).
+     */
+    protected val error404 = """
+{"errorCode":4040,"message":"no such file"}
+""".toByteArray()
+
+    /** Regular expression pattern used for matching URL paths. */
     protected val regex: Pattern = "($urlPath)(.*)".replace("/", "\\/").toPattern()
 
+    /**
+     * Returns a Matcher object for the provided URI using the regular expression pattern.
+     *
+     * @param uri The URI string to match against the regular expression pattern.
+     * @return The Matcher object for the given URI.
+     */
     fun getMatcher(uri: String): Matcher {
         return regex.matcher(uri)
     }
 
+    /**
+     * Checks if the request matches the provided URI using the regular expression pattern.
+     *
+     * @param request The ServerHttpRequest to match against the URI.
+     * @return true if the request matches the URI, false otherwise.
+     */
     override fun matches(request: ServerHttpRequest): Boolean {
         return getMatcher(request.path.toString()).matches()
     }
 
-    fun write404(response: ServerHttpResponse): Mono<Void> {
+    /**
+     * Writes a 404 response to the server.
+     *
+     * @param response The ServerHttpResponse object to write the response to.
+     * @return A Mono that completes when the response has been written.
+     */
+    open fun write404(response: ServerHttpResponse): Mono<Void> {
         response.setRawStatusCode(404)
         response.headers.contentType = MediaType.APPLICATION_JSON
         return writer.writeByteArray(response, error404)

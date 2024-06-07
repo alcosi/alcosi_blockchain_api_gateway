@@ -18,4 +18,11 @@ package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.hua
 
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.AbstractRequestValidator
 
+/**
+ * The HuaweiSafetyDetectCheckValidator class is responsible for validating requests using Huawei Safety Detect service.
+ *
+ * @param safetyDetectComponent The HuaweiSafetyDetectRequestValidationComponent used for request validation.
+ * @param tokenHeader The header name for the token.
+ * @param ipHeader The header name for the IP address.
+ */
 open class HuaweiSafetyDetectCheckValidator(safetyDetectComponent: HuaweiSafetyDetectRequestValidationComponent, tokenHeader: String, ipHeader: String) : AbstractRequestValidator(safetyDetectComponent, "HuaweiSafetyDetect", tokenHeader, ipHeader)

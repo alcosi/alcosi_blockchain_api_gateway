@@ -28,6 +28,16 @@ import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import java.util.*
 
+/**
+ * The LoginPutGatewayFilter class handles the authentication and login process for PUT requests.
+ *
+ * @property basePath The base path for the API.
+ * @property writer The GatewayFilterResponseWriter instance used for handling response writing.
+ * @property prepareHexService The PrepareHexService instance used for preparing wallet addresses.
+ * @property refreshTokenService The RefreshTokenService instance used for refreshing JSON Web Tokens (JWTs).
+ * @property uriRegex The regular expression for matching the URI.
+ * @property loginProcessors The list of LoginRequestProcess instances for processing login requests.
+ */
 open class LoginPutGatewayFilter(
     basePath: String,
     writer: GatewayFilterResponseWriter,
@@ -36,6 +46,14 @@ open class LoginPutGatewayFilter(
     uriRegex: String,
     loginProcessors: List<LoginRequestProcess>,
 ) : LoginAbstractGatewayFilter(basePath, writer, listOf(HttpMethod.PUT), uriRegex, loginProcessors.filter { it.rqTypes().contains(LoginRequestProcess.RequestType.PUT) }, prepareHexService) {
+    /**
+     * Internal method for retrieving a new JWT and refresh token for the given wallet.
+     *
+     * @param wallet The wallet name.
+     * @param exchange The ServerWebExchange instance.
+     * @param chain The GatewayFilterChain instance.
+     * @return A Mono emitting the new JWT and refresh token.
+     */
     override fun internal(
         wallet: String,
         exchange: ServerWebExchange,

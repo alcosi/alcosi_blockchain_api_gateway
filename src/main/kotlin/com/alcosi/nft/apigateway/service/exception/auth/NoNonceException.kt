@@ -18,10 +18,15 @@ package com.alcosi.nft.apigateway.service.exception.auth
 
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiSecurityException
 
-class NoNonceException(wallet: String) : ApiSecurityException(
+/**
+ * NoNonceException is an exception class that is thrown when there is no cached nonce for a specific wallet.
+ *
+ * @param wallet The wallet for which no nonce is found.
+ * @constructor Creates a NoNonceException instance with the specified wallet.
+ */
+open class NoNonceException(wallet: String) : ApiSecurityException(
     """
 No cached nonce for  $wallet
-    """
-        .trimIndent(),
+    """,
     401101,
 )

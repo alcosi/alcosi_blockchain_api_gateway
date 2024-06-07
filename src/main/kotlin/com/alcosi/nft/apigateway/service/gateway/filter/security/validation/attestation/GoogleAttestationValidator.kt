@@ -18,4 +18,11 @@ package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.att
 
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.AbstractRequestValidator
 
+/**
+ * This class is responsible for validating Google Attestation requests using the specified GoogleAttestationRequestValidationComponent.
+ *
+ * @param googleComponent The GoogleAttestationRequestValidationComponent used for validation.
+ * @param tokenHeader The header name for the token.
+ * @param ipHeader The header name for the IP address.
+ */
 open class GoogleAttestationValidator(googleComponent: GoogleAttestationRequestValidationComponent, tokenHeader: String, ipHeader: String) : AbstractRequestValidator(googleComponent, "GoogleAttestation", tokenHeader, ipHeader)

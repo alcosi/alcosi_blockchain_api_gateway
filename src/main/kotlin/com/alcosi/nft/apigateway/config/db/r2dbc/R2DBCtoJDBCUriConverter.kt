@@ -16,7 +16,16 @@
 
 package com.alcosi.nft.apigateway.config.db.r2dbc
 
+/**
+ * The R2DBCtoJDBCUriConverter class is responsible for converting R2DBC URIs to JDBC URIs.
+ */
 open class R2DBCtoJDBCUriConverter {
+    /**
+     * Converts the given R2DBC URI to a JDBC URI.
+     *
+     * @param value The R2DBC URI to be converted.
+     * @return The converted JDBC URI, or null if the input URI is null.
+     */
     open fun uri(value: String?): String? {
         val pool = value?.replace(":pool", "")
         val jdbc = pool?.replace("r2dbc", "jdbc")

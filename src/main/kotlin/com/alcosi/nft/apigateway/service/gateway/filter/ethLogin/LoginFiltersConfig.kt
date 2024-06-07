@@ -16,7 +16,6 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.ethLogin
 
-import com.alcosi.lib.objectMapper.MappingHelper
 import com.alcosi.lib.utils.PrepareHexService
 import com.alcosi.nft.apigateway.auth.service.CheckAuthSignatureService
 import com.alcosi.nft.apigateway.auth.service.LoginRequestProcess
@@ -26,6 +25,7 @@ import com.alcosi.nft.apigateway.service.gateway.GatewayBasePathProperties
 import com.alcosi.nft.apigateway.service.gateway.filter.GatewayFilterResponseWriter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
 import com.alcosi.nft.apigateway.service.multiWallet.BoundWalletsService
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -33,9 +33,29 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
+/**
+ * LoginFiltersConfig is a configuration class that defines various filters
+ * for the login process. It is annotated with @Configuration to indicate
+ * that it is a configuration class. It is conditionally enabled based on
+ * the property "filter.config.path.security.type.method" with a default
+ * value of "ETH_JWT".
+ */
 @Configuration
 @ConditionalOnProperty(prefix = "filter.config.path.security.type", name = ["method"], havingValue = "ETH_JWT", matchIfMissing = true)
 class LoginFiltersConfig {
+    /**
+     * Retrieves a filter for handling GET requests and retrieving authorities
+     * from a client.
+     *
+     * @param gatewayBasePathProperties The GatewayBasePathProperties object
+     *     containing the gateway base path.
+     * @param writer The GatewayFilterResponseWriter used to write the
+     *     response.
+     * @param prepareHexService The PrepareHexService used to prepare the
+     *     wallet address.
+     * @param properties EthLoginProperties.
+     * @return An instance of AuthoritiesGetGatewayFilter.
+     */
     @Bean
     @ConditionalOnMissingBean(AuthoritiesGetGatewayFilter::class)
     fun getAuthoritiesFilter(
@@ -48,6 +68,22 @@ class LoginFiltersConfig {
         return filter
     }
 
+    /**
+     * Retrieves a filter for handling GET requests and retrieving authorities
+     * from a client.
+     *
+     * @param gatewayBasePathProperties The GatewayBasePathProperties object
+     *     containing the gateway base path.
+     * @param writer The GatewayFilterResponseWriter used to write the
+     *     response.
+     * @param prepareHexService The PrepareHexService used to prepare the
+     *     wallet address.
+     * @param nonceComponent The NonceComponent used to get a new nonce.
+     * @param uriRegexString The regular expression to match against the
+     *     request URI.
+     * @param loginProcessors The list of LoginRequestProcess objects.
+     * @return An instance of LoginGetGatewayFilter.
+     */
     @Bean
     @ConditionalOnMissingBean(LoginGetGatewayFilter::class)
     fun getLoginFilter(
@@ -70,6 +106,25 @@ class LoginFiltersConfig {
         return filter
     }
 
+    /**
+     * Returns an instance of LoginPostGatewayFilter.
+     *
+     * @param gatewayBasePathProperties The GatewayBasePathProperties object
+     *     containing the gateway base path.
+     * @param writer The GatewayFilterResponseWriter used to write the
+     *     response.
+     * @param prepareHexService The PrepareHexService used to prepare the
+     *     wallet address.
+     * @param nonceComponent The NonceComponent used to get a new nonce.
+     * @param refreshTokenService The RefreshTokenService used to save token
+     *     information.
+     * @param checkAuthSignatureService The CheckAuthSignatureService used to
+     *     check the signature.
+     * @param uriRegexString The regular expression to match against the
+     *     request URI.
+     * @param loginProcessors The list of LoginRequestProcess objects.
+     * @return An instance of LoginPostGatewayFilter.
+     */
     @Bean
     @ConditionalOnMissingBean(LoginPostGatewayFilter::class)
     fun postLoginFilter(
@@ -86,6 +141,21 @@ class LoginFiltersConfig {
         return filter
     }
 
+    /**
+     * Creates and returns an instance of `LoginPutGatewayFilter`.
+     *
+     * @param basePath The base path for the gateway.
+     * @param writer The GatewayFilterResponseWriter used to write the
+     *     response.
+     * @param prepareHexService The PrepareHexService used to prepare the
+     *     wallet address.
+     * @param refreshTokenService The RefreshTokenService used to save token
+     *     information.
+     * @param uriRegexString The regular expression to match against the
+     *     request URI.
+     * @param loginProcessors The list of LoginRequestProcess objects.
+     * @return An instance of LoginPutGatewayFilter.
+     */
     @Bean
     @ConditionalOnMissingBean(LoginPutGatewayFilter::class)
     fun putLoginFilter(
@@ -100,6 +170,27 @@ class LoginFiltersConfig {
         return filter
     }
 
+    /**
+     * Creates and returns an instance of `AuthBoundWalletsPutGatewayFilter`.
+     *
+     * @param gatewayBasePathProperties The GatewayBasePathProperties object
+     *     containing the gateway base path.
+     * @param writer The GatewayFilterResponseWriter used to write the
+     *     response.
+     * @param prepareHexService The PrepareHexService used to prepare the
+     *     wallet address.
+     * @param uriRegexString The regular expression to match against the
+     *     request URI.
+     * @param boundWalletsService The BoundWalletsService used to handle bound
+     *     wallet operations.
+     * @param mappingHelper The MappingHelper used for mapping objects.
+     * @param nonceComponent The NonceComponent used to get a new nonce.
+     * @param checkSignatureService The CheckAuthSignatureService used to check
+     *     the signature.
+     * @param refreshTokenService The RefreshTokenService used to save token
+     *     information.
+     * @return An instance of AuthBoundWalletsPutGatewayFilter.
+     */
     @Bean
     @ConditionalOnMissingBean(AuthBoundWalletsPutGatewayFilter::class)
     @ConditionalOnBean(BoundWalletsService::class)
@@ -109,7 +200,7 @@ class LoginFiltersConfig {
         prepareHexService: PrepareHexService,
         @Value("\${gateway.auth.get.path.regex:(?<uri>\${gateway.base.path:/api}\${gateway.bound.put.path.uri:/v1/auth/bound/})(?<profileid>[0-9]{0,40})(/)(?<hexprefix>0x){0,1}(?<walletsecond>[0-9a-fA-F]{40}\$)}") uriRegexString: String,
         boundWalletsService: BoundWalletsService,
-        mappingHelper: MappingHelper,
+        mappingHelper: ObjectMapper,
         nonceComponent: NonceComponent,
         checkSignatureService: CheckAuthSignatureService,
         refreshTokenService: RefreshTokenService,

@@ -17,7 +17,6 @@
 package com.alcosi.nft.apigateway.service.gateway.filter
 
 import com.alcosi.lib.filters.servlet.HeaderHelper
-import com.alcosi.lib.objectMapper.MappingHelper
 import com.alcosi.lib.secured.encrypt.SensitiveComponent
 import com.alcosi.lib.secured.encrypt.key.KeyProvider
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
@@ -34,9 +33,20 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 
+/**
+ * Configuration class for defining various gateway filters.
+ */
 @AutoConfiguration
 @AutoConfigureBefore(SpringCloudGatewayLoggingAutoConfig::class)
 class GatewayFiltersConfig {
+    /**
+     * Retrieves the SpringCloudGatewayLoggingFilter instance.
+     *
+     * @param springCloudGatewayLoggingUtils The SpringCloudGatewayLoggingUtils instance used for logging.
+     * @param encryptFilters The list of EncryptGatewayFilter instances.
+     * @param decryptFilters The list of DecryptGatewayFilter instances.
+     * @return The initialized SpringCloudGatewayLoggingFilter instance.
+     */
     @Bean
     fun getSpringCloudGatewayLoggingFilter(
         springCloudGatewayLoggingUtils: SpringCloudGatewayLoggingUtils,
@@ -48,11 +58,23 @@ class GatewayFiltersConfig {
         return SpringCloudGatewayLoggingFilter(true, springCloudGatewayLoggingUtils, orderVal, HeaderHelper.RQ_ID)
     }
 
+    /**
+     * Retrieves an instance of the GatewayFilterResponseWriter.
+     *
+     * @param mappingHelper The ObjectMapper instance used for serialization and deserialization of JSON.
+     * @return An instance of the GatewayFilterResponseWriter.
+     */
     @Bean
-    fun getGatewayFilterResponseWriter(mappingHelper: MappingHelper): GatewayFilterResponseWriter {
+    fun getGatewayFilterResponseWriter(mappingHelper: ObjectMapper): GatewayFilterResponseWriter {
         return GatewayFilterResponseWriter(mappingHelper)
     }
 
+    /**
+     * Retrieves an instance of the StripBaseUriFilter.
+     *
+     * @param basePath The base path used for filtering.
+     * @return An instance of the StripBaseUriFilter.
+     */
     @Bean
     fun getStripBaseUriFilter(
         @Value("\${gateway.base.path:/api}") basePath: String,
@@ -60,15 +82,30 @@ class GatewayFiltersConfig {
         return StripBaseUriFilter(basePath)
     }
 
+    /**
+     * Retrieves an instance of the MultipartToJsonGatewayFilter.
+     *
+     * @param writer The GatewayFilterResponseWriter instance used for writing the response.
+     * @param objectMapper The ObjectMapper instance used for serialization and deserialization of JSON.
+     * @return An instance of the MultipartToJsonGatewayFilter.
+     */
     @Bean
     @ConditionalOnMissingBean(MultipartToJsonGatewayFilter::class)
     fun getMultipartToJsonGatewayFilter(
         writer: GatewayFilterResponseWriter,
-        mappingHelper: MappingHelper,
+        objectMapper: ObjectMapper,
     ): MultipartToJsonGatewayFilter {
-        return MultipartToJsonGatewayFilter()
+        return MultipartToJsonGatewayFilter(objectMapper = objectMapper)
     }
 
+    /**
+     * Retrieves an instance of the EncryptGatewayFilter.
+     *
+     * @param commonUtils The CommonLoggingUtils instance used for common logging operations.
+     * @param keyProvider The KeyProvider instance used for retrieving encryption keys.
+     * @param objectMapper The ObjectMapper instance used for serialization and deserialization of JSON.
+     * @return An instance of the EncryptGatewayFilter.
+     */
     @Bean
     @ConditionalOnMissingBean(EncryptGatewayFilter::class)
     fun getEncryptGatewayFilter(
@@ -79,6 +116,14 @@ class GatewayFiltersConfig {
         return EncryptGatewayFilter(commonUtils, keyProvider, objectMapper, PathConfigurationComponent.ATTRIBUTE_PROXY_CONFIG_FIELD)
     }
 
+    /**
+     * Retrieves an instance of the DecryptGatewayFilter.
+     *
+     * @param commonUtils The CommonLoggingUtils instance used for common logging operations.
+     * @param sensitiveComponent The SensitiveComponent used for decryption.
+     * @param keyProvider The KeyProvider used for obtaining the decryption key.
+     * @return An instance of the DecryptGatewayFilter.
+     */
     @Bean
     @ConditionalOnMissingBean(DecryptGatewayFilter::class)
     fun getDecryptGatewayFilter(
@@ -89,6 +134,14 @@ class GatewayFiltersConfig {
         return DecryptGatewayFilter(commonUtils, sensitiveComponent, keyProvider)
     }
 
+    /**
+     * Retrieves an instance of the `ValidationGatewayFilter`.
+     *
+     * @param validationService The `FilterValidationService` used for request validation.
+     * @param pathConfig The `PathConfigurationComponent` used for path configuration.
+     * @param basePath The base path used for filtering.
+     * @return An instance of the `ValidationGatewayFilter`.
+     */
     @Bean
     @ConditionalOnMissingBean(ValidationGatewayFilter::class)
     fun getValidationGatewayFilter(
@@ -99,6 +152,13 @@ class GatewayFiltersConfig {
         return ValidationGatewayFilter(validationService, pathConfig.validationConfig.toPredicate())
     }
 
+    /**
+     * Retrieves the ContextHeadersGatewayFilter instance.
+     *
+     * @param serviceName The name of the microservice.
+     * @param environment The environment of the microservice.
+     * @return The initialized ContextHeadersGatewayFilter instance.
+     */
     @Bean
     @ConditionalOnMissingBean(ContextHeadersGatewayFilter::class)
     fun getContextHeadersGatewayFilter(

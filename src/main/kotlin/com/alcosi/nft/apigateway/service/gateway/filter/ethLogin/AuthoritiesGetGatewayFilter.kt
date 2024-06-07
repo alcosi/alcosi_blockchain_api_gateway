@@ -27,6 +27,15 @@ import org.springframework.http.HttpMethod
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
+/**
+ * AuthoritiesGetGatewayFilter is a class that extends LoginAbstractGatewayFilter.
+ * It is responsible for filtering GET requests and retrieving authorities from a client.
+ *
+ * @param basePath The base path for the filter.
+ * @param writer The GatewayFilterResponseWriter used to write the response.
+ * @param uriRegexString The regular expression to match against the request URI.
+ * @param prepareHexService The PrepareHexService used to prepare the wallet address.
+ */
 open class AuthoritiesGetGatewayFilter(
     basePath: String,
     writer: GatewayFilterResponseWriter,
@@ -46,6 +55,15 @@ open class AuthoritiesGetGatewayFilter(
         return writer.writeJson(exchange.response, authorities)
     }
 
+    /**
+     * This method is responsible for performing internal logic for the AuthoritiesGetGatewayFilter class.
+     *
+     * @param wallet The wallet associated with the client.
+     * @param exchange The ServerWebExchange object representing the current exchange.
+     * @param chain The GatewayFilterChain object representing the chain of filters.
+     *
+     * @return A Mono representing the asynchronous result of the method.
+     */
     override fun internal(
         wallet: String,
         exchange: ServerWebExchange,

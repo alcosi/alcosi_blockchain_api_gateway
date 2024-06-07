@@ -24,6 +24,17 @@ import com.fasterxml.jackson.module.kotlin.jsonMapper
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
+/**
+ * EthJwtGatewayFilter is a subclass of JwtGatewayFilter that is specifically designed for handling
+ * JSON Web Tokens (JWT) in an Ethereum context.
+ *
+ * @property securityGatewayFilter The SecurityGatewayFilter instance to be used for security checks.
+ * @property checkJWTService The CheckJWTService instance to be used for JWT parsing and verification.
+ * @property order The order of the filter in the chain (default is JWT_LOG_ORDER).
+ * @property clientWalletHeader The name of the header used to pass the current wallet information (default is X-Client-Wallet).
+ * @property clientWalletsHeader The name of the header used to pass the profile wallets information (default is X-Client-Wallets).
+ * @property clientIdHeader The name of the header used to pass the profile ID information (default is X-Client-Id).
+ */
 open class EthJwtGatewayFilter(
     securityGatewayFilter: SecurityGatewayFilter,
     val checkJWTService: CheckJWTService,
@@ -32,6 +43,14 @@ open class EthJwtGatewayFilter(
     val clientWalletsHeader: String = CLIENT_WALLETS_HEADER,
     val clientIdHeader: String = CLIENT_ID_HEADER,
 ) : JwtGatewayFilter(securityGatewayFilter, listOf(clientIdHeader, clientWalletHeader, clientWalletsHeader), order) {
+    /**
+     * Mutates the given ServerWebExchange by adding client information from the provided JWT.
+     *
+     * @param jwt The JSON Web Token (JWT) string.
+     * @param exchange The ServerWebExchange object to be mutated.
+     * @param clientAttribute The attribute key to store the EthClient object in the exchange attributes.
+     * @return A Mono containing the mutated ServerWebExchange.
+     */
     override fun mutateExchange(
         jwt: String,
         exchange: ServerWebExchange,
@@ -52,6 +71,14 @@ open class EthJwtGatewayFilter(
         return Mono.just(exchange.mutate().request(withWallet).build())
     }
 
+    /**
+     * This companion object contains constant values that represent the headers used for clients in HTTP requests.
+     *
+     * The headers are:
+     * 1. CLIENT_WALLET_HEADER: Represents the header name for a single client wallet.
+     * 2. CLIENT_WALLETS_HEADER: Represents the header name for multiple client wallets.
+     * 3. CLIENT_ID_HEADER: Represents the header name for the client ID.
+     */
     companion object {
         val CLIENT_WALLET_HEADER: String = "X-Client-Wallet"
         val CLIENT_WALLETS_HEADER: String = "X-Client-Wallets"

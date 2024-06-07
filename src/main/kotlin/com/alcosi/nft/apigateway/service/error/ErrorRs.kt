@@ -16,5 +16,11 @@
 
 package com.alcosi.nft.apigateway.service.error
 
-@JvmRecord
+/**
+ * Represents an error response object.
+ *
+ * @param errorCode The error code.
+ * @param message The error message.
+ * @param errorClass The class name of the error.
+ */
 data class ErrorRs(val errorCode: Long, val message: String?, val errorClass: String)

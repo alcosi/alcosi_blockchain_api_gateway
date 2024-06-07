@@ -18,7 +18,15 @@ package com.alcosi.nft.apigateway.auth.dto
 
 import com.alcosi.lib.security.OneAuthorityPrincipal
 
-class EthClient(
+/**
+ * Represents an Ethereum client with the current wallet, profile wallets, and profile ID information.
+ * Extends the OneAuthorityPrincipal class.
+ *
+ * @param currentWallet The current wallet associated with the client.
+ * @param profileWallets The list of profile wallets associated with the client.
+ * @param profileId The profile ID associated with the client.
+ */
+open class EthClient(
     val currentWallet: String,
     val profileWallets: List<String>,
     val profileId: String,

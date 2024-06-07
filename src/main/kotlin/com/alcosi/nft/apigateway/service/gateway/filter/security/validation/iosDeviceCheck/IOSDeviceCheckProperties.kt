@@ -13,147 +13,121 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.iosDeviceCheck
 
-package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.iosDeviceCheck;
+import org.springframework.boot.context.properties.ConfigurationProperties
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
+/**
+ * The `IOSDeviceCheckProperties` class represents the configuration properties for iOS device check validation.
+ *
+ * @property disabled Whether iOS device check validation is disabled.
+ * @property alwaysPassed Whether iOS device check validation should always pass.
+ * @property superTokenEnabled Whether the super user token is enabled for iOS device check validation.
+ * @property superUserToken The super user token used for iOS device check validation.
+ * @property uri The URI for iOS device check validation.
+ * @property ttl The time-to-live for iOS device check validation in milliseconds.
+ * @property type The type of iOS device check validation.
+ * @property jwt The JSON Web Token (JWT) configuration for iOS device check validation.
+ */
 @ConfigurationProperties("validation.ios.device-check")
-public class IOSDeviceCheckProperties {
-    private Boolean disabled = false;
-    private Boolean alwaysPassed = false;
-    private Boolean superTokenEnabled = false;
-    private String superUserToken ="";
-
-    private String uri="https://api.devicecheck.apple.com/v1/validate_device_token";
-    private Long ttl = 1000L ;
-    private TYPE type = TYPE.ONLINE;
-    private Jwt jwt = new Jwt();
-
-
-    public static enum TYPE{
-        ONLINE;
-    }
-    public static class Jwt {
-        private String audenceUri = "https://appleid.apple.com";
-        private Long ttl = 600L;
-        private String keyId = "test";
-        private String issuer = "test";
-        private String subject = "test";
-        private String privateKey = "MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCDXFe7tTuoZ7UEKqy8XHIXfNeleS42C7FPQS8ywrWR3TA==";
-
-        public String getAudenceUri() {
-            return audenceUri;
-        }
-
-        public void setAudenceUri(String audenceUri) {
-            this.audenceUri = audenceUri;
-        }
-
-        public Long getTtl() {
-            return ttl;
-        }
-
-        public void setTtl(Long ttl) {
-            this.ttl = ttl;
-        }
-
-        public String getKeyId() {
-            return keyId;
-        }
-
-        public void setKeyId(String keyId) {
-            this.keyId = keyId;
-        }
-
-        public String getIssuer() {
-            return issuer;
-        }
-
-        public void setIssuer(String issuer) {
-            this.issuer = issuer;
-        }
-
-        public String getSubject() {
-            return subject;
-        }
-
-        public void setSubject(String subject) {
-            this.subject = subject;
-        }
-
-        public String getPrivateKey() {
-            return privateKey;
-        }
-
-        public void setPrivateKey(String privateKey) {
-            this.privateKey = privateKey;
-        }
+open class IOSDeviceCheckProperties {
+    /**
+     * The `disabled` variable represents whether iOS device check validation is disabled.
+     */
+    var disabled: Boolean = false
+    /**
+     * The `alwaysPassed` variable represents a boolean value indicating whether a condition is always passed.
+     *
+     * @property alwaysPassed The boolean value indicating whether the condition is always passed.
+     */
+    var alwaysPassed: Boolean = false
+    /**
+     * `superTokenEnabled` is a Boolean variable that indicates whether the super token feature is enabled or not.
+     *
+     * The default value is `false`.
+     */
+    var superTokenEnabled: Boolean = false
+    /**
+     * The `superUserToken` variable is a string that represents the token for a superuser.
+     */
+    var superUserToken: String = ""
+    /**
+     * The `uri` variable represents the uniform resource identifier (URI) for the Apple DeviceCheck API endpoint.
+     */
+    var uri: String = "https://api.devicecheck.apple.com/v1/validate_device_token"
+    /**
+     * The `ttl` variable represents the time-to-live for the JWT (JSON Web Token) in seconds.
+     *
+     * @property ttl The time-to-live value in seconds.
+     */
+    var ttl: Long = 1000L
+    /**
+     * Represents a variable of type `TYPE` that holds the current state of an object.
+     *
+     * Possible values for `TYPE`:
+     * - `ONLINE`
+     *
+     *
+     * @property type The current state of an object.
+     */
+    var type: TYPE = TYPE.ONLINE
+    /**
+     * Represents a JSON Web Token (JWT) used for authentication and authorization in iOS device check requests.
+     *
+     * @property audenceUri The URI of the intended recipients of the JWT.
+     * @property ttl The time-to-live for the JWT in seconds.
+     * @property keyId The key ID used in the header of the JWT.
+     * @property issuer The principal that issued the JWT.
+     * @property subject The principal that the JWT is about.
+     * @property privateKey The private key used for signing the JWT.
+     */
+    var jwt: Jwt = Jwt()
+    /**
+     * Enumeration defining the different types of devices.
+     */
+    enum class TYPE {
+        ONLINE
     }
 
-    public Jwt getJwt() {
-        return jwt;
-    }
-
-    public void setJwt(Jwt jwt) {
-        this.jwt = jwt;
-    }
-
-    ///
-    public TYPE getType() {
-        return type;
-    }
-
-    public void setType(TYPE type) {
-        this.type = type;
-    }
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
-    public Boolean getDisabled() {
-        return disabled;
-    }
-
-    public void setDisabled(Boolean disabled) {
-        this.disabled = disabled;
-    }
-
-    public Boolean getAlwaysPassed() {
-        return alwaysPassed;
-    }
-
-    public void setAlwaysPassed(Boolean alwaysPassed) {
-        this.alwaysPassed = alwaysPassed;
-    }
-
-    public Boolean getSuperTokenEnabled() {
-        return superTokenEnabled;
-    }
-
-    public void setSuperTokenEnabled(Boolean superTokenEnabled) {
-        this.superTokenEnabled = superTokenEnabled;
-    }
-
-    public String getSuperUserToken() {
-        return superUserToken;
-    }
-
-    public void setSuperUserToken(String superUserToken) {
-        this.superUserToken = superUserToken;
-    }
-
-
-    public Long getTtl() {
-        return ttl;
-    }
-
-    public void setTtl(Long ttl) {
-        this.ttl = ttl;
+    /**
+     * Represents a JSON Web Token (JWT) used for authentication and authorization purposes.
+     */
+    open class Jwt {
+        /**
+         * The `audenceUri` variable represents the URI (Uniform Resource Identifier) of the intended recipients of a JSON Web Token (JWT).
+         *
+         * @property audenceUri The URI of the intended recipients of the JWT.
+         */
+        var audenceUri: String = "https://appleid.apple.com"
+        /**
+         * This variable represents the time-to-live for iOS device check validation in milliseconds.
+         * The default value is 600 milliseconds.
+         */
+        var ttl: Long = 600L
+        /**
+         * Represents the key ID used in the header of a JSON Web Token (JWT).
+         *
+         * @property keyId The key ID string.
+         */
+        var keyId: String = "test"
+        /**
+         * The `issuer` variable represents the principal that issued the JSON Web Token (JWT) used for authentication and authorization purposes.
+         *
+         * @property issuer The principal that issued the JWT.
+         */
+        var issuer: String = "test"
+        /**
+         * Represents a subject variable.
+         *
+         * @property subject The subject of the token.
+         */
+        var subject: String = "test"
+        /**
+         * Represents a private key used for signing the JSON Web Token (JWT) in iOS device check requests.
+         *
+         * @property privateKey The private key string.
+         */
+        var privateKey: String =
+            "MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCDXFe7tTuoZ7UEKqy8XHIXfNeleS42C7FPQS8ywrWR3TA=="
     }
 }

@@ -21,8 +21,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import reactor.core.publisher.Mono
 
+/**
+ * Represents a provider for retrieving wallet configurations from an external service.
+ */
 interface MultiWalletProvider {
-    @JvmRecord
+    /**
+     * Data class representing the configuration for a multi-wallet.
+     *
+     * @property wallets The list of wallet addresses.
+     * @property profileId The profile ID associated with the multi-wallet.
+     */
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class MultiWalletConfig(
         @JsonDeserialize(contentUsing = HexStringDeSerializer::class)
@@ -30,5 +38,11 @@ interface MultiWalletProvider {
         val profileId: String,
     )
 
+    /**
+     * Retrieves the list of wallet addresses associated with the given wallet name.
+     *
+     * @param wallet The wallet name.
+     * @return A Mono emitting the MultiWalletConfig object containing the list of wallet addresses and profile ID.
+     */
     fun getWalletsListByWallet(wallet: String): Mono<MultiWalletConfig>
 }

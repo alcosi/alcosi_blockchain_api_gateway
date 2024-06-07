@@ -18,7 +18,13 @@ package com.alcosi.nft.apigateway.service.gateway.filter.security.validation
 
 import java.math.BigDecimal
 
-@JvmRecord
+/**
+ * The ValidationResult class represents the result of a validation operation.
+ *
+ * @property success Indicates whether the validation was successful.
+ * @property score The score associated with the validation.
+ * @property errorDescription The description of any error occurred during validation.
+ */
 data class ValidationResult(
     val success: Boolean,
     val score: BigDecimal,

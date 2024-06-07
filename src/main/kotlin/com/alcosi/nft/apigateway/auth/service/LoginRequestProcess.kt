@@ -19,16 +19,48 @@ package com.alcosi.nft.apigateway.auth.service
 import org.springframework.http.HttpMethod
 import reactor.core.publisher.Mono
 
+/**
+ * Interface representing the login request process.
+ */
 interface LoginRequestProcess {
+    /**
+     * Returns a list of RequestType values.
+     *
+     * @return the list of RequestType values
+     */
     fun rqTypes(): List<RequestType>
+
+    /**
+     * Returns a list of TYPE values.
+     *
+     * @return the list of TYPE values
+     */
 
     fun types(): List<TYPE>
 
+    /**
+     * Returns the HTTP method used by the login request process.
+     *
+     * @return the HTTP method used by the login request process
+     */
+
     fun method(): HttpMethod
 
+    /**
+     * Enum representing the type of request.
+     */
     enum class RequestType { GET, POST, PUT }
 
+    /**
+     * Represents the types for a login request process.
+     */
     enum class TYPE { BEFORE, AFTER }
 
+    /**
+     * Processes the given wallet.
+     *
+     * @param wallet the wallet to be processed
+     * @return a Mono representing the completion of the process
+     */
     fun process(wallet: String): Mono<Void>
 }

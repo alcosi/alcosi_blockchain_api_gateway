@@ -18,7 +18,17 @@ package com.alcosi.nft.apigateway.config
 
 import org.springframework.http.server.reactive.ServerHttpRequest
 
+/**
+ * Utility class for working with headers in a WebFlux application.
+ */
 object WebfluxHeadersHelper {
+    /**
+     * Retrieves the value of the specified header or query parameter from the request.
+     *
+     * @param request The [ServerHttpRequest] object representing the incoming request.
+     * @param headerName The name of the header or query parameter to retrieve.
+     * @return The value of the specified header or query parameter, or null if it is not present.
+     */
     fun getHeaderOrQuery(
         request: ServerHttpRequest,
         headerName: String,

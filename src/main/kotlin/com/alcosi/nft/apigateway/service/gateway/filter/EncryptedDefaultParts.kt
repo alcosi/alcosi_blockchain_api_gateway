@@ -13,13 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/**
+ * Should use protected DefaultParts from org.springframework.http.codec.multipart package, so we use this package
+ */
 package org.springframework.http.codec.multipart
 
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.http.HttpHeaders
 import reactor.core.publisher.Flux
 
+/**
+ * The `EncryptedDefaultParts` class provides a utility for creating encrypted parts for multipart requests.
+ *
+ * It contains a nested class `EncryptedPart` that delegates all `Part` operations to the provided `delegate`.
+ * The `EncryptedPart` class is `open`, allowing for further extension.
+ *
+ * The `create` function is used to create an encrypted part. It takes the `headers` and `dataBuffers` as parameters and
+ * returns a new `Part` object. The `IS_JSON` header is set to "true" in the provided `headers`.
+ *
+ */
 object EncryptedDefaultParts {
     open class EncryptedPart(delegate: Part) : Part by delegate
 

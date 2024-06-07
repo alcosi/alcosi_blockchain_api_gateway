@@ -20,7 +20,22 @@ import org.apache.logging.log4j.kotlin.logger
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
+/**
+ * This abstract class provides a base implementation of a request validator.
+ *
+ * @property validationComponent The request validation component to use for validation.
+ * @property type The type of the validator.
+ * @property tokenHeader The header name for the token.
+ * @property ipHeader The header name for the IP address.
+ */
 abstract class AbstractRequestValidator(protected open val validationComponent: RequestValidationComponent, override val type: String, protected val tokenHeader: String, protected val ipHeader: String) : RequestValidator {
+    /**
+     * Validates the request of the given [exchange] using the provided token and IP address headers.
+     * Returns a [Mono] that emits a [ValidationResult].
+     *
+     * @param exchange The server web exchange containing the request to validate.
+     * @return A [Mono] emitting a [ValidationResult].
+     */
     override fun validate(exchange: ServerWebExchange): Mono<ValidationResult> {
         val token = exchange.request.headers[tokenHeader]?.firstOrNull()
         val ip = exchange.request.headers[ipHeader]?.firstOrNull()

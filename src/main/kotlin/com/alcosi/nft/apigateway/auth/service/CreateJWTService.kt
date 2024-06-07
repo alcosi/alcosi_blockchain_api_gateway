@@ -27,29 +27,56 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 
+/**
+ * CreateJWTService class is responsible for creating JSON Web Tokens (JWT).
+ *
+ * @property tokenLifetime The lifetime of the token.
+ * @property tokenIssuer The issuer of the token.
+ * @property privateKey The private key used for signing the token.
+ * @property multiWalletProvider The provider for retrieving wallet information.
+ */
 open class CreateJWTService(
     val tokenLifetime: Duration,
     val tokenIssuer: String,
     appPrivateKey: String,
     protected val multiWalletProvider: MultiWalletProvider,
 ) {
+    /**
+     * Represents the private key used for signing JSON Web Tokens (JWT) in the `CreateJWTService` class.
+     *
+     * @property privateKey The private key used for signing the token.
+     */
     protected open val privateKey: Key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(appPrivateKey))
+
+    /**
+     * The `builder` property is responsible for building JSON Web Tokens (JWT) using the JwtBuilder class.
+     *
+     * It is a protected open property that is initialized with a new instance of JwtBuilder from the Jwts class.
+     *
+     * @property builder The JwtBuilder instance used for building JWT.
+     */
     protected open val builder: JwtBuilder = Jwts.builder()
 
+    /**
+     * Creates a JSON Web Token (JWT) for the given wallet.
+     *
+     * @param wallet The wallet name.
+     * @return A Mono emitting the JWT string.
+     */
     open fun createJWT(wallet: String?): Mono<String> {
         return multiWalletProvider
             .getWalletsListByWallet(wallet!!)
             .map { profileWalletsConfig ->
                 builder
-                    .setIssuer(tokenIssuer)
-                    .setSubject("profile")
+                    .issuer(tokenIssuer)
+                    .subject("profile")
                     .claim("currentWallet", wallet)
                     .claim("profileId", profileWalletsConfig.profileId)
                     .claim("profileWallets", profileWalletsConfig.wallets)
-                    .setId(wallet)
+                    .id(wallet)
                     .claim("authorities", listOf("ALL"))
-                    .setIssuedAt(Date.from(Instant.now()))
-                    .setExpiration(
+                    .issuedAt(Date.from(Instant.now()))
+                    .expiration(
                         Date.from(
                             Instant.ofEpochMilli(System.currentTimeMillis()).plusSeconds(
                                 tokenLifetime.toSeconds(),

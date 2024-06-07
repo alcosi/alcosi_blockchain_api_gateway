@@ -22,7 +22,21 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import org.springframework.http.HttpMethod
 import java.io.IOException
 
+/**
+ * This class is responsible for deserializing a JSON string into a HttpMethod object.
+ * It extends the JsonDeserializer class from the Jackson library.
+ *
+ * @constructor Creates an instance of HttpMethodDeSerializer.
+ */
 open class HttpMethodDeSerializer : JsonDeserializer<HttpMethod?>() {
+    /**
+     * This method deserializes a JSON string into a HttpMethod object.
+     *
+     * @param jsonParser The JSON parser used to read the JSON string.
+     * @param context The deserialization context used during deserialization.
+     * @return The deserialized HttpMethod object, or null if the JSON string is null.
+     * @throws IOException If an error occurs during deserialization or if the HttpMethod is unknown.
+     */
     override fun deserialize(
         jsonParser: JsonParser?,
         context: DeserializationContext?,

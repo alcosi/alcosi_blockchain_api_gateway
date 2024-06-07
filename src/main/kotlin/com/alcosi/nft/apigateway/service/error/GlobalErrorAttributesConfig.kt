@@ -22,8 +22,27 @@ import org.springframework.boot.web.reactive.error.DefaultErrorAttributes
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
+/**
+ * GlobalErrorAttributesConfig is a class that represents the configuration
+ * for global error attributes in a Spring Boot application.
+ *
+ * It is annotated with @Configuration to indicate that it is a configuration
+ * class. It also extends the Logging interface to enable logging capabilities.
+ *
+ * @see Configuration
+ * @see Logging
+ */
 @Configuration
 class GlobalErrorAttributesConfig : Logging {
+    /**
+     * Retrieves the global error attributes for the Spring Boot application.
+     *
+     * The method returns a DefaultErrorAttributes instance that provides custom error attribute handling.
+     * It overrides the getErrorAttributes function to customize the attributes returned in case of an error.
+     *
+     * @return A DefaultErrorAttributes instance that handles global error attributes.
+     * @see DefaultErrorAttributes
+     */
     @Bean
     @ConditionalOnMissingBean(value = [GlobalErrorAttributes::class])
     fun getGlobalErrorAttributes(): DefaultErrorAttributes {

@@ -16,12 +16,13 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.attestation
 
-import com.alcosi.lib.objectMapper.MappingHelper
+import com.alcosi.lib.objectMapper.mapOne
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationResult
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationUniqueTokenChecker
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.codec.binary.Base64
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
@@ -29,6 +30,20 @@ import reactor.core.publisher.Mono
 import java.math.BigDecimal
 import java.time.Instant
 
+/**
+ * This class represents a component for performing online request validation using Google Attestation.
+ *
+ * @property alwaysPassed Whether the validation should always pass.
+ * @property superTokenEnabled Whether the super token is enabled for validation.
+ * @property superUserToken The super user token used for validation.
+ * @property key The API key to access the Google Attestation service.
+ * @property packageName The package name of the application.
+ * @property ttl The TTL (time-to-live) in milliseconds for the request.
+ * @property uri The URI of the Google Attestation service.
+ * @property webClient The WebClient used for making HTTP requests.
+ * @property mappingHelper The helper class for mapping JSON to objects.
+ * @property uniqueTokenChecker The token checker for checking the uniqueness of the token.
+ */
 open class GoogleAttestationOnlineRequestValidationComponent(
     alwaysPassed: Boolean,
     superTokenEnabled: Boolean,
@@ -38,15 +53,25 @@ open class GoogleAttestationOnlineRequestValidationComponent(
     ttl: Long,
     val uri: String,
     val webClient: WebClient,
-    mappingHelper: MappingHelper,
+    mappingHelper: ObjectMapper,
     uniqueTokenChecker: ValidationUniqueTokenChecker,
 ) : GoogleAttestationRequestValidationComponent(alwaysPassed, superTokenEnabled, superUserToken, key, packageName, ttl, mappingHelper, uniqueTokenChecker) {
-    @JvmRecord
+    /**
+     * Represents a verification request for Google attestation.
+     *
+     * @property signedAttestation The signed attestation string.
+     * @constructor Creates a VerificationRequest.
+     */
     data class VerificationRequest
         @JsonCreator
         constructor(val signedAttestation: String?)
 
-    @JvmRecord
+    /**
+     * Represents the response of the verification process.
+     *
+     * @property isValidSignature Indicates whether the signature is valid.
+     * @property error The error message, if any.
+     */
     data class VerificationResponse
         @JsonCreator
         constructor(
@@ -54,8 +79,21 @@ open class GoogleAttestationOnlineRequestValidationComponent(
             @JsonProperty("error") val error: String?,
         )
 
+    /**
+     * Represents a request object used for certain operations.
+     *
+     * This class is a data class annotated with `JsonIgnoreProperties(ignoreUnknown = true)` to ignore any unknown properties
+     * when deserializing the JSON into an object.
+     *
+     * @property timestamp The timestamp of the request in milliseconds.
+     * @property nonce The unique identifier (nonce) of the request.
+     * @property apkPackageName The package name of the APK.
+     * @property apkDigestSha256 The SHA-256 digest hash of the APK.
+     * @property apkCertificateDigestSha256 A set of SHA-256 digest hashes of the APK's certificates.
+     * @property ctsProfileMatch Indicates if the device passes the Compatibility Test Suite (CTS) integrity check.
+     * @property basicIntegrity Indicates if the device has basic integrity.
+     */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    @JvmRecord
     data class Request
         @JsonCreator
         constructor(
@@ -68,6 +106,13 @@ open class GoogleAttestationOnlineRequestValidationComponent(
             @JsonProperty("basicIntegrity") val basicIntegrity: Boolean,
         )
 
+    /**
+     * Maps the given JSON body to a Request object.
+     *
+     * @param body The JSON body string to be mapped.
+     * @return The mapped Request object.
+     * @throws AttestationValidationException If there is an error during mapping.
+     */
     protected open fun mapRequest(body: String): Request {
         try {
             logger.debug("Attestation request : $body")
@@ -78,6 +123,12 @@ open class GoogleAttestationOnlineRequestValidationComponent(
         }
     }
 
+    /**
+     * Retrieves the body of the JWT token.
+     *
+     * @param token The JWT token.
+     * @return The body of the JWT token.
+     */
     protected open fun getJwtBody(token: String): String {
         try {
             val payload = extractJwsData(token)!!
@@ -89,6 +140,13 @@ open class GoogleAttestationOnlineRequestValidationComponent(
         }
     }
 
+    /**
+     * Extracts the JWS data from the given JWS signature.
+     *
+     * @param jws The JWS signature.
+     * @return The extracted JWS data.
+     * @throws AttestationValidationException If there is an error during extraction.
+     */
     protected open fun extractJwsData(jws: String): String {
         val parts = jws.split(".")
         return if (parts.size != 3) {
@@ -100,6 +158,13 @@ open class GoogleAttestationOnlineRequestValidationComponent(
         }
     }
 
+    /**
+     * Performs internal validation of a token using Google attestation.
+     *
+     * @param token The token to be validated.
+     * @param ip The IP address associated with the token (optional).
+     * @return A Mono emitting a ValidationResult object indicating the result of the validation.
+     */
     override fun checkInternal(
         token: String,
         ip: String?,
@@ -135,6 +200,12 @@ open class GoogleAttestationOnlineRequestValidationComponent(
         return googleRs
     }
 
+    /**
+     * Checks the validity of a request.
+     *
+     * @param rq The request object to be checked.
+     * @throws AttestationValidationException If the request is invalid.
+     */
     protected open fun checkRequest(rq: Request) {
         if (!packageName.equals(rq.apkPackageName, ignoreCase = true)) {
             throw AttestationValidationException("Invalid apkPackageName")

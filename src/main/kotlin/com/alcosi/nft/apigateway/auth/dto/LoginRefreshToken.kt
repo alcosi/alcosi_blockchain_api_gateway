@@ -22,7 +22,13 @@ import java.io.Serializable
 import java.time.LocalDateTime
 import java.util.*
 
-@JvmRecord
+/**
+ * This class represents a login refresh token.
+ *
+ * @property refreshToken The refresh token.
+ * @property jwtHash The JWT hash.
+ * @property updatedAt The time when the token was last updated. Defaults to the current date and time.
+ */
 @RedisHash("LoginRefreshToken")
 data class LoginRefreshToken(
     val refreshToken: UUID,

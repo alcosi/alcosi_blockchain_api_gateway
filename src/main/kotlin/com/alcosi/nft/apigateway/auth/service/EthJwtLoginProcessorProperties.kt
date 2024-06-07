@@ -13,59 +13,65 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alcosi.nft.apigateway.auth.service
 
-package com.alcosi.nft.apigateway.auth.service;
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.http.HttpMethod
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.http.HttpMethod;
-
-import java.util.List;
-
+/**
+ * Configuration properties for the EthJwtLoginProcessor.
+ */
 @ConfigurationProperties("gateway.default-request-login-request-process")
-public class EthJwtLoginProcessorProperties {
-    private Boolean enabled = true;
-    private String serviceUri;
-    private HttpMethod serviceMethod;
-    private List<LoginRequestProcess.RequestType> rqTypes = List.of();
-    private List< LoginRequestProcess.TYPE> types = List.of();
+open class EthJwtLoginProcessorProperties {
+    /**
+     * The `enabled` variable indicates whether a certain feature or functionality is enabled or not.
+     *
+     * @property enabled a boolean value representing the enabled state. `true` indicates that the feature is enabled, while `false` indicates that it is disabled.
+     */
+    var enabled: Boolean = true
 
-    public Boolean getEnabled() {
-        return enabled;
-    }
+    /**
+     * The serviceUri variable represents the URI of a service.
+     */
+    var serviceUri: String? = null
 
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
+    /**
+     * Represents the HTTP method used in the service request.
+     *
+     * The `serviceMethod` variable can be set to one of the following values:
+     * - GET: indicates a GET request method.
+     * - POST: indicates a POST request method.
+     * - PUT: indicates a PUT request method.
+     *
+     * If the `serviceMethod` is not set, it defaults to `null`.
+     *
+     * This variable is used in the `DefaultRequestLoginRequestProcess` class to determine the HTTP method used for the login request process.
+     * It is also used in the `LoginRequestProcess` interface to define the available request types.
+     *
+     * @see DefaultRequestLoginRequestProcess
+     * @see LoginRequestProcess
+     * @see HttpMethod
+     */
+    var serviceMethod: HttpMethod? = null
 
-    public String getServiceUri() {
-        return serviceUri;
-    }
+    /**
+     * Represents a list of different types of login request processes.
+     *
+     * This variable is used to specify the types of login request processes available. The type can be one of the following:
+     * - RequestType.GET: Indicates a GET request method.
+     * - RequestType.POST: Indicates a POST request method.
+     * - RequestType.PUT: Indicates a PUT request method.
+     *
+     * The rqTypes variable is used within the EthJwtLoginProcessorProperties class to configure the supported request types for login request processes. The rqTypes property allows
+     *  you to define a list of supported request types.
+     *
+     * @see EthJwtLoginProcessorProperties
+     * @see LoginRequestProcess.RequestType
+     */
+    var rqTypes: List<LoginRequestProcess.RequestType> = listOf()
 
-    public void setServiceUri(String serviceUri) {
-        this.serviceUri = serviceUri;
-    }
-
-    public HttpMethod getServiceMethod() {
-        return serviceMethod;
-    }
-
-    public void setServiceMethod(HttpMethod serviceMethod) {
-        this.serviceMethod = serviceMethod;
-    }
-
-    public List<LoginRequestProcess.RequestType> getRqTypes() {
-        return rqTypes;
-    }
-
-    public void setRqTypes(List<LoginRequestProcess.RequestType> rqTypes) {
-        this.rqTypes = rqTypes;
-    }
-
-    public List<LoginRequestProcess.TYPE> getTypes() {
-        return types;
-    }
-
-    public void setTypes(List<LoginRequestProcess.TYPE> types) {
-        this.types = types;
-    }
+    /**
+     * Holds a list of login request process types.
+     */
+    var types: List<LoginRequestProcess.TYPE> = listOf()
 }

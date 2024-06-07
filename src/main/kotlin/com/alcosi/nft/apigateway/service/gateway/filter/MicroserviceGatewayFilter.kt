@@ -20,4 +20,8 @@ import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.cloud.gateway.filter.GatewayFilter
 import org.springframework.core.Ordered
 
+/**
+ * The `MicroserviceGatewayFilter` interface represents a filter that can be applied to a microservice gateway.
+ * It extends the `GatewayFilter`, `Ordered`, and `Logging` interfaces.
+ */
 interface MicroserviceGatewayFilter : GatewayFilter, Ordered, Logging

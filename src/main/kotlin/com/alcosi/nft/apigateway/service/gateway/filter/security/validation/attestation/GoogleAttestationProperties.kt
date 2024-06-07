@@ -13,105 +13,85 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.attestation
 
-package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.attestation;
+import org.springframework.boot.context.properties.ConfigurationProperties
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
+/**
+ * Configuration properties for Google Attestation validation.
+ */
 @ConfigurationProperties("validation.google.attestation")
-public class GoogleAttestationProperties {
-    private Boolean disabled = false;
-    private Boolean alwaysPassed = false;
-    private Boolean superTokenEnabled = false;
-    private String superUserToken ="";
-    private String key ="";
-    private String packageName="" ;
-    private String hostname ="" ;
-    private String uri="https://www.googleapis.com/androidcheck/v1/attestations/verify";
-    private Long ttl = 100L ;
-    private TYPE type = TYPE.ONLINE;
-
-    public static enum TYPE{
-        ONLINE,OFFLINE;
-    }
-
-    public TYPE getType() {
-        return type;
-    }
-
-    public void setType(TYPE type) {
-        this.type = type;
-    }
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
-    public Boolean getDisabled() {
-        return disabled;
-    }
-
-    public void setDisabled(Boolean disabled) {
-        this.disabled = disabled;
-    }
-
-    public Boolean getAlwaysPassed() {
-        return alwaysPassed;
-    }
-
-    public void setAlwaysPassed(Boolean alwaysPassed) {
-        this.alwaysPassed = alwaysPassed;
-    }
-
-    public Boolean getSuperTokenEnabled() {
-        return superTokenEnabled;
-    }
-
-    public void setSuperTokenEnabled(Boolean superTokenEnabled) {
-        this.superTokenEnabled = superTokenEnabled;
-    }
-
-    public String getSuperUserToken() {
-        return superUserToken;
-    }
-
-    public void setSuperUserToken(String superUserToken) {
-        this.superUserToken = superUserToken;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
-    }
-
-    public String getHostname() {
-        return hostname;
-    }
-
-    public void setHostname(String hostname) {
-        this.hostname = hostname;
-    }
-
-    public Long getTtl() {
-        return ttl;
-    }
-
-    public void setTtl(Long ttl) {
-        this.ttl = ttl;
+open class GoogleAttestationProperties {
+    /**
+     * Indicates whether the feature is disabled or not.
+     */
+    var disabled: Boolean = false
+    /**
+     * Variable to indicate whether the validation for Google Attestation is always passed.
+     * If set to true, the validation will always pass regardless of the actual result.
+     * The default value is false.
+     */
+    var alwaysPassed: Boolean = false
+    /**
+     * Represents whether the super token is enabled or not.
+     */
+    var superTokenEnabled: Boolean = false
+    /**
+     * The superUserToken variable stores the token for the super user.
+     *
+     * This variable is of type String and represents the token that is used
+     * for super user authentication or authorization.
+     *
+     * Usage example:
+     *   var superUserToken: String = ""
+     *
+     * This variable is used in the following classes:
+     *   - GoogleAttestationProperties
+     *   - GoogleAttestationRequestValidationConfig
+     *   - GoogleAttestationRequestValidationComponent
+     *   - GoogleAttestationValidator
+     *
+     * See also:
+     *   - GoogleAttestationProperties.superUserToken
+     *   - GoogleAttestationRequestValidationConfig.getGoogleOnlineAttestationComponent()
+     *   - GoogleAttestationRequestValidationConfig.getGoogleOfflineAttestationComponent()
+     *   - GoogleAttestationRequestValidationComponent.superUserToken
+     *   - GoogleAttestationValidator
+     */
+    var superUserToken: String = ""
+    /**
+     * Represents a key used for certain operations.
+     *
+     * @property key The value of the key.
+     */
+    var key: String = ""
+    /**
+     * Represents the name of the package.
+     *
+     * @property packageName The name of the package.
+     */
+    var packageName: String = ""
+    /**
+     * Represents the hostname configuration property.
+     */
+    var hostname: String = ""
+    /**
+     * The URI for making a request to verify Android attestations.
+     */
+    var uri: String = "https://www.googleapis.com/androidcheck/v1/attestations/verify"
+    /**
+     * Time-to-live value for a certain operation, specified in milliseconds.
+     */
+    var ttl: Long = 100L
+    /**
+     * Represents the type of the variable.
+     * The available types are ONLINE and OFFLINE.
+     */
+    var type: TYPE = TYPE.ONLINE
+    /**
+     * Represents the type of validation for Google Attestation.
+     */
+    enum class TYPE {
+        ONLINE, OFFLINE
     }
 }

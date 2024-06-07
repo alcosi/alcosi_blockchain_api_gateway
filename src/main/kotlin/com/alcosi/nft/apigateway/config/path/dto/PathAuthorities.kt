@@ -16,23 +16,59 @@
 
 package com.alcosi.nft.apigateway.config.path.dto
 
-class PathAuthorities(val pathAuthorityList: List<PathAuthority>,
-                      val checkMode: AuthoritiesCheck = AuthoritiesCheck.ALL) {
+/**
+ * The `PathAuthorities` class represents a collection of path authorities
+ * and provides methods for checking the authorities against a given
+ * profile.
+ *
+ * @param pathAuthorityList The list of path authorities.
+ * @param checkMode The authorities check mode.
+ * @constructor Creates a new instance of the `PathAuthorities` class.
+ */
+open class PathAuthorities(
+    val pathAuthorityList: List<PathAuthority>,
+    val checkMode: AuthoritiesCheck = AuthoritiesCheck.ALL
+) {
+    /**
+     * The `AuthoritiesCheck` enum represents the check modes for authorities.
+     * The check modes can be ANY or ALL.
+     */
     enum class AuthoritiesCheck {
         ANY,
         ALL,
     }
-    fun checkHaveAuthorities(profileAuth: List<String>?): Boolean {
-        return when(checkMode){
-            AuthoritiesCheck.ANY ->pathAuthorityList.any { it.checkHaveAuthorities(profileAuth) }
-            AuthoritiesCheck.ALL ->pathAuthorityList.all { it.checkHaveAuthorities(profileAuth) }
+
+    /**
+     * Checks whether the given profile authorities satisfy the path
+     * authorities based on the check mode.
+     *
+     * @param profileAuth The list of profile authorities.
+     * @return true if the profile authorities satisfy the path authorities,
+     *     false otherwise.
+     */
+    open fun checkHaveAuthorities(profileAuth: List<String>?): Boolean {
+        return when (checkMode) {
+            AuthoritiesCheck.ANY -> pathAuthorityList.any { it.checkHaveAuthorities(profileAuth) }
+            AuthoritiesCheck.ALL -> pathAuthorityList.all { it.checkHaveAuthorities(profileAuth) }
         }
     }
 
-    fun haveAuth(): Boolean {
+    /**
+     * Checks whether the path authorities have authentication.
+     *
+     * @return true if the path authorities have authentication, false
+     *     otherwise.
+     */
+    open fun haveAuth(): Boolean {
         return pathAuthorityList.any { it.haveAuth() }
     }
 
+    /**
+     * Checks whether the path authorities have authentication.
+     *
+     * @return true if the path authorities have authentication, false
+     *     otherwise.
+     */
     fun noAuth(): Boolean {
         return !haveAuth()
     }

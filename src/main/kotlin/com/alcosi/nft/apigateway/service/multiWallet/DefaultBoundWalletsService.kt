@@ -16,24 +16,43 @@
 
 package com.alcosi.nft.apigateway.service.multiWallet
 
-import com.alcosi.lib.objectMapper.MappingHelper
 import com.alcosi.nft.apigateway.auth.dto.EthClient
 import com.alcosi.nft.apigateway.service.gateway.filter.security.eth.EthJwtGatewayFilter.Companion.CLIENT_ID_HEADER
 import com.alcosi.nft.apigateway.service.gateway.filter.security.eth.EthJwtGatewayFilter.Companion.CLIENT_WALLETS_HEADER
 import com.alcosi.nft.apigateway.service.gateway.filter.security.eth.EthJwtGatewayFilter.Companion.CLIENT_WALLET_HEADER
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
+/**
+ * Represents the default implementation of the [BoundWalletsService] interface.
+ *
+ * @param webClient The instance of WebClient used for making HTTP requests.
+ * @param serviceUriTemplate The URI template for the service endpoint.
+ * @param method The HTTP method to be used for the request.
+ * @param mappingHelper The instance of ObjectMapper used for mapping responses.
+ */
 open class DefaultBoundWalletsService(
     protected val webClient: WebClient,
     protected val serviceUriTemplate: String,
     protected val method: HttpMethod,
-    protected val mappingHelper: MappingHelper,
+    protected val mappingHelper: ObjectMapper,
 ) : BoundWalletsService {
-    @JvmRecord
+    /**
+     * Represents the response object for the AddRs class.
+     *
+     * @property status The status of the operation.
+     */
     data class AddRs(val status: String)
 
+    /**
+     * Binds a wallet in the Ethereum client.
+     *
+     * @param client The instance of EthClient representing the Ethereum client.
+     * @param walletSecond The wallet address to be bound.
+     * @return A Mono emitting a String representing the result of the binding operation.
+     */
     override fun bound(
         client: EthClient,
         walletSecond: String,

@@ -17,9 +17,11 @@
 package com.alcosi.nft.apigateway.auth.service.db
 
 import com.alcosi.lib.logging.annotations.LogTime
-import com.alcosi.lib.objectMapper.MappingHelper
+import com.alcosi.lib.objectMapper.mapOne
+import com.alcosi.lib.objectMapper.serialize
 import com.alcosi.nft.apigateway.auth.dto.LoginRefreshToken
 import com.alcosi.nft.apigateway.service.exception.auth.NotValidRTException
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import reactor.core.publisher.Mono
@@ -28,15 +30,42 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
 
+/**
+ * Prefix used for keys related to refresh tokens.
+ *
+ * The value of this constant is "REFRESH_TOKEN".
+ */
 private const val KEY_PREFIX = "REFRESH_TOKEN"
 
+/**
+ * This class represents a component for managing refresh tokens in a Redis database.
+ *
+ * @property redisTemplate The Redis template used for interacting with the Redis server.
+ * @property mappingHelper The mapping helper used for object serialization and deserialization.
+ * @property rtLifetime The lifetime duration of the refresh token.
+ */
 open class RefreshTokenDBComponent(
     redisTemplate: ReactiveStringRedisTemplate,
-    val mappingHelper: MappingHelper,
+    val mappingHelper: ObjectMapper,
     val rtLifetime: Duration,
 ) : Logging {
+    /**
+     * Variable representing the Redis operations for value in the RedisTemplate.
+     *
+     * This variable provides access to Redis operations for values. It can be used to perform operations
+     * such as getting, setting, and deleting values in Redis.
+     */
     val redisOpsForValue = redisTemplate.opsForValue()
 
+    /**
+     * Checks if a given refresh token is valid.
+     *
+     * @param rt The refresh token.
+     * @param jwtHash The hash code of the JWT.
+     * @param wallet The wallet associated with the refresh token.
+     * @return A Mono indicating whether the refresh token is valid (true) or not (false).
+     * @throws NotValidRTException If the refresh token is not valid.
+     */
     open fun checkIsValid(
         rt: UUID,
         jwtHash: Int,
@@ -61,6 +90,14 @@ open class RefreshTokenDBComponent(
             }
     }
 
+    /**
+     * Saves a new LoginRefreshToken object in Redis.
+     *
+     * @param wallet The wallet associated with the refresh token.
+     * @param rt The refresh token.
+     * @param jwtHash The hash code of the JWT.
+     * @return A Mono indicating whether the saving was successful (true) or not (false).
+     */
     @LogTime
     open fun saveNew(
         wallet: String,
@@ -79,5 +116,11 @@ open class RefreshTokenDBComponent(
             .map { true }
     }
 
+    /**
+     * Returns the Redis ID for the given wallet.
+     *
+     * @param wallet The wallet name.
+     * @return The Redis ID for the wallet.
+     */
     protected open fun getRedisId(wallet: String) = "${KEY_PREFIX}_$wallet"
 }

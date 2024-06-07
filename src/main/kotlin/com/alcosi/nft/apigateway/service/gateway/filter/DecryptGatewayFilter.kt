@@ -18,6 +18,7 @@ package com.alcosi.nft.apigateway.service.gateway.filter
 
 import com.alcosi.lib.secured.encrypt.SensitiveComponent
 import com.alcosi.lib.secured.encrypt.key.KeyProvider
+import io.github.breninsul.namedlimitedvirtualthreadexecutor.service.VirtualTreadExecutor
 import io.github.breninsul.webfluxlogging.CommonLoggingUtils
 import org.apache.logging.log4j.kotlin.Logging
 import org.reactivestreams.Publisher
@@ -32,14 +33,44 @@ import reactor.core.scheduler.Schedulers
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 
+/**
+ * Value indicating the "Transfer-Encoding" header field value for chunked transfer encoding.
+ *
+ * The "Transfer-Encoding" header field specifies the form of encoding used to safely transfer the
+ * payload body in a message. When the value is set to "chunked", the message body is sent in a series
+ * of chunks where each chunk is preceded by its size in hexadecimal format followed by a carriage return
+ * and line feed.
+ *
+ * This value is used to set the "Transfer-Encoding" header field for the chunked transfer encoding in HTTP requests
+ * or responses.
+ *
+ */
 private val TRANSFER_ENCODING_CHUNKED_VALUE = "chunked"
 
+/**
+ * DecryptGatewayFilter is a class that implements the MicroserviceGatewayFilter interface.
+ * It provides a filter method that is responsible for decrypting the response body of a ServerWebExchange.
+ * The decryption is done using a SensitiveComponent and a KeyProvider.
+ * The decrypted response is then passed to the next filter in the GatewayFilterChain.
+ *
+ * @property utils The CommonLoggingUtils instance used for logging.
+ * @property sensitiveComponent The SensitiveComponent used for decryption.
+ * @property keyProvider The KeyProvider used for obtaining the decryption key.
+ * @property order The order of the filter. Default is Int.MIN_VALUE.
+ */
 open class DecryptGatewayFilter(
     val utils: CommonLoggingUtils,
     val sensitiveComponent: SensitiveComponent,
     val keyProvider: KeyProvider,
     private val order: Int = Int.MIN_VALUE,
 ) : MicroserviceGatewayFilter {
+    /**
+     * Applies the filter to the given server web exchange and gateway filter chain.
+     *
+     * @param exchange the server web exchange
+     * @param chain the gateway filter chain
+     * @return a Mono representing the completion of the filter
+     */
     override fun filter(
         exchange: ServerWebExchange,
         chain: GatewayFilterChain,
@@ -49,18 +80,37 @@ open class DecryptGatewayFilter(
         return chain.filter(decorated)
     }
 
+    /**
+     * Returns the order of this DecryptGatewayFilter.
+     *
+     * @return The order of the DecryptGatewayFilter.
+     */
     override fun getOrder(): Int {
         return order
     }
 
+    /**
+     * DecryptResponseDecorator is a class that extends ServerHttpResponseDecorator and is responsible
+     * for decrypting the response body before it is sent to the client. It decrypts the content using
+     * a provided key obtained from a KeyProvider and a SensitiveComponent for decryption.
+     *
+     * @param exchange The ServerWebExchange object representing the current HTTP exchange.
+     * @param utils An instance of CommonLoggingUtils for logging purposes.
+     * @param sensitiveComponent An instance of SensitiveComponent for performing the decryption.
+     * @param keyProvider An instance of KeyProvider for obtaining the decryption key.
+     */
     open class DecryptResponseDecorator(
         protected val exchange: ServerWebExchange,
         val utils: CommonLoggingUtils,
         val sensitiveComponent: SensitiveComponent,
         val keyProvider: KeyProvider,
-    ) :
-        ServerHttpResponseDecorator(exchange.response), Logging {
-
+    ) : ServerHttpResponseDecorator(exchange.response), Logging {
+        /**
+         * Writes the given body to the response, performing decryption and other necessary operations.
+         *
+         * @param body The body to write to the response.
+         * @return A Mono representing the completion of the write operation.
+         */
         override fun writeWith(body: Publisher<out DataBuffer>): Mono<Void> {
             return DataBufferUtils.join(body)
                 .flatMap { dataBuffer ->
@@ -75,7 +125,7 @@ open class DecryptGatewayFilter(
                         logger.info("Key getting took ${System.currentTimeMillis() - time}")
                         return@fromFuture k
                     }
-                        .subscribeOn(Schedulers.boundedElastic())
+                        .subscribeOn(com.alcosi.nft.apigateway.config.VirtualWebFluxScheduler)
                         .cache()
                     val decrypted = key.mapNotNull { k ->
                         val d = Mono.fromFuture(CompletableFuture.supplyAsync({
@@ -87,7 +137,7 @@ open class DecryptGatewayFilter(
                         return@mapNotNull d.mapNotNull { dd -> dd?.toByteArray() }
                     }
                         .flatMap { d -> d }
-                        .subscribeOn(Schedulers.boundedElastic())
+                        .subscribeOn(com.alcosi.nft.apigateway.config.VirtualWebFluxScheduler)
                     return@flatMap decrypted
                 }
                 .mapNotNull { decrypted ->
@@ -108,7 +158,21 @@ open class DecryptGatewayFilter(
         }
     }
 
+    /**
+     * Companion object for the DecryptGatewayFilter class.
+     */
     companion object {
-        protected open val executor = Executors.newVirtualThreadPerTaskExecutor()
+        /**
+         * The executor variable is a protected property that holds an instance of an executor.
+         *
+         * It is created using the newVirtualThreadPerTaskExecutor() method from the Executors class, which returns an implementation of the Executor interface.
+         * This executor creates a new thread for each task that is submitted to it, allowing tasks to run concurrently.
+         *
+         * Being a protected property, it can be accessed by subclasses of the current class, but not by classes outside the class hierarchy.
+         *
+         * @see Executors
+         * @see java.util.concurrent.Executor
+         */
+        protected open val executor = VirtualTreadExecutor
     }
 }

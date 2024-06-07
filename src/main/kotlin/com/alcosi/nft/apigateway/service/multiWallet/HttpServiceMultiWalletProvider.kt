@@ -21,12 +21,26 @@ import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
-class HttpServiceMultiWalletProvider(
+/**
+ * Represents a provider for retrieving wallet configurations from an HTTP service.
+ *
+ * @param hexService The instance of PrepareHexService used for preparing wallet addresses.
+ * @param webClient The instance of WebClient used for making HTTP requests.
+ * @param serviceAddress The address of the HTTP service.
+ * @param httpMethod The HTTP method to be used for the request.
+ */
+open class HttpServiceMultiWalletProvider(
     protected val hexService: PrepareHexService,
     protected val webClient: WebClient,
     protected val serviceAddress: String,
     protected val httpMethod: HttpMethod,
 ) : MultiWalletProvider {
+    /**
+     * Retrieves the list of wallet configurations for a specific wallet.
+     *
+     * @param wallet The wallet identifier.
+     * @return A Mono that emits the MultiWalletConfig object containing the list of wallets and the profile ID.
+     */
     override fun getWalletsListByWallet(wallet: String): Mono<MultiWalletProvider.MultiWalletConfig> {
         val rqUri = serviceAddress + hexService.prepareAddr(wallet)
         val httpRs =

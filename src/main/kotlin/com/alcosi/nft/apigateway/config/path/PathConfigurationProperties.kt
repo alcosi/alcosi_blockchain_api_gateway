@@ -18,9 +18,51 @@ package com.alcosi.nft.apigateway.config.path
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 
+/**
+ * Configuration properties for the Path Configuration component.
+ *
+ * This class provides configuration properties for the Path Configuration component. It is annotated with
+ * `@ConfigurationProperties` to define a prefix for the properties. The prefix is "filter.config.path", which means
+ * that the properties can be configured using the key-value format "filter.config.path.propertyName".
+ *
+ * This class has three properties:
+ * - `validation`: A map of validation configurations. The keys represent the route names and the values are the
+ *   configuration values. It is initialized with an empty map.
+ * - `security`: A map of security configurations. The keys represent the route names and the values are the configuration
+ *   values. It is initialized with an empty map.
+ * - `proxy`: A map of proxy configurations. The keys represent the route names and the values are the configuration
+ *   values. It is initialized with an empty map.
+ *
+ */
 @ConfigurationProperties(prefix = "filter.config.path")
 class PathConfigurationProperties {
-    var validation: Map<String, Any?> = mapOf()
-    var security: Map<String, Any?> = mapOf()
-    var proxy: Map<String, String?> = mapOf()
+    /**
+     * Represents a map of validation configurations.
+     *
+     * The keys in the map represent the route names, and the values are the configuration values.
+     * This map is used to store the validation route configurations.
+     *
+     * @property validation The map of validation configurations.
+     */
+    var validation: MutableMap<String, Any?> = mutableMapOf()
+
+    /**
+     * Represents a map of security configurations.
+     *
+     * The keys in the map represent the route names, and the values are the configuration values.
+     * This map is used to store the security route configurations.
+     *
+     * @property security The map of security configurations.
+     */
+    var security: MutableMap<String, Any?> = mutableMapOf()
+
+    /**
+     * Represents a mutable map of proxy configurations.
+     *
+     * This variable is used to store proxy route configurations. The keys in the map represent the route names, and the values are the configuration values. The configuration values
+     *  are JSON strings representing the route configurations.
+     *
+     * @property proxy The mutable map of proxy configurations. The keys represent the route names, and the values are nullable strings.
+     */
+    var proxy: MutableMap<String, String?> = mutableMapOf()
 }

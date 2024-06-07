@@ -26,6 +26,16 @@ import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.web.server.ServerWebExchange
 import java.util.function.Predicate
 
+/**
+ * FilterMatchPredicate is a base class for filter match predicates used in request filtering.
+ *
+ * @param isSecured Specifies whether the predicate is secured.
+ * @param prefix The prefix used for matching paths.
+ * @param pathMethods The list of FilterMatchConfigDTO objects representing the configuration for filtering matching requests.
+ * @param type The type of predicate.
+ * @param matchType The type of predicate matcher.
+ * @param baseAuthorities The base authorities to be used for the predicate.
+ */
 open class FilterMatchPredicate(
     val isSecured: Boolean,
     prefix: String,
@@ -34,18 +44,35 @@ open class FilterMatchPredicate(
     val matchType: PredicateMatcherType,
     val baseAuthorities: PathAuthorities,
 ) : Logging, Predicate<ServerWebExchange> {
+    /**
+     * Represents a list of HTTP filter matchers.
+     *
+     * @property matchers The list of HTTP filter matchers.
+     */
     open val matchers: List<HttpFilterMatcher<*>> =
         when (type) {
             PathConfigurationComponent.PredicateType.REGEX -> pathMethods.map { HttpFilterMatcherRegex(prefix, it) }
             PathConfigurationComponent.PredicateType.MVC -> pathMethods.map { HttpFilterMatcherMVC(prefix, it) }
         }.sortedBy { it.config }
 
+    /**
+     * Finds the best matching HTTP filter matcher for the given ServerWebExchange.
+     *
+     * @param exchange The ServerWebExchange to be checked.
+     * @return The best matching HttpFilterMatcher or null if no match is found.
+     */
     open fun findMatcher(exchange: ServerWebExchange): HttpFilterMatcher<*>? {
         val uri = exchange.request.path.toString()
         val matcher = matchers.find { it.checkRequest(uri, exchange.request.method) }
         return matcher
     }
 
+    /**
+     * Sets the matcher attribute for the given HttpFilterMatcher and ServerWebExchange.
+     *
+     * @param matcher The HttpFilterMatcher to set the attribute for.
+     * @param exchange The ServerWebExchange to set the attribute on.
+     */
     protected open fun setMatcherAttribute(
         matcher: HttpFilterMatcher<*>?,
         exchange: ServerWebExchange,
@@ -61,6 +88,12 @@ open class FilterMatchPredicate(
         }
     }
 
+    /**
+     * Tests the ServerWebExchange against the configured criteria to determine if it matches.
+     *
+     * @param t The ServerWebExchange to be tested.
+     * @return true if the ServerWebExchange matches the criteria, false otherwise.
+     */
     override fun test(t: ServerWebExchange): Boolean {
         val matcher = findMatcher(t)
         setMatcherAttribute(matcher, t)

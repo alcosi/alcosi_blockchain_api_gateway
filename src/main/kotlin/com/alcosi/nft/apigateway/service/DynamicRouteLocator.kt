@@ -25,13 +25,33 @@ import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
 import reactor.core.publisher.Flux
 import java.net.URI
 
+/**
+ * This class represents a dynamic route locator that implements the RouteLocator interface.
+ * It is responsible for generating and caching routes based on the provided configuration.
+ *
+ * @property proxyRoutes The list of proxy route configurations.
+ * @property filtersList The list of microservice gateway filters to apply.
+ * @property routesBuilder The RouteLocatorBuilder instance used to create routes.
+ * @property routesCache The cached Flux of routes.
+ */
 open class DynamicRouteLocator(
     val proxyRoutes: List<ProxyRouteConfigDTO>,
     val filtersList: List<MicroserviceGatewayFilter>,
     val routesBuilder: RouteLocatorBuilder,
 ) : RouteLocator {
+    /**
+     * Flux variable that represents the cache for routes.
+     */
     val routesCache: Flux<Route> = initFlux()
 
+    /**
+     * Initializes and configures the Flux of routes based on the provided proxyRoutes.
+     * It creates and configures Route objects based on the properties of the ProxyRouteConfigDTO object.
+     * The routes are filtered using GatewayBaseContextFilter and sorted based on their order property.
+     * The resulting Flux of routes is cached and subscribed to.
+     *
+     * @return A Flux of Route objects representing the configured routes.
+     */
     @OptIn(ExperimentalStdlibApi::class)
     open fun initFlux(): Flux<Route> {
         val routesListBuilder = routesBuilder.routes()
@@ -68,6 +88,11 @@ open class DynamicRouteLocator(
         return mappedProxyRotes
     }
 
+    /**
+     * Returns a Flux of Route objects representing the configured routes.
+     *
+     * @return A Flux of Route objects.
+     */
     override fun getRoutes(): Flux<Route> {
         return routesCache
     }

@@ -22,16 +22,34 @@ import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.web.server.ServerWebExchange
 import java.util.function.Predicate
 
+/**
+ * SecurityConfigGatewayPredicate is a class that represents the security configuration for a gateway predicate.
+ *
+ * @param delegate The filter match predicate used for request filtering.
+ * @param securityConfig The security route configuration.
+ */
 open class SecurityConfigGatewayPredicate(
     open val delegate: FilterMatchPredicate,
     open val securityConfig: SecurityRouteConfigDTO,
 ) : Logging, Predicate<ServerWebExchange> {
+    /**
+     * Determines whether the ServerWebExchange matches the criteria to pass the test.
+     *
+     * @param t The ServerWebExchange to be tested.
+     * @return true if the ServerWebExchange matches the criteria, false otherwise.
+     */
     override fun test(t: ServerWebExchange): Boolean {
         val haveToPass = delegate.test(t)
         setConfig(haveToPass, t)
         return haveToPass
     }
 
+    /**
+     * Sets the configuration attribute for the given ServerWebExchange.
+     *
+     * @param haveToPass Determines whether the configuration should be set.
+     * @param t The ServerWebExchange to set the configuration attribute on.
+     */
     protected open fun setConfig(
         haveToPass: Boolean,
         t: ServerWebExchange,

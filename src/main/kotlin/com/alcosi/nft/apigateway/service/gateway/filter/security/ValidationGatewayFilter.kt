@@ -27,15 +27,35 @@ import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import java.util.function.Predicate
 
+/**
+ * This class represents a Validation Gateway Filter that extends the MicroserviceGatewayFilter class. It is responsible for filtering requests based on validation rules.
+ *
+ * @property validationService The FilterValidationService used for request validation.
+ * @property predicate The predicate function used to determine if a request requires validation.
+ * @property order The order of the filter in the filter chain.
+ */
 open class ValidationGatewayFilter(
     val validationService: FilterValidationService,
     val predicate: Predicate<ServerWebExchange>,
     private val order: Int = JWT_LOG_ORDER + 11,
 ) : MicroserviceGatewayFilter {
+    /**
+     * Returns the order of the ValidationGatewayFilter.
+     *
+     * @return The order of the ValidationGatewayFilter.
+     */
     override fun getOrder(): Int {
         return order
     }
 
+    /**
+     * Filters the incoming request based on certain conditions and performs validation if required.
+     * Returns a Mono object representing the completion of the filtering process.
+     *
+     * @param exchange The ServerWebExchange object representing the incoming HTTP request.
+     * @param chain The GatewayFilterChain object representing the chain of filters to be applied.
+     * @return A Mono object representing the completion of the filtering process.
+     */
     override fun filter(
         exchange: ServerWebExchange,
         chain: GatewayFilterChain,
@@ -61,7 +81,14 @@ open class ValidationGatewayFilter(
         }
     }
 
-    private fun setValidationHeader(
+    /**
+     * Sets the validation header value in the given ServerWebExchange object.
+     *
+     * @param exchange The ServerWebExchange object in which to set the validation header.
+     * @param value The boolean value to set as the validation header value.
+     * @return The modified ServerWebExchange object with the updated validation header.
+     */
+    protected open fun setValidationHeader(
         exchange: ServerWebExchange,
         value: Boolean?,
     ): ServerWebExchange {

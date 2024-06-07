@@ -13,130 +13,169 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alcosi.nft.apigateway.auth.service
 
-package com.alcosi.nft.apigateway.auth.service;
+import org.springframework.boot.context.properties.ConfigurationProperties
+import java.time.Duration
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.time.Duration;
-
-@ConfigurationProperties("jwt")
-public class EthJwtProperties {
-    private Key key = new Key();
-    private Boolean checkSignDisable = false;
-    private Token token = new Token();
-    private Nonce nonce=new Nonce();
-    private String loginTemplate = """
+/**
+ * The `defaultLoginTemplate` variable is a private constant that represents the default login template.
+ *
+ * This template is used to display a message to the user when they need to connect their wallet.
+ * It contains a placeholder, `@nonce@`, which will be replaced with the actual nonce value.
+ *
+ */
+private const val defaultLoginTemplate = """
 Please connect your wallet
-@nonce@""";
+@nonce@
+"""
 
-    public String getLoginTemplate() {
-        return loginTemplate;
+/**
+ * Configuration properties for EthJwt.
+ */
+@ConfigurationProperties("jwt")
+open class EthJwtProperties {
+    /**
+     * Represents a key for configuration properties in EthJwtProperties.
+     *
+     * @property privateKey The private key value.
+     */
+    var key: Key = Key()
+
+    /**
+     * Represents the checkSignDisable property.
+     *
+     * This property determines whether the signature of the authentication token should be checked or not.
+     * If set to true, the signature will not be checked, otherwise, it will be checked.
+     */
+    var checkSignDisable: Boolean = false
+
+    /**
+     * Represents a token used for authentication.
+     *
+     * @property issuer The issuer of the token.
+     * @property lifetime The lifetime of the token.
+     * @property rtLifetime The lifetime of the refresh token.
+     */
+    var token: Token = Token()
+
+    /**
+     * Represents a nonce used for authentication.
+     *
+     * @property lifetime The lifetime of the nonce.
+     * @property redisPrefix The Redis prefix used for storing the nonce.
+     */
+    var nonce: Nonce = Nonce()
+
+    /**
+     * Represents the login template for EthJwtProperties.
+     *
+     * The login template is used by the PrepareLoginMsgComponent to prepare login messages.
+     * It is a string that contains the message template for login.
+     *
+     * @see EthJwtProperties
+     * @see PrepareLoginMsgComponent
+     */
+    var loginTemplate: String = defaultLoginTemplate
+
+    /**
+     * Represents a Nonce used for authentication.
+     */
+    open class Nonce {
+        /**
+         * Represents the lifetime of a variable.
+         *
+         * The lifetime represents the duration for which the variable is considered valid or active.
+         *
+         * @property lifetime The duration of the variable's lifetime.
+         */
+        var lifetime: Duration = Duration.ofMinutes(5)
+
+        /**
+         * Represents the Redis prefix used for storing the nonce in the EthJwtProperties class.
+         *
+         * The Redis prefix is a string that is used as a prefix when storing the nonce in the Redis server.
+         * It is used to differentiate the nonce from other keys stored in the Redis server.
+         *
+         * @property redisPrefix The Redis prefix used for storing the nonce.
+         * @see EthJwtProperties
+         * @see NonceDBComponent
+         * @see Nonce
+         */
+        var redisPrefix: String = "LOGIN_NONCE"
     }
 
-    public void setLoginTemplate(String loginTemplate) {
-        this.loginTemplate = loginTemplate;
+    /**
+     * Represents a token that can be issued for authentication.
+     *
+     * The Token class is an open class that can be subclassed to represent different types of tokens.
+     * It has properties for the issuer, lifetime, and refresh token lifetime.
+     * The issuer represents the entity that issued the token.
+     * The lifetime represents the duration for which the token is considered valid.
+     * The refresh token lifetime represents the duration for which the refresh token is considered valid.
+     *
+     * @property issuer The issuer of the token.
+     * @property lifetime The duration of the token's lifetime.
+     * @property rtLifetime The duration of the refresh token's lifetime.
+     */
+    open class Token {
+        /**
+         * Represents the issuer of the token.
+         */
+        var issuer: String = "Test"
+
+        /**
+         * Represents the duration of the token's lifetime.
+         *
+         * The lifetime represents the duration for which the token is considered valid.
+         *
+         * @see Token
+         * @see EthJwtProperties
+         */
+        var lifetime: Duration = Duration.ofHours(1)
+
+        /**
+         * Represents the duration of the refresh token's lifetime.
+         *
+         * The refresh token lifetime represents the duration for which the refresh token is considered valid.
+         *
+         * @see Token
+         * @see EthJwtProperties
+         */
+        var rtLifetime: Duration = Duration.ofDays(7)
     }
 
-    public Boolean getCheckSignDisable() {
-        return checkSignDisable;
-    }
+    /**
+     * Represents a key used for encryption or signing.
+     *
+     * The Key class is an open class that can be subclassed to represent different types of keys.
+     * It has a nullable `privateKey` property that can be used to store the private key value.
+     *
+     * @property privateKey The private key for encryption or signing.
+     */
+    open class Key {
+        /**
+         * Represents a key used for encryption or signing.
+         *
+         * The Key class is an open class that can be subclassed to represent different types of keys.
+         * It has a nullable `privateKey` property that can be used to store the private key value.
+         *
+         * @property privateKey The private key for encryption or signing.
+         */
+        var privateKey: String? = null
 
-    public void setCheckSignDisable(Boolean checkSignDisable) {
-        this.checkSignDisable = checkSignDisable;
-    }
-
-    public Nonce getNonce() {
-        return nonce;
-    }
-
-    public void setNonce(Nonce nonce) {
-        this.nonce = nonce;
-    }
-
-    public Key getKey() {
-        return key;
-    }
-
-    public void setKey(Key key) {
-        this.key = key;
-    }
-
-    public Token getToken() {
-        return token;
-    }
-
-    public void setToken(Token token) {
-        this.token = token;
-    }
-    public static class Nonce{
-        private Duration lifetime = Duration.ofMinutes(5);
-        private String redisPrefix = "LOGIN_NONCE";
-
-        public Duration getLifetime() {
-            return lifetime;
-        }
-
-        public void setLifetime(Duration lifetime) {
-            this.lifetime = lifetime;
-        }
-
-        public String getRedisPrefix() {
-            return redisPrefix;
-        }
-
-        public void setRedisPrefix(String redisPrefix) {
-            this.redisPrefix = redisPrefix;
-        }
-    }
-
-    public static class Token {
-        private String issuer ="Test";
-        private Duration lifetime = Duration.ofHours(1);
-        private Duration rtLifetime = Duration.ofDays(7);
-
-        public Duration getRtLifetime() {
-            return rtLifetime;
-        }
-
-        public void setRtLifetime(Duration rtLifetime) {
-            this.rtLifetime = rtLifetime;
-        }
-
-        public String getIssuer() {
-            return issuer;
-        }
-
-        public void setIssuer(String issuer) {
-            this.issuer = issuer;
-        }
-
-        public Duration getLifetime() {
-            return lifetime;
-        }
-
-        public void setLifetime(Duration lifetime) {
-            this.lifetime = lifetime;
-        }
-    }
-
-    public static class Key {
-        private String privateKey;
-
-        public String getPrivate() {
-            return getPrivateKey();
-        }
-
-        public void setPrivate(String privateKey) {
-            setPrivateKey(privateKey);
-        }
-
-        public String getPrivateKey() {
-            return privateKey;
-        }
-
-        public void setPrivateKey(String privateKey) {
-            this.privateKey = privateKey;
-        }
+        /**
+         * Represents a key used for encryption or signing.
+         *
+         * The Key class is an open class that can be subclassed to represent different types of keys.
+         * It has a nullable `privateKey` property that can be used to store the private key value.
+         *
+         * @property privateKey The private key for encryption or signing.
+         */
+        var private: String?
+            get() = privateKey
+            set(privateKey) {
+                this.privateKey = privateKey
+            }
     }
 }

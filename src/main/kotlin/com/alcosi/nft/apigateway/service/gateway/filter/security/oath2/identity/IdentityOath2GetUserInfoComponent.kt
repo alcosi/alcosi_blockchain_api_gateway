@@ -16,7 +16,7 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.identity
 
-import com.alcosi.lib.objectMapper.MappingHelper
+import com.alcosi.lib.objectMapper.mapOne
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiException
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -26,7 +26,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
 open class IdentityOath2GetUserInfoComponent(
-    protected val mappingHelper: MappingHelper,
+    protected val mappingHelper: ObjectMapper,
     protected val webClient: WebClient,
     protected val objectMapper: ObjectMapper,
     idServerUri: String,
@@ -44,7 +44,7 @@ open class IdentityOath2GetUserInfoComponent(
             @JsonProperty("family_name") open val lastName: String?,
         )
 
-    @JvmRecord
+    //@JvmRecord
     data class Result(val response: Account?, val error: Error?) {
         data class Error(val httpCode: HttpStatusCode, val body: String?)
 

@@ -28,6 +28,21 @@ import org.springframework.http.HttpMethod
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
+/**
+ * The LoginPostGatewayFilter class is a subclass of LoginAbstractGatewayFilter.
+ * It is responsible for handling POST requests related to login operations.
+ * This filter performs various tasks such as checking signatures, saving refresh tokens, and verifying nonces.
+ * It delegates the actual login process to a list of LoginRequestProcess objects.
+ *
+ * @param basePath The base path of the filter.
+ * @param writer The GatewayFilterResponseWriter used for reading request bodies and writing responses.
+ * @param prepareHexService The PrepareHexService for preparing hex values.
+ * @param refreshTokenService The RefreshTokenService for refreshing JSON Web Tokens (JWT).
+ * @param nonceComponent The NonceComponent for managing nonces.
+ * @param checkSignatureService The CheckAuthSignatureService for checking signatures.
+ * @param uriRegexString The URI regex pattern to match against.
+ * @param loginProcessors The list of LoginRequestProcess objects for handling login requests.
+ */
 open class LoginPostGatewayFilter(
     basePath: String,
     writer: GatewayFilterResponseWriter,

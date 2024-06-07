@@ -14,16 +14,10 @@
  * limitations under the License.
  */
 
-package com.alcosi.nft.apigateway.service.predicate
+package com.alcosi.nft.apigateway.config
 
-/**
- * Represents the type of predicate matcher used in the PathConfigurationComponent class.
- *
- * Available options for PredicateMatcherType:
- * - MATCH_IF_NOT_CONTAINS_IN_LIST: Matches if the value does not contain in the list.
- * - MATCH_IF_CONTAINS_IN_LIST: Matches if the value contains in the list.
- */
-enum class PredicateMatcherType {
-    MATCH_IF_NOT_CONTAINS_IN_LIST,
-    MATCH_IF_CONTAINS_IN_LIST,
-}
+import io.github.breninsul.namedlimitedvirtualthreadexecutor.service.VirtualNamedLimitedExecutorService
+import reactor.core.scheduler.Scheduler
+import reactor.core.scheduler.Schedulers
+
+object VirtualWebFluxScheduler: Scheduler by Schedulers.fromExecutorService(VirtualNamedLimitedExecutorService("virtual-web-flux") )

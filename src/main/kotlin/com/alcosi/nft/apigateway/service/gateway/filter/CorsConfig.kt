@@ -26,6 +26,22 @@ import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.reactive.CorsWebFilter
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
 
+/**
+ * Configuration class for setting up Cross-Origin Resource Sharing (CORS) configuration.
+ *
+ * This class extends the `CorsConfiguration` class and defines a Spring bean `corsFilter()` that creates
+ * a `CorsWebFilter` instance with a default CORS configuration.
+ *
+ * To enable this CORS configuration, the property `gateway.filter.cors.enabled` must be set to `true`
+ * in the application's configuration. If this property is not present, it defaults to `true`.
+ *
+ * The `corsFilter()` bean is conditionally created using `@ConditionalOnMissingBean` to ensure that
+ * it is only created if there is no other bean of type `CorsWebFilter` in the application context.
+ *
+ * The default CORS configuration allows requests from any origin, allows all HTTP methods, and allows
+ * all headers. Requests are not allowed to include credentials.
+ *
+ */
 @ConditionalOnProperty(
     prefix = "gateway.filter.cors",
     name = ["enabled"],
@@ -35,6 +51,13 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource
 @Configuration
 @EnableConfigurationProperties(CorsFilterProperties::class)
 class CorsConfig : CorsConfiguration() {
+    /**
+     * Creates a CorsWebFilter with a default CORS configuration.
+     * The default CORS configuration allows requests from any origin, allows all HTTP methods, and allows
+     * all headers. Requests are not allowed to include credentials.
+     *
+     * @return CorsWebFilter - the created CorsWebFilter instance.
+     */
     @Bean
     @ConditionalOnMissingBean(CorsWebFilter::class)
     fun corsFilter(): CorsWebFilter {

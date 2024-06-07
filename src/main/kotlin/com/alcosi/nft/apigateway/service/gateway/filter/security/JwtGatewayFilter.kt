@@ -30,6 +30,16 @@ import org.springframework.web.server.ServerWebExchangeDecorator
 import reactor.core.publisher.Mono
 import java.security.Principal
 
+/**
+ * JwtGatewayFilter is an abstract class that implements the MicroserviceGatewayFilter interface.
+ * It provides functionality for processing JWT authentication in a gateway filter.
+ *
+ * @property securityGatewayFilter The SecurityGatewayFilter instance used for security checks.
+ * @property authHeaders The list of authentication headers.
+ * @property order The order of the filter execution (default is JWT_LOG_ORDER).
+ * @property jwtHeader The name of the JWT header (default is AUTHORIZATION_HEADER).
+ * @property securityClientAttribute The attribute name used to store the client details in the exchange.
+ */
 abstract class JwtGatewayFilter(
     val securityGatewayFilter: SecurityGatewayFilter,
     protected val authHeaders: List<String>,
@@ -37,10 +47,22 @@ abstract class JwtGatewayFilter(
     val jwtHeader: String = AUTHORIZATION_HEADER,
     val securityClientAttribute: String = SECURITY_CLIENT_ATTRIBUTE,
 ) : MicroserviceGatewayFilter {
+    /**
+     * Get the order of the security filter.
+     *
+     * @return The order of the security filter.
+     */
     override fun getOrder(): Int {
         return order
     }
 
+    /**
+     * Filters the incoming request based on certain conditions.
+     *
+     * @param exchange The [ServerWebExchange] object representing the incoming request.
+     * @param chain The [GatewayFilterChain] object to proceed with the filtering.
+     * @return A [Mono] object representing the completion of the filtering process.
+     */
     override fun filter(
         exchange: ServerWebExchange,
         chain: GatewayFilterChain,
@@ -64,12 +86,24 @@ abstract class JwtGatewayFilter(
         }
     }
 
+    /**
+     * Determines whether the given request is a security request.
+     *
+     * @param exchange The [ServerWebExchange] object representing the incoming request.
+     * @return true if the request is a security request, false otherwise.
+     */
     protected open fun getIsSecurityRequest(exchange: ServerWebExchange): Boolean {
         val authorities = exchange.attributes[PathConfigurationComponent.ATTRIBUTE_REQ_AUTHORITIES_FIELD] as PathAuthorities?
         return authorities?.haveAuth() == true || securityGatewayFilter.predicate.test(exchange)
     }
 
-    protected fun clearExchange(exchange: ServerWebExchange): ServerWebExchange {
+    /**
+     * Clears the authentication headers from the given ServerWebExchange.
+     *
+     * @param exchange The ServerWebExchange object representing the incoming request.
+     * @return The ServerWebExchange object with the authentication headers cleared.
+     */
+    protected open fun clearExchange(exchange: ServerWebExchange): ServerWebExchange {
         val rqBuilder = exchange.request.mutate()
         authHeaders.forEach { rqBuilder.header(it, null) }
         val clearRq = rqBuilder.build()
@@ -80,7 +114,14 @@ abstract class JwtGatewayFilter(
         return PrincipalWebExchange(exchangeWithClient, securityClientAttribute)
     }
 
-    protected fun getHeaderInternal(
+    /**
+     * Retrieves the header value based on the given request and authentication header name.
+     *
+     * @param request The [ServerHttpRequest] object representing the incoming request.
+     * @param authHeader The name of the authentication header.
+     * @return The value of the authentication header, or null if not present.
+     */
+    protected open fun getHeaderInternal(
         request: ServerHttpRequest,
         authHeader: String,
     ): String? {
@@ -92,16 +133,36 @@ abstract class JwtGatewayFilter(
         }
     }
 
+    /**
+     * Mutates the given ServerWebExchange with the provided JWT token and client attribute.
+     *
+     * @param jwt The JWT token.
+     * @param exchange The ServerWebExchange object representing the incoming request.
+     * @param clientAttribute The client attribute.
+     * @return A Mono object representing the completion of the mutation process.
+     */
     abstract fun mutateExchange(
         jwt: String,
         exchange: ServerWebExchange,
         clientAttribute: String,
     ): Mono<ServerWebExchange>
 
+    /**
+     * Represents a decorator class for [ServerWebExchange] with additional functionality for retrieving the principal.
+     *
+     * @property delegateExchange The delegate [ServerWebExchange] object.
+     * @property securityClientAttribute The name of the client attribute.
+     */
     open class PrincipalWebExchange(
         delegateExchange: ServerWebExchange,
         protected val securityClientAttribute: String,
     ) : ServerWebExchangeDecorator(delegateExchange) {
+        /**
+         * Retrieves the principal from the server web exchange.
+         *
+         * @return Returns a Mono that emits the principal, or an empty Mono if the principal is not found.
+         * @param T The type of principal to retrieve.
+         */
         override fun <T : Principal> getPrincipal(): Mono<T> {
             val attribute = getAttribute<T?>(securityClientAttribute)
             return if (attribute == null) {
@@ -112,8 +173,26 @@ abstract class JwtGatewayFilter(
         }
     }
 
+    /**
+     * The companion object for the JwtGatewayFilter class.
+     */
     companion object {
+        /**
+         * Represents the order of the JWT log in a filtering process.
+         * The JWT log order is calculated based on the order of the security log minus 10.
+         *
+         * @see JwtGatewayFilter
+         * @see ValidationGatewayFilter
+         * @see LoginAbstractGatewayFilter
+         * @see AuthBoundWalletsPutGatewayFilter
+         * @see EthJwtGatewayFilter
+         * @see Oath2GatewayFilter
+         */
         const val JWT_LOG_ORDER = SECURITY_LOG_ORDER - 10
+
+        /**
+         * Represents the name of the authorization header used in an HTTP request.
+         */
         const val AUTHORIZATION_HEADER = "Authorization"
     }
 }

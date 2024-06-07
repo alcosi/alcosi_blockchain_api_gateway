@@ -16,7 +16,7 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.captcha
 
-import com.alcosi.lib.objectMapper.MappingHelper
+import com.alcosi.lib.objectMapper.mapOne
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiValidationException
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.RequestValidationComponent
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationResult
@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonRawValue
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -39,6 +40,21 @@ import java.net.URLEncoder
 import java.nio.charset.Charset
 import java.util.function.Consumer
 
+/**
+ * This class is responsible for validating Google reCAPTCHA requests.
+ *
+ * @property alwaysPassed Indicates whether all requests should always pass validation.
+ * @property superTokenEnabled Indicates whether a super user token is enabled.
+ * @property superUserToken The super user token used for validation.
+ * @property ttl The time-to-live (expiration) duration for unique tokens.
+ * @property captchaKey The Google reCAPTCHA site key.
+ * @property captchaMinRate The minimum score required for a successful validation.
+ * @property googleServerUrl The URL of the Google reCAPTCHA server.
+ * @property webClient The WebClient used for making HTTP requests.
+ * @property mappingHelper The MappingHelper used for JSON mapping.
+ * @property uniqueTokenChecker The ValidationUniqueTokenChecker used for checking token uniqueness.
+ * @constructor Initializes the GoogleCaptchaRequestValidationComponent.
+ */
 open class GoogleCaptchaRequestValidationComponent(
     alwaysPassed: Boolean,
     superTokenEnabled: Boolean,
@@ -48,11 +64,23 @@ open class GoogleCaptchaRequestValidationComponent(
     protected val captchaMinRate: BigDecimal,
     protected val googleServerUrl: String,
     protected val webClient: WebClient,
-    protected val mappingHelper: MappingHelper,
+    protected val mappingHelper: ObjectMapper,
     uniqueTokenChecker: ValidationUniqueTokenChecker,
 ) : RequestValidationComponent(alwaysPassed, superTokenEnabled, superUserToken, ttl, uniqueTokenChecker) {
+    /**
+     * Represents an exception that occurs when the response from the captcha service is deemed bad or invalid.
+     *
+     * @param s The error message associated with the exception.
+     */
     data class BadResponseCaptchaException(private var s: String) : ApiValidationException(s, 1)
 
+    /**
+     * Checks the internal validation of the token and IP address.
+     *
+     * @param token The token string.
+     * @param ip The IP address string.
+     * @return A Mono emitting a ValidationResult.
+     */
     override fun checkInternal(
         token: String,
         ip: String?,
@@ -88,7 +116,15 @@ open class GoogleCaptchaRequestValidationComponent(
         return googleRs
     }
 
-    @JvmRecord
+    /**
+     * Response represents the response received from the captcha service.
+     *
+     * @property success Whether the captcha verification was successful
+     * @property score The score of the captcha verification (nullable)
+     * @property hostname The hostname associated with the captcha response
+     * @property action The action associated with the captcha response
+     * @property errors The set of error codes associated with the captcha response (nullable)
+     */
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     @JsonSerialize
@@ -104,7 +140,13 @@ open class GoogleCaptchaRequestValidationComponent(
         }
     }
 
-    @JvmRecord
+    /**
+     * Request is a data class representing a request object.
+     *
+     * @property secret The secret string.
+     * @property response The response string.
+     * @property remoteIP The remote IP address (nullable).
+     */
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
     data class Request(
         @JsonProperty("secret") val secret: String,
@@ -122,7 +164,14 @@ open class GoogleCaptchaRequestValidationComponent(
         }
     }
 
-    protected fun serializeForm(
+    /**
+     * Serializes a form data object to a URL-encoded string.
+     *
+     * @param formData The form data represented as a MultiValueMap.
+     * @param charset The character encoding to be used in the serialization. Default is UTF-8.
+     * @return The serialized form data as a URL-encoded string.
+     */
+    protected open fun serializeForm(
         formData: MultiValueMap<String?, String>,
         charset: Charset = Charsets.UTF_8,
     ): String {

@@ -13,67 +13,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alcosi.nft.apigateway.service.gateway.filter.openapi
 
-package com.alcosi.nft.apigateway.service.gateway.filter.openapi;
+import org.springframework.boot.context.properties.ConfigurationProperties
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
+/**
+ * Configuration properties for OpenAPI documentation.
+ *
+ * @property disabled Whether OpenAPI documentation is disabled.
+ * @property swaggerUri The URI path for the Swagger UI.
+ * @property swaggerFilePath The file path for the Swagger UI files.
+ * @property openApiFileUri The URI path for the OpenAPI file.
+ * @property openApiUri The URI path for accessing OpenAPI documentation.
+ * @property openApiFilesPath The file path for storing OpenAPI files.
+ */
 @ConfigurationProperties("opendoc")
-public class OpenApiProperties {
-    private Boolean disabled = false;
-    private String swaggerUri = "/openapi/docs/swagger-ui/";
-    private String swaggerFilePath ="classpath:com/alcosi/nft/apigateway/service/gateway/filter/openapi/swagger_html/";
-    private String openApiFileUri ="/openapi/docs/openapi.yaml";
-    private String openApiUri ="/openapi/docs/";
+class OpenApiProperties {
+    /**
+     * Represents whether OpenAPI documentation is disabled.
+     *
+     * @property disabled Flag indicating whether OpenAPI documentation is disabled. The default value is `false`.
+     */
+    var disabled: Boolean = false
 
-    private String openApiFilesPath ="/opt/openapi/";
+    /**
+     * The URI path for the Swagger UI.
+     */
+    var swaggerUri: String = "/openapi/docs/swagger-ui/"
 
-    public String getOpenApiUri() {
-        return openApiUri;
-    }
+    /**
+     * File path for the Swagger UI files.
+     */
+    var swaggerFilePath: String = "classpath:com/alcosi/nft/apigateway/service/gateway/filter/openapi/swagger_html/"
 
-    public void setOpenApiUri(String openApiUri) {
-        this.openApiUri = openApiUri;
-    }
+    /**
+     * The URI path for the OpenAPI file.
+     */
+    var openApiFileUri: String = "/openapi/docs/openapi.yaml"
 
-    public String getOpenApiFilesPath() {
-        return openApiFilesPath;
-    }
+    /**
+     * Represents the URI path for accessing OpenAPI documentation.
+     *
+     * @property openApiUri The URI path for accessing OpenAPI documentation.
+     */
+    var openApiUri: String = "/openapi/docs/"
 
-    public void setOpenApiFilesPath(String openApiFilesPath) {
-        this.openApiFilesPath = openApiFilesPath;
-    }
-
-    public Boolean getDisabled() {
-        return disabled;
-    }
-
-    public void setDisabled(Boolean disabled) {
-        this.disabled = disabled;
-    }
-
-    public void setSwaggerFilePath(String swaggerFilePath) {
-        this.swaggerFilePath = swaggerFilePath;
-    }
-
-    public String getSwaggerUri() {
-        return swaggerUri;
-    }
-
-    public void setSwaggerUri(String swaggerUri) {
-        this.swaggerUri = swaggerUri;
-    }
-
-    public String getSwaggerFilePath() {
-        return swaggerFilePath;
-    }
-
-
-    public String getOpenApiFileUri() {
-        return openApiFileUri;
-    }
-
-    public void setOpenApiFileUri(String openApiFileUri) {
-        this.openApiFileUri = openApiFileUri;
-    }
+    /**
+     * The file path for storing OpenAPI files.
+     */
+    var openApiFilesPath: String = "/opt/openapi/"
 }

@@ -16,17 +16,28 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.security.validation
 
-import com.alcosi.lib.synchronisation.SynchronizationService
+import io.github.breninsul.synchronizationstarter.service.SynchronizationService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
+/**
+ * The ValidationConfig class is a configuration class used to configure and create beans for validation components.
+ * It is responsible for initializing and wiring the necessary dependencies required for validation.
+ */
 @Configuration
 @EnableConfigurationProperties(ValidationProperties::class)
 @ConditionalOnProperty(prefix = "validation", name = ["disabled"], matchIfMissing = true, havingValue = "false")
 class ValidationConfig {
+    /**
+     * Retrieves an instance of FilterValidationService based on the provided dependencies.
+     *
+     * @param services The list of RequestValidators to use for validation.
+     * @param properties The validation properties containing configuration values.
+     * @return An instance of FilterValidationService.
+     */
     @Bean
     @ConditionalOnMissingBean(FilterValidationService::class)
     fun getFilterValidationService(
@@ -36,6 +47,12 @@ class ValidationConfig {
         return FilterValidationService(services, properties.alwaysPassed, properties.tokenTypeHeader)
     }
 
+    /**
+     * Retrieves an instance of ValidationUniqueTokenChecker based on the provided dependencies.
+     *
+     * @param synchronizationService The synchronization service used for token synchronization.
+     * @return An instance of ValidationUniqueTokenChecker.
+     */
     @Bean
     @ConditionalOnMissingBean(ValidationUniqueTokenChecker::class)
     fun getValidationUniqueTokenChecker(synchronizationService: SynchronizationService): ValidationUniqueTokenChecker {

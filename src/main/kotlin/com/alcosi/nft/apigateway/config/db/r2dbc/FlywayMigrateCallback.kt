@@ -16,6 +16,15 @@
 
 package com.alcosi.nft.apigateway.config.db.r2dbc
 
+/**
+ * FlywayMigrateCallback is an interface that represents a callback function
+ * to be called during the execution of Flyway migration. It can be used
+ * to perform additional actions or logic before or after the migration process.
+ */
 interface FlywayMigrateCallback {
+    /**
+     * This method represents a callback function that is called during the execution of Flyway migration.
+     * It can be used to perform additional actions or logic before or after the migration process.
+     */
     fun call()
 }

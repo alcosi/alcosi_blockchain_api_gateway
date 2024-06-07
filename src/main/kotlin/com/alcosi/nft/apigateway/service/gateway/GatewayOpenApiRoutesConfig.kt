@@ -27,10 +27,24 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.ResourceLoader
 
+/**
+ * GatewayOpenApiRoutesConfig is a configuration class that defines the routes for Swagger and OpenAPI in a gateway.
+ *
+ * @property gatewayBasePathProperties The GatewayBasePathProperties used for configuring the base path of the gateway.
+ */
 @Configuration
 @EnableConfigurationProperties(GatewayBasePathProperties::class)
 @ConditionalOnProperty(prefix = "opendoc", name = ["disabled"], matchIfMissing = true, havingValue = "false")
 class GatewayOpenApiRoutesConfig {
+    /**
+     * Returns the swagger API route for a gateway.
+     *
+     * @param resourceLoader The ResourceLoader used for loading resources.
+     * @param filter The SwaggerApiGatewayFilter used for filtering requests and handling Swagger API requests.
+     * @param properties The GatewayBasePathProperties used for configuring the base path of the gateway.
+     * @param builder The RouteLocatorBuilder used for building the route locator.
+     * @return The RouteLocator representing the swagger API route.
+     */
     @Bean
     fun getSwaggerApiRoute(
         resourceLoader: ResourceLoader,
@@ -50,6 +64,16 @@ class GatewayOpenApiRoutesConfig {
             .build()
     }
 
+    /**
+     * Returns the OpenAPI route for the gateway.
+     *
+     * @param filter The OpenApiDocGatewayFilter used for filtering requests and handling OpenAPI requests.
+     * @param resourceLoader The ResourceLoader used for loading resources.
+     * @param properties The GatewayBasePathProperties used for configuring the base path of the gateway.
+     * @param writer The GatewayFilterResponseWriter used for writing the filter response.
+     * @param builder The RouteLocatorBuilder used for building the route locator.
+     * @return The RouteLocator representing the OpenAPI route.
+     */
     @Bean
     fun getOpenApiRoute(
         filter: OpenApiDocGatewayFilter,

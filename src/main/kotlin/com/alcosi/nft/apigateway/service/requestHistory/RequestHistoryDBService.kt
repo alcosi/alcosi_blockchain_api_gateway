@@ -34,28 +34,63 @@ import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import java.util.*
 
+/**
+ * This class represents a service for managing request history in a database.
+ *
+ * @param component The database component responsible for saving request history data.
+ * @param ipHeader The name of the header containing the client's IP address. Default is "x-real-ip".
+ * @param maskHeaders The list of headers that should be masked when saving the request history.
+ */
 open class RequestHistoryDBService(
     protected val component: RequestHistoryDBComponent,
     protected val ipHeader: String = "x-real-ip",
     protected val maskHeaders: List<String>
 ) {
+    /**
+     * Represents the details of a route.
+     *
+     * @property proxyConfig The proxy route configuration.
+     * @property securityConfig The security route configuration.
+     * @property requiredAuthorities The required authorities for the route.
+     */
     data class RouteDetails(
         val proxyConfig: ProxyRouteConfigDTO?,
         val securityConfig: SecurityRouteConfigDTO?,
         val requiredAuthorities: PathAuthorities?,
     )
 
+    /**
+     * HistoryRqInfo is a data class that represents the information related to a request history.
+     *
+     * @property idMono The Mono that represents the ID of the request history.
+     * @property rqTime The LocalDateTime object that represents the time of the request.
+     */
     data class HistoryRqInfo(
         val idMono: Mono<Long>,
         val rqTime: LocalDateTime,
     )
 
+    /**
+     * Represents the information related to the response of a history record.
+     *
+     * @property idMono A [Mono] emitting the ID of the history record.
+     * @property rqTime The [LocalDateTime] representing the request time.
+     * @property rsTime The [LocalDateTime] representing the response time.
+     */
     data class HistoryRsInfo(
         val idMono: Mono<Long>,
         val rqTime: LocalDateTime,
         val rsTime: LocalDateTime,
     )
 
+    /**
+     * Saves the request information to the database and returns the associated history ID.
+     *
+     * This method is annotated with `@Transactional` to ensure that it is executed within a new transaction.
+     *
+     * @param exchange The ServerWebExchange object representing the request and response.
+     * @return The HistoryRqInfo object containing the ID of the request history and the time of the request.
+     */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun saveRequest(exchange: ServerWebExchange): HistoryRqInfo {
         val request = exchange.request
@@ -95,6 +130,15 @@ open class RequestHistoryDBService(
         return historyRqInfo
     }
 
+    /**
+     * Saves authentication information to the database and returns the associated history info.
+     *
+     * This method is annotated with @Transactional(propagation = Propagation.REQUIRES_NEW)
+     * to ensure that it is executed within a new transaction.
+     *
+     * @param exchange The ServerWebExchange object representing the request and response.
+     * @return The HistoryRqInfo object containing the ID of the request history and the time of the request.
+     */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun saveAuth(exchange: ServerWebExchange): HistoryRqInfo? {
         val client = exchange.attributes[SecurityGatewayFilter.SECURITY_CLIENT_ATTRIBUTE]
@@ -109,6 +153,14 @@ open class RequestHistoryDBService(
         return requestHistoryInfo
     }
 
+    /**
+     * Saves the response information to the database and returns the associated response history.
+     *
+     * @param info The HistoryRqInfo object representing the request history information.
+     * @param rsSize The size of the response in bytes. Can be null if unknown.
+     * @param rsStatusCode The HTTP status code of the response. Can be null if unknown.
+     * @return The HistoryRsInfo object containing the ID of the response history, the time of the request, and the time of the response.
+     */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun saveRs(
         info: HistoryRqInfo,
@@ -121,8 +173,22 @@ open class RequestHistoryDBService(
         return HistoryRsInfo(idMono, info.rqTime, rsTime)
     }
 
+    /**
+     * Retrieves the IP address from the ServerHttpRequest object.
+     *
+     * If the IP address is present in the headers, the first occurrence is returned.
+     * If the IP address is not found in the headers, the hostString of the remoteAddress is returned.
+     *
+     * @return The IP address as a String.
+     */
     open fun ServerHttpRequest.getIp() = headers[ipHeader]?.firstOrNull() ?: remoteAddress?.hostString!!
 
+    /**
+     * Retrieves the URI of the request including the path and query parameters.
+     * The query parameters are appended to the path in the format "key:value1,value2&key2:value3,value4".
+     *
+     * @return The URI as a String.
+     */
     open fun ServerHttpRequest.getUri(): String {
         val params =
             queryParams

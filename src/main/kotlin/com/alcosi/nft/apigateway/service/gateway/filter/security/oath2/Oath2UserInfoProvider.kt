@@ -20,6 +20,15 @@ import com.alcosi.lib.security.PrincipalDetails
 import org.apache.logging.log4j.kotlin.Logging
 import reactor.core.publisher.Mono
 
+/**
+ * Oath2UserInfoProvider interface provides a method to retrieve user information based on an OAuth2 token.
+ */
 interface Oath2UserInfoProvider : Logging {
+    /**
+     * Retrieves user information based on an OAuth2 token.
+     *
+     * @param token The token used for authentication.
+     * @return A Mono that emits the user information as a PrincipalDetails object.
+     */
     fun getInfo(token: String): Mono<PrincipalDetails>
 }

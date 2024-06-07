@@ -13,20 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alcosi.nft.apigateway.service.gateway.filter
 
-package com.alcosi.nft.apigateway.service.gateway.filter;
+import org.springframework.boot.context.properties.ConfigurationProperties
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
+/**
+ * Configuration properties for the CorsFilter.
+ *
+ * This class is annotated with `@ConfigurationProperties` to indicate that it can be configured
+ * using properties specified in the application's configuration file with the prefix "gateway.filter.cors".
+ *
+ * By default, this configuration is enabled (`enabled = true`), meaning that the CORS filter is active.
+ */
 @ConfigurationProperties("gateway.filter.cors")
-public class CorsFilterProperties {
-    private Boolean enabled = true;
-
-    public Boolean getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
+class CorsFilterProperties {
+    /**
+     * Indicates whether the CORS filter is enabled or not.
+     * By default, it is set to `true`, meaning that the CORS filter is active.
+     */
+    var enabled: Boolean = true
 }

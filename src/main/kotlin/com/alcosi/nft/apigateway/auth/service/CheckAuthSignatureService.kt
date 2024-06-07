@@ -26,10 +26,21 @@ import org.web3j.crypto.Sign.SignatureData
 import java.nio.charset.StandardCharsets
 import java.util.*
 
+/**
+ * CheckAuthSignatureService is a class that provides functionality for checking the authenticity of a signature.
+ *
+ * @property disable A flag indicating whether the signature checking is disabled.
+ * @property prepareArgsService An instance of the PrepareHexService class used for preparing hexadecimal values.
+ */
 open class CheckAuthSignatureService(
     protected open val disable: Boolean,
     protected open val prepareArgsService: PrepareHexService,
 ) : Logging {
+    /**
+     * Checks the authenticity of a signature.
+     *
+     * @param nonce The client nonce object.
+     * @param signature*/
     open fun check(
         nonce: com.alcosi.nft.apigateway.auth.dto.ClientNonce,
         signature: String,
@@ -47,6 +58,12 @@ open class CheckAuthSignatureService(
         }
     }
 
+    /**
+     * Retrieves the signature data from the given signature string.
+     *
+     * @param signature The signature string to extract the data from.
+     * @return The extracted signature data.
+     */
     protected open fun getSignatureData(signature: String): SignatureData {
         val signatureBytes = Hex.decodeHex(prepareArgsService.prepareHex(signature))
         var v = signatureBytes[64]

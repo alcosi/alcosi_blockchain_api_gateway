@@ -18,10 +18,18 @@ package com.alcosi.nft.apigateway.service.exception.auth
 
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiSecurityException
 
-class WrongWalletException(wallet: String) : ApiSecurityException(
+/**
+ * WrongWalletException is an open class for representing exceptions related to
+ * incorrect wallet in JSON Web Tokens (JWT).
+ *
+ * @property wallet The name of the wrong wallet.
+ *
+ * @constructor Creates a WrongWalletException instance with the given wallet.
+ * @param wallet The name of the wrong wallet.
+ */
+open class WrongWalletException(wallet: String) : ApiSecurityException(
     """
 Wallet is wrong for this JWT  $wallet
-    """
-        .trimIndent(),
+    """,
     40110,
 )

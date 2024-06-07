@@ -18,5 +18,10 @@ package com.alcosi.nft.apigateway.auth.dto
 
 import java.util.*
 
-@JvmRecord
+/**
+ * Represents a JSON Web Token (JWT) along with its corresponding refresh token.
+ *
+ * @property rt The refresh token.
+ * @property jwt The JWT string.
+ */
 data class JWTAndRefreshToken(val rt: UUID, val jwt: String)

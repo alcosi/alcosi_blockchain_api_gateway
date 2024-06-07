@@ -22,16 +22,35 @@ import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.web.server.ServerWebExchange
 import java.util.function.Predicate
 
+/**
+ * Represents a gateway predicate for route configuration.
+ *
+ * @property delegate The delegate match predicate used for filtering requests.
+ * @property proxyConfig The proxy route configuration.
+ */
 open class RouteConfigGatewayPredicate(
     open val delegate: FilterMatchPredicate,
     open val proxyConfig: ProxyRouteConfigDTO,
 ) : Logging, Predicate<ServerWebExchange> {
+    /**
+     * Overrides the `test` method of the `RouteConfigGatewayPredicate` class.
+     * Tests the `ServerWebExchange` against the configured criteria to determine if it matches.
+     *
+     * @param t The `ServerWebExchange` to be tested.
+     * @return True if the `ServerWebExchange` matches the criteria, false otherwise.
+     */
     override fun test(t: ServerWebExchange): Boolean {
         val haveToPass = delegate.test(t)
         setConfig(haveToPass, t)
         return haveToPass
     }
 
+    /**
+     * Sets the config attribute in the ServerWebExchange if haveToPass is true.
+     *
+     * @param haveToPass Specifies whether the config attribute should be set.
+     * @param t The ServerWebExchange object to set the config attribute on.
+     */
     protected open fun setConfig(
         haveToPass: Boolean,
         t: ServerWebExchange,

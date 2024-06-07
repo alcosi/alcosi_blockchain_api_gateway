@@ -26,11 +26,27 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import java.util.*
 
+/**
+ * The RefreshTokenService class is responsible for refreshing JSON Web Tokens (JWT) by generating
+ * a new JWT along with a corresponding refresh token.
+ *
+ * @property createJWTService The CreateJWTService instance used for creating new JWTs.
+ * @property dbComponent The RefreshTokenDBComponent instance used for managing refresh tokens in a Redis database.
+ * @property checkJWTService The CheckJWTService instance used for parsing and verifying JWTs.
+ */
 open class RefreshTokenService(
     protected val createJWTService: CreateJWTService,
     protected val dbComponent: RefreshTokenDBComponent,
     protected val checkJWTService: CheckJWTService,
 ) {
+    /**
+     * Refreshes the JWT and refresh token for the given wallet.
+     *
+     * @param wallet The wallet name.
+     * @param jwtString The JWT string.
+     * @param rt The refresh token.
+     * @return A Mono emitting the new JWT and refresh token.
+     */
     open fun refresh(
         wallet: String,
         jwtString: String,
@@ -49,6 +65,12 @@ open class RefreshTokenService(
         return walletMono.flatMap { w -> saveInfo(w) }
     }
 
+    /**
+     * Saves the provided wallet information.
+     *
+     * @param wallet The wallet name.
+     * @return A Mono emitting the new JWT and refresh token.
+     */
     open fun saveInfo(wallet: String): Mono<JWTAndRefreshToken> {
         val newRt = UUID.randomUUID()
         return createJWTService.createJWT(wallet).flatMap {
@@ -57,6 +79,12 @@ open class RefreshTokenService(
         }
     }
 
+    /**
+     * Retrieves the wallet name from the provided JSON Web Token (JWT) string.
+     *
+     * @param jwtString The JSON Web Token (JWT) string.
+     * @return The wallet name extracted from the JWT.
+     */
     protected open fun getWalletFromToken(jwtString: String): String {
         return try {
             return parseClaims(checkJWTService.parse(jwtString))
@@ -65,6 +93,12 @@ open class RefreshTokenService(
         }
     }
 
+    /**
+     * Parses the provided Claims object and returns the value associated with the "currentWallet" claim as a String.
+     *
+     * @param claims The Claims object to be parsed.
+     * @return The value associated with the "currentWallet" claim.
+     */
     protected open fun parseClaims(claims: Claims): String {
         return claims.get("currentWallet", String::class.java)
     }

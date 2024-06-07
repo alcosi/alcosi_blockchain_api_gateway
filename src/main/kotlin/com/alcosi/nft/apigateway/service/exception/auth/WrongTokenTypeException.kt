@@ -18,10 +18,16 @@ package com.alcosi.nft.apigateway.service.exception.auth
 
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiSecurityException
 
-class WrongTokenTypeException() : ApiSecurityException(
+/**
+ * WrongTokenTypeException is a subclass of ApiSecurityException that
+ * represents an exception when an unsupported token type is encountered.
+ * It is thrown when a token type other than "Bearer" is received.
+ *
+ * @constructor Creates a WrongTokenTypeException instance.
+ */
+open class WrongTokenTypeException() : ApiSecurityException(
     """
 Wrong token type. Only Bearer is supported
-    """
-        .trimIndent(),
+    """,
     401120,
 )

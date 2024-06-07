@@ -13,40 +13,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alcosi.nft.apigateway.config.db.redis
 
-package com.alcosi.nft.apigateway.config.db.redis;
+import org.springframework.boot.context.properties.ConfigurationProperties
+import java.time.Duration
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.time.Duration;
-
+/**
+ * Configuration properties for Redis check.
+ *
+ * @property delay The delay duration between each check. Default is 5 seconds.
+ * @property disabled A flag indicating whether the Redis check is disabled. Default is false.
+ * @property check A flag indicating whether the Redis check is enabled. Default is true.
+ */
 @ConfigurationProperties(prefix = "spring.data.redis.check")
-public class RedisCheckProperties {
-    private Duration delay= Duration.ofSeconds(5);
-    private Boolean disabled = false;
-    private Boolean check = true;
+class RedisCheckProperties {
+    /**
+     * Represents the delay duration between each check in the Redis check configuration.
+     *
+     * The default value for this variable is 5 seconds.
+     *
+     * @see RedisCheckProperties
+     * @see RedisConfig
+     * @see getRedisCheckScheduler
+     */
+    var delay: Duration = Duration.ofSeconds(5)
 
-    public Boolean getCheck() {
-        return check;
-    }
+    /**
+     * Indicates whether the Redis check is disabled or not.
+     *
+     * The default value of this variable is `false`.
+     *
+     * @see RedisCheckProperties
+     * @see RedisConfig
+     * @see getRedisCheckScheduler
+     */
+    var disabled: Boolean = false
 
-    public void setCheck(Boolean check) {
-        this.check = check;
-    }
-
-    public Duration getDelay() {
-        return delay;
-    }
-
-    public void setDelay(Duration delay) {
-        this.delay = delay;
-    }
-
-    public Boolean getDisabled() {
-        return disabled;
-    }
-
-    public void setDisabled(Boolean disabled) {
-        this.disabled = disabled;
-    }
+    /**
+     * Represents a boolean flag indicating whether the Redis check is enabled or not.
+     *
+     * The default value for this variable is `true`.
+     *
+     * This variable is used in the RedisCheckProperties class to determine whether the Redis check is enabled or disabled.
+     * It is also referenced in the RedisConfig class and the getRedisCheckScheduler function.
+     *
+     * @see RedisCheckProperties
+     * @see RedisConfig
+     * @see getRedisCheckScheduler
+     */
+    var check: Boolean = true
 }

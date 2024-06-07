@@ -22,9 +22,20 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
+/**
+ * Configuration class for SecurityFiltersConfig.
+ *
+ * This class is responsible for configuring the security filters for the application based on the provided properties.
+ */
 @Configuration
 @ConditionalOnProperty(matchIfMissing = true, prefix = "filter.config.path.security", value = ["enabled"], havingValue = "true")
 class SecurityFiltersConfig {
+    /**
+     * Retrieves the SecurityGatewayFilter based on the provided path configuration.
+     *
+     * @param pathConfig The PathConfigurationComponent containing the security configuration path.
+     * @return The SecurityGatewayFilter configured with the provided path configuration.
+     */
     @Bean
     @ConditionalOnMissingBean(SecurityGatewayFilter::class)
     fun getSecurityGatewayFilter(pathConfig: PathConfigurationComponent): SecurityGatewayFilter {

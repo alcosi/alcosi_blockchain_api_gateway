@@ -16,5 +16,9 @@
 
 package com.alcosi.nft.apigateway.auth.dto
 
-@JvmRecord
+/**
+ * Represents a list of authorities for a profile.
+ *
+ * @property authorities The list of authorities.
+ */
 data class ProfileAuthorities(val authorities: List<String>)

@@ -16,9 +16,9 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.attestation
 
-import com.alcosi.lib.objectMapper.MappingHelper
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationProperties
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationUniqueTokenChecker
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -26,16 +26,27 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.client.WebClient
 
+/**
+ * Configuration class for Google Attestation Request Validation.
+ */
 @EnableConfigurationProperties(GoogleAttestationProperties::class)
 @Configuration
 @ConditionalOnProperty(prefix = "validation.google-attestation", name = ["disabled"], matchIfMissing = true, havingValue = "false")
 class GoogleAttestationRequestValidationConfig {
+    /**
+     * Retrieves the Google online attestation component for validating Google Attestation requests.
+     *
+     * @param webClient The WebClient instance used for making HTTP requests.
+     * @param mappingHelper The MappingHelper instance used for mapping request data.
+     * @param uniqueTokenChecker The ValidationUniqueTokenChecker instance used for checking token uniqueness.
+     * @param properties The GoogleAttestationProperties instance containing configuration properties.
+     * @*/
     @Bean
     @ConditionalOnMissingBean(GoogleAttestationRequestValidationComponent::class)
     @ConditionalOnProperty(prefix = "validation.google.attestation", name = ["type"], matchIfMissing = true, havingValue = "ONLINE")
     fun getGoogleOnlineAttestationComponent(
         webClient: WebClient,
-        mappingHelper: MappingHelper,
+        mappingHelper: ObjectMapper,
         uniqueTokenChecker: ValidationUniqueTokenChecker,
         properties: GoogleAttestationProperties,
     ): GoogleAttestationRequestValidationComponent {
@@ -53,11 +64,19 @@ class GoogleAttestationRequestValidationConfig {
         )
     }
 
+    /**
+     * Retrieves the Google offline attestation component for validating Google Attestation requests.
+     *
+     * @param mappingHelper The MappingHelper instance used for mapping request data.
+     * @param uniqueTokenChecker The ValidationUniqueTokenChecker instance used for checking token uniqueness.
+     * @param properties The GoogleAttestationProperties instance containing configuration properties.
+     * @return The GoogleAttestationRequestValidationComponent instance.
+     */
     @Bean
     @ConditionalOnMissingBean(GoogleAttestationRequestValidationComponent::class)
     @ConditionalOnProperty(prefix = "validation.google.attestation", name = ["type"], matchIfMissing = false, havingValue = "OFFLINE")
     fun getGoogleOfflineAttestationComponent(
-        mappingHelper: MappingHelper,
+        mappingHelper: ObjectMapper,
         uniqueTokenChecker: ValidationUniqueTokenChecker,
         properties: GoogleAttestationProperties,
     ): GoogleAttestationRequestValidationComponent {
@@ -74,6 +93,13 @@ class GoogleAttestationRequestValidationConfig {
         )
     }
 
+    /**
+     * Retrieves the Google Attestation Validator instance.
+     *
+     * @param component The Google Attestation Request Validation Component.
+     * @param validationProperties The Validation Properties for Google Attestation.
+     * @return The Google Attestation Validator instance.
+     */
     @Bean
     @ConditionalOnMissingBean(GoogleAttestationValidator::class)
     fun getGoogleAttestationValidator(

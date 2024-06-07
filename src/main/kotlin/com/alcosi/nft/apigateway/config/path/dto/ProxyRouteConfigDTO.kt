@@ -23,7 +23,21 @@ import com.alcosi.nft.apigateway.service.predicate.RouteConfigGatewayPredicate
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonFormat
 
-@JvmRecord
+/**
+ * Represents the configuration for a proxy route in the application.
+ *
+ * @property name The name of the proxy route.
+ * @property matches The list of filter match configurations for matching requests.
+ * @property microserviceUri The URI of the microservice to which requests should be proxied.
+ * @property matchType The type of matching for the filter.
+ * @property type The type of predicate used for matching.
+ * @property basePathFilter Indicates whether the base path should be filtered.
+ * @property order The order of the proxy route configuration.
+ * @property basePath The base path for filtering requests.
+ * @property addBasePath Indicates whether the base path should be appended to the proxied request.
+ * @property encryptFields The list of fields to encrypt in the request.
+ * @property apiKey The API key for authenticating requests.
+ */
 data class ProxyRouteConfigDTO
     @JsonCreator
     constructor(
@@ -40,7 +54,19 @@ data class ProxyRouteConfigDTO
         val encryptFields: List<String>?,
         val apiKey: String?,
     ) {
-        fun toPredicate(): RouteConfigGatewayPredicate {
+    /**
+     * Returns a [RouteConfigGatewayPredicate] based on the current state of the ProxyRouteConfigDTO object.
+     *
+     * If the 'type' property is null, the default value [PathConfigurationComponent.PredicateType.MVC] is used.
+     * If 'addBasePath' is false, the 'prefix' is set to an empty string. Otherwise, it is set to the value of 'basePath'.
+     * The 'matches' property is used as the 'pathMethods' argument for the FilterMatchPredicate constructor.
+     * The 'matchType' property is used as the 'matchType' argument for the FilterMatchPredicate constructor.
+     * The FilterMatchPredicate is created with a new instance of PathAuthorities containing a single PathAuthority with an empty list of authorities.
+     * Finally, a new RouteConfigGatewayPredicate is created with the FilterMatchPredicate and the current ProxyRouteConfigDTO object, and returned.
+     *
+     * @return The generated [RouteConfigGatewayPredicate] based on the current state of the ProxyRouteConfigDTO object.
+     */
+    fun toPredicate(): RouteConfigGatewayPredicate {
             val predicateType = type ?: PathConfigurationComponent.PredicateType.MVC
             val prefix = if (addBasePath == false) "" else (basePath ?: "")
             val filterPredicate =

@@ -18,10 +18,15 @@ package com.alcosi.nft.apigateway.service.exception.auth
 
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiSecurityException
 
-class NotValidRTException() : ApiSecurityException(
+/**
+ * NotValidRTException is an open class for representing exceptions related
+ * to invalid RT data. It extends the ApiSecurityException class.
+ *
+ * @constructor Creates a NotValidRTException instance.
+ */
+open class NotValidRTException() : ApiSecurityException(
     """
 Not valid RT data. Probably not the most recent data used
-    """
-        .trimIndent(),
+    """,
     401102,
 )

@@ -18,4 +18,11 @@ package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ios
 
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.AbstractRequestValidator
 
+/**
+ * The `IOSDeviceCheckValidator` class is responsible for validating iOS device check requests.
+ *
+ * @param iosDeviceCheckComponent The `IOSDeviceCheckRequestValidationComponent` component used for validation.
+ * @param tokenHeader The token header for validation.
+ * @param ipHeader The IP header for validation.
+ */
 open class IOSDeviceCheckValidator(iosDeviceCheckComponent: IOSDeviceCheckRequestValidationComponent, tokenHeader: String, ipHeader: String) : AbstractRequestValidator(iosDeviceCheckComponent, "IOSDeviceCheck", tokenHeader, ipHeader)

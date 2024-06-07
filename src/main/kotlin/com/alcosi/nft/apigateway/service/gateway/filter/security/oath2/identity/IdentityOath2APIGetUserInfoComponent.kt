@@ -16,26 +16,50 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.identity
 
-import com.alcosi.lib.objectMapper.MappingHelper
+import com.alcosi.lib.objectMapper.mapOne
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiException
 import com.alcosi.nft.apigateway.service.gateway.filter.security.oath2.Oath2AuthComponent
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 
+/**
+ * The IdentityOath2APIGetUserInfoComponent is a class that allows retrieving user information
+ * from the identity server using the OAuth2 API.
+ *
+ * @property mappingHelper The MappingHelper instance used for object mapping.
+ * @property webClient The WebClient instance used for making HTTP requests.
+ * @property oath2AuthComponent The Oath2AuthComponent instance used for OAuth2 authentication.
+ * @property apiVersion The version of the API.
+ * @property idServerUri The URI of the identity server.
+ * @property relativePath The relative path for retrieving user information.
+ */
 open class IdentityOath2APIGetUserInfoComponent(
-    protected val mappingHelper: MappingHelper,
+    protected val mappingHelper: ObjectMapper,
     protected val webClient: WebClient,
     protected val oath2AuthComponent: Oath2AuthComponent,
     protected val apiVersion: String,
     idServerUri: String,
     relativePath: String = "/api/user/{id}",
 ) {
+    /**
+     * The URI for retrieving user information.
+     */
     protected open val getUserInfoUri = "${idServerUri}$relativePath"
 
-    @JvmRecord
+    /**
+     * Represents a User.
+     *
+     * @property id The user's ID.
+     * @property fullName The user's full name.
+     * @property email The user's email.
+     * @property phoneNumber The user's phone number.
+     * @property claims The user's claims.
+     * @property photo The user's photo.
+     */
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class User
         @JsonCreator
@@ -51,8 +75,14 @@ open class IdentityOath2APIGetUserInfoComponent(
             val claims: List<Claim>,
             val photo: String?,
         ) {
-            @JvmRecord
-            @JsonIgnoreProperties(ignoreUnknown = true)
+        /**
+         * Represents a full name.
+         *
+         * @property firstName The first name.
+         * @property lastName The last name.
+         * @property middleName The middle name.
+         */
+        @JsonIgnoreProperties(ignoreUnknown = true)
             data class FullName
                 @JsonCreator
                 constructor(
@@ -64,8 +94,13 @@ open class IdentityOath2APIGetUserInfoComponent(
                     val middleName: String?,
                 )
 
-            @JvmRecord
-            data class Claim
+        /**
+         * Represents a claim in the user's profile.
+         *
+         * @property type The type of the claim.
+         * @property value The value of the claim.
+         */
+        data class Claim
                 @JsonCreator
                 constructor(
                     @JsonProperty("type") val type: String,
@@ -73,6 +108,13 @@ open class IdentityOath2APIGetUserInfoComponent(
                 )
         }
 
+    /**
+     * Retrieves user information based on the provided ID.
+     *
+     * @param id The ID of the user.
+     * @return A Mono that emits the User object.
+     * @throws ApiException if there is an error retrieving the user information.
+     */
     fun getInfo(id: String): Mono<User> {
         return webClient
             .get()

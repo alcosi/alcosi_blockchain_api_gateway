@@ -18,4 +18,11 @@ package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.cap
 
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.AbstractRequestValidator
 
+/**
+ * Represents a validator for Google reCAPTCHA requests.
+ *
+ * @param googleCaptchaComponent The GoogleCaptchaRequestValidationComponent used for validation.
+ * @param tokenHeader The name of the header that contains the token.
+ * @param ipHeader The name of the header that contains the IP address.
+ */
 open class GoogleCaptchaValidator(googleCaptchaComponent: GoogleCaptchaRequestValidationComponent, tokenHeader: String, ipHeader: String) : AbstractRequestValidator(googleCaptchaComponent, "GoogleCaptcha", tokenHeader, ipHeader)

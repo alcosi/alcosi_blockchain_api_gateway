@@ -20,9 +20,18 @@ import com.alcosi.lib.utils.PrepareHexService
 import kotlinx.coroutines.reactor.mono
 import reactor.core.publisher.Mono
 
-open class SingleMultiWalletProvider(
-    protected val hexService: PrepareHexService,
-) : MultiWalletProvider {
+/**
+ * Provides a single implementation of the MultiWalletProvider interface.
+ *
+ * @param hexService The instance of PrepareHexService used for preparing wallet addresses.
+ */
+open class SingleMultiWalletProvider(protected val hexService: PrepareHexService, ) : MultiWalletProvider {
+    /**
+     * Retrieves the list of wallet addresses associated with the given wallet name.
+     *
+     * @param wallet The wallet name.
+     * @return A Mono emitting the MultiWalletConfig object containing the list of wallet addresses and profile ID.
+     */
     override fun getWalletsListByWallet(wallet: String): Mono<MultiWalletProvider.MultiWalletConfig> {
         val preparedWallet = hexService.prepareAddr(wallet)
         return mono { MultiWalletProvider.MultiWalletConfig(listOf(preparedWallet), preparedWallet) }

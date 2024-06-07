@@ -24,11 +24,25 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
+/**
+ * The `ContextHeadersGatewayFilter` class is responsible for adding context headers to the incoming request before passing it through the filter chain.
+ *
+ * @param serviceName The name of the microservice.
+ * @param environment The environment of the microservice.
+ * @param order The order of the filter. Default value is `SECURITY_LOG_ORDER + 10`.
+ */
 open class ContextHeadersGatewayFilter(
     val serviceName: String,
     val environment: String,
     private val order: Int = SECURITY_LOG_ORDER + 10,
 ) : MicroserviceGatewayFilter {
+    /**
+     * This method is responsible for adding context headers to the incoming request before passing it through the filter chain.
+     *
+     * @param exchange The ServerWebExchange object representing the current exchange.
+     * @param chain The GatewayFilterChain object representing the filter chain.
+     * @return A Mono<Void> indicating completion of the filtering process.
+     */
     override fun filter(
         exchange: ServerWebExchange,
         chain: GatewayFilterChain,
@@ -49,6 +63,11 @@ open class ContextHeadersGatewayFilter(
         return chain.filter(decorated)
     }
 
+    /**
+     * Returns the order of the `ContextHeadersGatewayFilter` filter.
+     *
+     * @return The order of the filter.
+     */
     override fun getOrder(): Int {
         return order
     }

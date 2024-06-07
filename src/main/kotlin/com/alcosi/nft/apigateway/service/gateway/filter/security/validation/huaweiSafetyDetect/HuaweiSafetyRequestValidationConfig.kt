@@ -16,9 +16,9 @@
 
 package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.huaweiSafetyDetect
 
-import com.alcosi.lib.objectMapper.MappingHelper
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationProperties
 import com.alcosi.nft.apigateway.service.gateway.filter.security.validation.ValidationUniqueTokenChecker
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -26,6 +26,12 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.client.WebClient
 
+/**
+ * Configuration class for Huawei Safety Request Validation.
+ *
+ * This class provides the configuration for the Huawei Safety Request Validation component,
+ * including the conditional bean creation for the necessary components.
+ */
 @Configuration
 @ConditionalOnProperty(
     prefix = "validation.huawei.safety-detect",
@@ -35,18 +41,34 @@ import org.springframework.web.reactive.function.client.WebClient
 )
 @EnableConfigurationProperties(HuaweiSafetyDetectProperties::class)
 class HuaweiSafetyRequestValidationConfig {
+    /**
+     * Returns a new instance of HuaweiSafetyVerifySignatureComponent based on the provided properties.
+     *
+     * @param properties The HuaweiSafetyDetectProperties object containing the certificate information.
+     * @return The HuaweiSafetyVerifySignatureComponent instance initialized with the provided certificate.
+     */
     @Bean
     @ConditionalOnMissingBean(HuaweiSafetyVerifySignatureComponent::class)
     fun getHuaweiSafetyVerifySignatureComponent(properties: HuaweiSafetyDetectProperties): HuaweiSafetyVerifySignatureComponent {
         return HuaweiSafetyVerifySignatureComponent(properties.certificate)
     }
 
+    /**
+     * Returns the HuaweiSafetyDetectRequestValidationComponent based on the provided properties.
+     *
+     * @param properties The HuaweiSafetyDetectProperties object containing the configuration information.
+     * @param webClient The WebClient instance for making HTTP requests.
+     * @param mappingHelper The ObjectMapper instance for mapping objects.
+     * @param verifyUtil The HuaweiSafetyVerifySignatureComponent instance for signature verification.
+     * @param uniqueTokenChecker The ValidationUniqueTokenChecker instance for checking token uniqueness.
+     * @return The HuaweiSafetyDetectRequestValidationComponent initialized with the provided properties.
+     */
     @Bean
     @ConditionalOnMissingBean(HuaweiSafetyDetectRequestValidationComponent::class)
     fun getHuaweiSafetyDetectRequestValidationComponent(
         properties: HuaweiSafetyDetectProperties,
         webClient: WebClient,
-        mappingHelper: MappingHelper,
+        mappingHelper: ObjectMapper,
         verifyUtil: HuaweiSafetyVerifySignatureComponent,
         uniqueTokenChecker: ValidationUniqueTokenChecker,
     ): HuaweiSafetyDetectRequestValidationComponent {
@@ -63,6 +85,13 @@ class HuaweiSafetyRequestValidationConfig {
         )
     }
 
+    /**
+     * Retrieves an instance of HuaweiSafetyDetectCheckValidator.
+     *
+     * @param component The HuaweiSafetyDetectRequestValidationComponent used for request validation.
+     * @param validationProperties The validation properties.
+     * @return The HuaweiSafetyDetectCheckValidator instance.
+     */
     @Bean
     @ConditionalOnMissingBean(HuaweiSafetyDetectCheckValidator::class)
     fun getHuaweiSafetyDetectCheckValidator(

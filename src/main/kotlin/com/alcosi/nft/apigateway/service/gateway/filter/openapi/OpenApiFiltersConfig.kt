@@ -27,10 +27,22 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.ResourceLoader
 
+/**
+ * Configuration class for OpenApi filters.
+ */
 @Configuration
 @EnableConfigurationProperties(OpenApiProperties::class, GatewayBasePathProperties::class)
 @ConditionalOnProperty(prefix = "opendoc", name = ["disabled"], matchIfMissing = true, havingValue = "false")
 class OpenApiFiltersConfig {
+    /**
+     * Retrieves the Swagger API Gateway Filter.
+     *
+     * @param openApiProperties The OpenAPI properties.
+     * @param gatewayBasePathProperties The Gateway base path properties.
+     * @param resourceLoader The ResourceLoader for loading resources.
+     * @param writer The GatewayFilterResponseWriter for writing the response.
+     * @return The SwaggerApiGatewayFilter.
+     */
     @Bean
     @ConditionalOnMissingBean(SwaggerApiGatewayFilter::class)
     fun getSwaggerApiFilter(
@@ -48,6 +60,17 @@ class OpenApiFiltersConfig {
         )
     }
 
+    /**
+     * Retrieves the OpenApiDocGatewayFilter.
+     *
+     * @param openApiProperties The OpenApiProperties object containing the OpenAPI properties.
+     * @param gatewayBasePathProperties The GatewayBasePathProperties object containing the gateway base path properties.
+     * @param basePath The base path for the gateway.
+     * @param resourceLoader The ResourceLoader used for loading resources.
+     * @param writer The GatewayFilterResponseWriter used for writing the response.
+     * @param builder The RouteLocatorBuilder used for building route locators.
+     * @return The OpenApiDocGatewayFilter.
+     */
     @Bean
     @ConditionalOnMissingBean(OpenApiDocGatewayFilter::class)
     fun getOpenApiFilter(

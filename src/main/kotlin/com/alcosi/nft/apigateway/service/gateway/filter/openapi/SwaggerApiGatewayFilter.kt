@@ -26,8 +26,26 @@ import org.springframework.http.MediaType
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 
+/**
+ * Swagger API Order.
+ *
+ * Represents the order value for Swagger API in the GatewayFilter chain.
+ * The Swagger API order is set to 40.
+ */
 public const val SWAGGER_API_ORDER = 40
 
+/**
+ * SwaggerApiGatewayFilter is an open class that extends FileGatewayFilter.
+ * It is responsible for filtering requests based on file paths in the URL and handling Swagger API requests.
+ *
+ * @property gatewayFilterResponseWriter The GatewayFilterResponseWriter used for writing HTTP responses.
+ * @property resourceLoader The ResourceLoader used for loading Swagger API resources.
+ * @property swaggerUriPath The URI path for Swagger API requests.
+ * @property filePath The base path of the Swagger API files.
+ * @property apiFilePath The API file path used for replacing placeholders in the Swagger initializer file.
+ * @property swaggerFileRegex The regex pattern for matching Swagger API files.
+ * @property order The order value for ordering of filters.
+ */
 open class SwaggerApiGatewayFilter(
     val gatewayFilterResponseWriter: GatewayFilterResponseWriter,
     val resourceLoader: ResourceLoader,
@@ -36,16 +54,33 @@ open class SwaggerApiGatewayFilter(
     val apiFilePath: String,
     val swaggerFileRegex: Regex = "^([a-zA-Z0-9_\\-()])+(\\.png|\\.css|\\.html|\\.js)\$".toRegex(),
     private val order: Int = SWAGGER_API_ORDER,
-) : FileGatewayFilter(filePath, gatewayFilterResponseWriter, swaggerUriPath),
-    Logging,
-    Ordered {
+) : FileGatewayFilter(filePath, gatewayFilterResponseWriter, swaggerUriPath), Logging, Ordered {
+    /**
+     * Represents the media type for JavaScript files.
+     */
     protected val jsMediaType = MediaType.parseMediaType("application/javascript")
+
+    /**
+     * Represents the media type for CSS files.
+     */
     protected val cssMediaType = MediaType.parseMediaType("text/css")
 
+    /**
+     * Returns the order value of the SwaggerApiGatewayFilter class.
+     *
+     * @return The order value.
+     */
     override fun getOrder(): Int {
         return order
     }
 
+    /**
+     * Reads a file as a byte array.
+     *
+     * @param fileName The name of the file to read.
+     * @return The contents of the file as a byte array.
+     * @throws ApiException if the file name doesn't match the regex pattern.
+     */
     protected fun readFile(fileName: String): ByteArray {
         if (!swaggerFileRegex.matches(fileName)) {
             throw ApiException(500, "Bad filename")
@@ -61,6 +96,13 @@ open class SwaggerApiGatewayFilter(
         }
     }
 
+    /**
+     * Filters the request based on the provided conditions.
+     *
+     * @param exchange The ServerWebExchange object representing the request and response.
+     * @param chain The GatewayFilterChain object representing the filter chain.
+     * @return A Mono that completes when the response has been processed.
+     */
     override fun filter(
         exchange: ServerWebExchange,
         chain: GatewayFilterChain,

@@ -31,6 +31,20 @@ import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.scheduling.annotation.EnableScheduling
 import kotlin.io.path.Path
 
+/**
+ * The `ApiGatewayApplication` class is the entry point for the API Gateway application.
+ * It is a Spring Boot application that enables scheduling and configures various settings.
+ *
+ * The `@EnableScheduling` annotation enables scheduling support for the application.
+ *
+ * The `@SpringBootApplication` annotation is used to enable the Spring Boot features and
+ * configure the application. It takes the following parameters:
+ * - `scanBasePackages`: Specifies the base packages to scan for components, such as controllers,
+ *   services, and repositories.
+ * - `exclude`: Excludes the specified auto-configuration classes from the application context.
+ *   In this case, Redis, R2DBC, JDBC, and Flyway-related auto-configurations are excluded.
+ *
+ */
 @EnableScheduling
 @SpringBootApplication(
     scanBasePackages = [
@@ -47,7 +61,26 @@ import kotlin.io.path.Path
 )
 class ApiGatewayApplication
 
+/**
+ * The main entry point for the application.
+ *
+ * This method initializes and runs the API Gateway application. It loads external jars,
+ * sets the web application type to reactive, and starts the application.
+ *
+ * @param args The command line arguments.
+ * @see ExternalJarLoad.loadDependency
+ * @see SpringApplicationBuilder
+ * @see ApiGatewayApplication
+ */
 fun main(args: Array<String>) {
+
+// Here we are checking and setting "reactor.schedulers.defaultBoundedElasticOnVirtualThreads" system property based on the environment variable value.
+// If the corresponding environment variable is not set to "false", we are setting the system property to "true".
+// This property is used by Reactor to determine if the scheduler should use virtual threads.
+    val boundedElasticVirtual=System.getenv()["reactor.schedulers.defaultBoundedElasticOnVirtualThreads"]
+    if (!"false".contentEquals(boundedElasticVirtual)) {
+        System.setProperty("reactor.schedulers.defaultBoundedElasticOnVirtualThreads", "true")
+    }
     val externalJarDir = System.getenv()["external.jar.directory.path"] ?: "/opt/external-jar"
     ExternalJarLoad().loadDependency(listOf(Path(externalJarDir)), true)
     SpringApplicationBuilder(ApiGatewayApplication::class.java)

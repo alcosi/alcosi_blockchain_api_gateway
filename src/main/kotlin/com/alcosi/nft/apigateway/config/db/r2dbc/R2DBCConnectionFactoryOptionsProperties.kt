@@ -13,97 +13,107 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alcosi.nft.apigateway.config.db.r2dbc
 
-package com.alcosi.nft.apigateway.config.db.r2dbc;
+import org.springframework.boot.context.properties.ConfigurationProperties
+import java.time.Duration
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
+/**
+ * Configuration properties for R2DBC connection factory options.
+ *
+ * @property enabled Whether R2DBC connection factory options are enabled. Default is false.
+ * @property threads The number of threads to use for R2DBC connection factory options. Default is 10.
+ * @property maxTasks The maximum number of tasks to allow in R2DBC connection factory options. Default is 10.
+ * @property requestHistoryFilterOrder The order of the request history filter. Default is -2147483648.
+ * @property requestHistoryIpHeader The IP header to use for request history. Default is "x-real-ip".
+ * @property partitionsInitSchedulerDelay The delay for initializing partitions. Default is 1 day.
+ * @property partitionsInitMonthDelta The month delta for initializing partitions. Default is 2.
+ * @property requestHistoryMaskHeaders The list of headers to mask in request history. Default is ["AUTHORIZATION", "ValidationToken"].
+ * @property options Additional options for R2DBC connection factory. Default is an empty map.
+ */
 @ConfigurationProperties(prefix = "spring.r2dbc")
-public class R2DBCConnectionFactoryOptionsProperties  {
-    private Boolean enabled = false;
-    private Integer threads = 10;
-    private Integer maxTasks = 10;
-    private Integer requestHistoryFilterOrder = -2147483648;
-    private String requestHistoryIpHeader = "x-real-ip";
-    private Duration partitionsInitSchedulerDelay = Duration.ofDays(1);
-    private Integer partitionsInitMonthDelta = 2;
+open class R2DBCConnectionFactoryOptionsProperties {
+    /**
+     * Represents whether R2DBC connection factory options are enabled.
+     * The default value is false.
+     *
+     * @see R2DBCConnectionFactoryOptionsProperties
+     */
+    var enabled: Boolean = false
 
-    private List<String > requestHistoryMaskHeaders = List.of("AUTHORIZATION","ValidationToken");
+    /**
+     * Number of threads to use for R2DBC connection factory options.
+     *
+     * @see R2DBCConnectionFactoryOptionsProperties
+     */
+    var threads: Int = 10
 
-    public List<String> getRequestHistoryMaskHeaders() {
-        return requestHistoryMaskHeaders;
-    }
+    /**
+     * Maximum number of tasks allowed in the R2DBC connection factory options.
+     *
+     * @see R2DBCConnectionFactoryOptionsProperties
+     */
+    var maxTasks: Int = 10
 
-    public void setRequestHistoryMaskHeaders(List<String> requestHistoryMaskHeaders) {
-        this.requestHistoryMaskHeaders = requestHistoryMaskHeaders;
-    }
+    /**
+     * Represents the filter order of the request history filter.
+     *
+     * The request history filter is responsible for saving the request history information, including the request headers
+     * and the response details. This filter will be executed based on the filter order value.
+     * A lower value indicates a higher priority, i.e., filters with a lower value will be executed before filters with a higher value.
+     *
+     * The default value for this variable is -2147483648, which is the minimum value for an `Int`
+     *
+     * @see R2DBCConnectionFactoryOptionsProperties
+     */
+    var requestHistoryFilterOrder: Int = -2147483648
 
-    public Duration getPartitionsInitSchedulerDelay() {
-        return partitionsInitSchedulerDelay;
-    }
+    /**
+     * The IP header used to retrieve the client IP address from incoming requests.
+     *
+     * @see R2DBCConnectionFactoryOptionsProperties
+     *
+     */
+    var requestHistoryIpHeader: String = "x-real-ip"
 
-    public void setPartitionsInitSchedulerDelay(Duration partitionsInitSchedulerDelay) {
-        this.partitionsInitSchedulerDelay = partitionsInitSchedulerDelay;
-    }
+    /**
+     * Represents the delay for initializing partitions in the scheduler.
+     * The value is a Duration object representing a time span of 1 day.
+     *
+     * @see R2DBCConnectionFactoryOptionsProperties
+     *
+     */
+    var partitionsInitSchedulerDelay: Duration = Duration.ofDays(1)
 
-    public Integer getPartitionsInitMonthDelta() {
-        return partitionsInitMonthDelta;
-    }
+    /**
+     * The number of months to initialize partitions for.
+     *
+     * @see R2DBCConnectionFactoryOptionsProperties
+     *
+     */
+    var partitionsInitMonthDelta: Int = 2
 
-    public void setPartitionsInitMonthDelta(Integer partitionsInitMonthDelta) {
-        this.partitionsInitMonthDelta = partitionsInitMonthDelta;
-    }
+    /**
+     * Holds a list of headers that should be masked in the request history.
+     * This variable is used in the `RequestHistoryDBService` class for saving requests and responses.
+     * The headers specified in this list will be replaced with "<masked>" when saved in the request history.
+     *
+     * @see R2DBCConnectionFactoryOptionsProperties
+     *
+     */
+    var requestHistoryMaskHeaders: List<String> = listOf("AUTHORIZATION", "ValidationToken")
 
-    public String getRequestHistoryIpHeader() {
-        return requestHistoryIpHeader;
-    }
-
-    public void setRequestHistoryIpHeader(String requestHistoryIpHeader) {
-        this.requestHistoryIpHeader = requestHistoryIpHeader;
-    }
-
-    public Integer getThreads() {
-        return threads;
-    }
-
-    public void setThreads(Integer threads) {
-        this.threads = threads;
-    }
-
-    public Integer getMaxTasks() {
-        return maxTasks;
-    }
-
-    public void setMaxTasks(Integer maxTasks) {
-        this.maxTasks = maxTasks;
-    }
-
-    public Integer getRequestHistoryFilterOrder() {
-        return requestHistoryFilterOrder;
-    }
-
-    public void setRequestHistoryFilterOrder(Integer requestHistoryFilterOrder) {
-        this.requestHistoryFilterOrder = requestHistoryFilterOrder;
-    }
-
-    public Boolean getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    private Map<String,String> options= Map.of();
-
-    public Map<String, String> getOptions() {
-        return options;
-    }
-
-    public void setOptions(Map<String, String> options) {
-        this.options = options;
-    }
+    /**
+     * options is a variable of type Map<String, String>.
+     *
+     * It represents a map of options that can be used for customization or configuration purposes.
+     *
+     * The keys in the map are of type String, representing the names of the options.
+     *
+     * The values in the map are of type String, representing the values associated with the options.
+     *
+     * @see R2DBCConnectionFactoryOptionsProperties
+     *
+     */
+    var options: MutableMap<String, String> = mutableMapOf()
 }

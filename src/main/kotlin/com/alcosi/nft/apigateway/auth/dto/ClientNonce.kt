@@ -21,7 +21,15 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.time.LocalDateTime
 
-@JvmRecord
+/**
+ * Represents a client nonce.
+ *
+ * @property nonce The nonce value.
+ * @property createdAt The date and time when the nonce was created.
+ * @property msg The message associated with the nonce.
+ * @property wallet The wallet associated with the nonce.
+ * @property validUntil The date and time until which the nonce is valid.
+ */
 data class ClientNonce(
     val nonce: String,
     @JsonFormat(shape = JsonFormat.Shape.STRING)
@@ -32,6 +40,11 @@ data class ClientNonce(
     @JsonAlias("time")
     val validUntil: LocalDateTime,
 ) {
+    /**
+     * Returns the date and time when the nonce was created.
+     *
+     * @return The date and time when the nonce was created.
+     */
     @JsonProperty("time")
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     fun time(): LocalDateTime {

@@ -18,10 +18,20 @@ package com.alcosi.nft.apigateway.service.exception.auth
 
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiSecurityException
 
-class WrongSignerException(walletSign: String, walletRq: String) : ApiSecurityException(
+/**
+ * WrongSignerException is an open class for representing exceptions related to wrong signers.
+ * It extends the ApiSecurityException class.
+ *
+ * @property walletSign The signer's wallet sign.
+ * @property walletRq The signer's wallet request.
+ *
+ * @constructor Creates a WrongSignerException instance with the given wallet sign and wallet request.
+ * @param walletSign The signer's wallet sign.
+ * @param walletRq The signer's wallet request.
+ */
+open class WrongSignerException(walletSign: String, walletRq: String) : ApiSecurityException(
     """
 Wrong signer. Sign: $walletSign rq:$walletRq
-    """
-        .trimIndent(),
+    """,
     401100,
 )

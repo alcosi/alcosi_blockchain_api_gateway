@@ -23,7 +23,24 @@ import org.springframework.boot.web.error.ErrorAttributeOptions
 import org.springframework.boot.web.reactive.error.DefaultErrorAttributes
 import org.springframework.web.reactive.function.server.ServerRequest
 
-class GlobalErrorAttributes : DefaultErrorAttributes(), Logging {
+/**
+ * GlobalErrorAttributes is an open class that extends
+ * DefaultErrorAttributes and provides custom error attribute handling. It
+ * overrides the getErrorAttributes function to customize the attributes
+ * returned in case of an error.
+ *
+ * @see DefaultErrorAttributes
+ */
+open class GlobalErrorAttributes : DefaultErrorAttributes(), Logging {
+    /**
+     * Retrieves the error attributes for the given request and options.
+     *
+     * @param request The ServerRequest object representing the incoming
+     *     request.
+     * @param options The ErrorAttributeOptions that determine how the error
+     *     attributes should be computed.
+     * @return A Map containing the error attributes for the given request.
+     */
     override fun getErrorAttributes(
         request: ServerRequest,
         options: ErrorAttributeOptions,
@@ -31,14 +48,21 @@ class GlobalErrorAttributes : DefaultErrorAttributes(), Logging {
         val t = super.getError(request)
         logger.error("Unhandled error ${request.exchange().request.id}", t)
         val map = super.getErrorAttributes(request, options)
-        if (t is ApiException) {
-            map["status"] = t.httpCode
-            map["errorCode"] = t.code
-        } else if (t is ExpiredJwtException) {
-            map["status"] = 401
-            map["errorCode"] = 4011
-        } else {
-            map["errorCode"] = 5000
+        when (t) {
+            is ApiException -> {
+                map["status"] = t.httpCode
+                map["errorCode"] = t.code
+            }
+
+            is ExpiredJwtException -> {
+                map["status"] = 401
+                map["errorCode"] = 4011
+            }
+
+            else -> {
+                map["errorCode"] = 5000
+
+            }
         }
         map["message"] = t.message
         map["errorClass"] = t.javaClass.name

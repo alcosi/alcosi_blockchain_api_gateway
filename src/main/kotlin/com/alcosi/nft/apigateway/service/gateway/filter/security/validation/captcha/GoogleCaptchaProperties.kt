@@ -13,100 +13,81 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.captcha
 
-package com.alcosi.nft.apigateway.service.gateway.filter.security.validation.captcha;
+import org.springframework.boot.context.properties.ConfigurationProperties
+import java.math.BigDecimal
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.math.BigDecimal;
-
+/**
+ * Configuration properties for Google Captcha validation.
+ *
+ * @property disabled Whether Google Captcha validation is disabled. Default: false.
+ * @property alwaysPassed Whether Google Captcha validation always passes. Default: false.
+ * @property superTokenEnabled Whether to enable super user token for Google Captcha validation. Default: false.
+ * @property superUserToken The super user token for Google Captcha validation.
+ * @property key The API key for Google Captcha validation.
+ * @property uri The URI for the Google Captcha verification endpoint. Default: "https*/
 @ConfigurationProperties("validation.google.captcha")
-public class GoogleCaptchaProperties {
-    private Boolean disabled = false;
-    private Boolean alwaysPassed = false;
-    private Boolean attestationSuperTokenEnabled = false;
-    private String superUserToken  ="";
-    private String key ="";
-    private String uri="https://www.google.com/recaptcha/api/siteverify";
-    private Long ttl = 6000L ;
-    private TYPE type = TYPE.ONLINE;
-
-    private BigDecimal minRate = new BigDecimal("0.3");
-
-    public BigDecimal getMinRate() {
-        return minRate;
-    }
-
-    public void setMinRate(BigDecimal minRate) {
-        this.minRate = minRate;
-    }
-
-    public  enum TYPE{
-        ONLINE;
-    }
-
-    public TYPE getType() {
-        return type;
-    }
-
-    public void setType(TYPE type) {
-        this.type = type;
-    }
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
-    public Boolean getDisabled() {
-        return disabled;
-    }
-
-    public void setDisabled(Boolean disabled) {
-        this.disabled = disabled;
-    }
-
-    public Boolean getAlwaysPassed() {
-        return alwaysPassed;
-    }
-
-    public void setAlwaysPassed(Boolean alwaysPassed) {
-        this.alwaysPassed = alwaysPassed;
-    }
-
-    public Boolean getSuperTokenEnabled() {
-        return attestationSuperTokenEnabled;
-    }
-
-    public void setSuperTokenEnabled(Boolean attestationSuperTokenEnabled) {
-        this.attestationSuperTokenEnabled = attestationSuperTokenEnabled;
-    }
-
-    public String getSuperUserToken() {
-        return superUserToken;
-    }
-
-    public void setSuperUserToken(String superUserToken) {
-        this.superUserToken = superUserToken;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-
-    public Long getTtl() {
-        return ttl;
-    }
-
-    public void setTtl(Long ttl) {
-        this.ttl = ttl;
+open class GoogleCaptchaProperties {
+    /**
+     * Represents whether Google Captcha validation is disabled.
+     */
+    var disabled: Boolean = false
+    /**
+     * Represents a variable indicating whether a condition is always passed.
+     *
+     * @property alwaysPassed Boolean value indicating whether the condition is always passed.
+     */
+    var alwaysPassed: Boolean = false
+    /**
+     * Whether the super token functionality is enabled or not.
+     */
+    var superTokenEnabled: Boolean = false
+    /**
+     * The superUserToken is a variable that stores a String representation of a super user token.
+     * It is used to authenticate and identify super users in the system.
+     */
+    var superUserToken: String = ""
+    /**
+     * Represents the API key used for Google Captcha validation.
+     * Default value is an empty string.
+     */
+    var key: String = ""
+    /**
+     * Represents the URI (Uniform Resource Identifier) for the Google Captcha API endpoint.
+     */
+    var uri: String = "https://www.google.com/recaptcha/api/siteverify"
+    /**
+     * Time to Live (TTL) for a specific operation.
+     *
+     * @property ttl The duration in milliseconds that represents the time to live.
+     */
+    var ttl: Long = 6000L
+    /**
+     * Represents the type of a variable.
+     *
+     * Currently, there is only one possible value for this variable, which is "ONLINE".
+     * This indicates that the variable is used to represent an online state.
+     *
+     * @see GoogleCaptchaProperties
+     */
+    var type: TYPE = TYPE.ONLINE
+    /**
+     * Represents the minimum interest rate.
+     *
+     * The `minRate` variable stores the minimum interest rate as a `BigDecimal` value.
+     * The default value is 0.3.
+     *
+     * @see BigDecimal
+     */
+    var minRate: BigDecimal = BigDecimal("0.3")
+    /**
+     * Enum representing the type of validation for Google Captcha.
+     *
+     * There is only one value in this enum:
+     * - ONLINE: Indicates that the validation is done online.
+     */
+    enum class TYPE {
+        ONLINE
     }
 }

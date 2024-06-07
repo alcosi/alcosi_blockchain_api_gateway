@@ -13,74 +13,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.alcosi.nft.apigateway.service.multiWallet
 
-package com.alcosi.nft.apigateway.service.multiWallet;
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.http.HttpMethod
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.http.HttpMethod;
-
+/**
+ * Configuration properties for the MultiWallet component.
+ *
+ * @property disabled Indicates whether the MultiWallet component is disabled or not. Defaults to true.
+ * @property httpService Configuration properties for the HTTP service used as the MultiWallet provider.
+ * @property bound Configuration properties for the bound wallet service.
+ * @property provider The provider for the MultiWallet component. Currently only supports HTTP_SERVICE.
+ */
 @ConfigurationProperties("auth.multi-wallet")
-public class MultiWalletProperties {
-    private Boolean disabled = true;
-    private HttpService httpService = new HttpService();
-    private HttpService bound = new HttpService();
-
-    private Provider provider =Provider.HTTP_SERVICE;
-
-    public Boolean getDisabled() {
-        return disabled;
-    }
-
-    public void setDisabled(Boolean disabled) {
-        this.disabled = disabled;
-    }
-
-    public HttpService getBound() {
-        return bound;
-    }
-
-    public void setBound(HttpService bound) {
-        this.bound = bound;
-    }
-
-    public HttpService getHttpService() {
-        return httpService;
-    }
-
-    public void setHttpService(HttpService httpService) {
-        this.httpService = httpService;
-    }
-
-    public Provider getProvider() {
-        return provider;
-    }
-
-    public void setProvider(Provider provider) {
-        this.provider = provider;
-    }
-
-    public enum Provider{
+class MultiWalletProperties {
+    /**
+     * Indicates whether the MultiWallet component is disabled or not.
+     *
+     * @property disabled The current status of the MultiWallet component.
+     */
+    var disabled: Boolean = true
+    /**
+     * Represents an instance of the HttpService class used for HTTP communication.
+     */
+    var httpService: HttpService = HttpService()
+    /**
+     * The `bound` variable represents an instance of the `HttpService` class.
+     *
+     * @property bound The `HttpService` instance that is bound to this variable.
+     */
+    var bound: HttpService = HttpService()
+    /**
+     * The provider for the MultiWallet component.
+     */
+    var provider: Provider = Provider.HTTP_SERVICE
+    /**
+     * Represents the provider for the MultiWallet component.
+     */
+    enum class Provider {
         HTTP_SERVICE
     }
 
-    public class HttpService{
-        private String uri = "";
-        private HttpMethod method = HttpMethod.GET;
-
-        public String getUri() {
-            return uri;
-        }
-
-        public void setUri(String uri) {
-            this.uri = uri;
-        }
-
-        public HttpMethod getMethod() {
-            return method;
-        }
-
-        public void setMethod(HttpMethod method) {
-            this.method = method;
-        }
+    /**
+     * Represents a class for making HTTP requests.
+     */
+    open class HttpService {
+        /**
+         * Represents a URI (uniform resource identifier) used for making HTTP requests.
+         */
+        var uri: String = ""
+        /**
+         * Represents the HTTP method used for making a request.
+         */
+        var method: HttpMethod = HttpMethod.GET
     }
 }

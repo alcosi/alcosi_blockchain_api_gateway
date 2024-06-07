@@ -18,7 +18,19 @@ package com.alcosi.nft.apigateway.auth.service
 
 import org.apache.commons.text.StringSubstitutor
 
+/**
+ * Component class responsible for preparing login messages.
+ *
+ * @param loginTemplate The template for login messages.
+ */
 open class PrepareLoginMsgComponent(val loginTemplate: String) {
+    /**
+     * Retrieves a formatted login message based on the provided wallet and nonce.
+     *
+     * @param wallet The wallet associated with the login message.
+     * @param nonce The nonce associated with the login message.
+     * @return The formatted login message as a [String].
+     */
     open fun getMsg(
         wallet: String,
         nonce: String,
