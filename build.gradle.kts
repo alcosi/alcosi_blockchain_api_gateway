@@ -63,7 +63,7 @@ val dockerProjectName = (System.getenv()["DOCKER_XRT_PROJECT_NAME"] ?: System.ge
 val dockerHubProject = System.getenv()["DOCKER_XRT_PROJECT"] ?: "$dockerProjectNamespace/$dockerProjectName/"
 val javaVersion = JavaVersion.VERSION_21
 
-val env = "DEV-02"
+val env = "RELEASE"
 
 group = "com.alcosi.nft"
 version = "15.0-$env"
@@ -119,25 +119,44 @@ publishing {
             }
         }
     }
-    publications {
-        create<MavenPublication>("ApiGateway") {
-            from(components["java"])
-            groupId = group.toString()
-            artifactId = appName
-            version = version
-            pom {
-                licenses {
-                    license {
-                        name.set("Apache 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0")
-                    }
-                }
+//    publications {
+//        create<MavenPublication>("ApiGateway") {
+//            from(components["java"])
+//            groupId = group.toString()
+//            artifactId = appName
+//            version = version
+//            pom {
+//                licenses {
+//                    license {
+//                        name.set("Apache 2.0")
+//                        url.set("http://www.apache.org/licenses/LICENSE-2.0")
+//                    }
+//                }
+//            }
+//        }
+//    }
+}
+val repo = "github.com/alcosi/alcosi_blockchain_api_gateway"
+
+centralPortal {
+    pom {
+        packaging = "jar"
+        name.set(project.name)
+        val repository = "https://$repo"
+        url.set(repository)
+        licenses {
+            license {
+                name.set("Apache 2.0")
+                url.set("http://www.apache.org/licenses/LICENSE-2.0")
             }
+        }
+        scm {
+            connection.set("scm:$repository.git")
+            developerConnection.set("scm:git@$repo.git")
+            url.set(repository)
         }
     }
 }
-
-
 
 
 configurations {
