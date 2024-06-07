@@ -154,7 +154,7 @@ open class DecryptGatewayFilter(
                                 .doFinally { DataBufferUtils.release(buffer) }
                         },
                         { buffer -> DataBufferUtils.release(buffer) })// Ensure buffer is released/
-                }
+                }.cache()
         }
     }
 

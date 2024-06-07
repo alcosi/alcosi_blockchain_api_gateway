@@ -41,9 +41,7 @@ import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.server.ServerWebExchangeDecorator
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.scheduler.Schedulers
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executors
 /**
  * Value indicating the "Transfer-Encoding" header field value for chunked transfer encoding.
  *
@@ -254,6 +252,7 @@ open class EncryptGatewayFilter(
                                         )
                                     }
                                     .flux()
+                                    .cache()
                             EncryptedDefaultParts.create(part.headers(), filePartEncrypted)
                         }
                 multipartData[field] = encrypted
@@ -339,6 +338,7 @@ open class EncryptGatewayFilter(
                     .mapNotNull { node -> objectMapper.writeValueAsBytes(node) }
                     .map { bytes -> exchange.response.bufferFactory().wrap(bytes) }
                     .flux()
+                    .cache()
                 return encryptedRq
             }
         }

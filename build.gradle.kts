@@ -63,7 +63,7 @@ val dockerProjectName = (System.getenv()["DOCKER_XRT_PROJECT_NAME"] ?: System.ge
 val dockerHubProject = System.getenv()["DOCKER_XRT_PROJECT"] ?: "$dockerProjectNamespace/$dockerProjectName/"
 val javaVersion = JavaVersion.VERSION_21
 
-val env = "dev"
+val env = "DEV-02"
 
 group = "com.alcosi.nft"
 version = "15.0-$env"
