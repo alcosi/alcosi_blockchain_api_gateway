@@ -44,7 +44,6 @@ plugins {
 
 
 
-java.sourceCompatibility = JavaVersion.VERSION_21
 val web3jVersion = "4.12.0"
 val jjwtVersion = "0.12.5"
 val openApiJoinedFile = "openapi.yaml"
@@ -57,16 +56,20 @@ val gitToken = "${System.getenv()["GIHUB_PACKAGE_TOKEN"] ?: System.getenv()["GIT
 
 val dockerUsername = System.getenv()["DOCKER_XRT_USERNAME"] ?: System.getenv()["CI_REGISTRY_USER"]
 val dockerPass = System.getenv()["DOCKER_XRT_PASSWORD"] ?: System.getenv()["CI_JOB_TOKEN"]
-val dockerRegistry = (System.getenv()["DOCKER_XRT_REGISTRY"] ?: System.getenv()["CI_REGISTRY"]) ?: "registry.xertilox.com"
+val dockerRegistry = (System.getenv()["DOCKER_XRT_REGISTRY"] ?: System.getenv()["CI_REGISTRY"]) ?: "harbor.alcosi.com"
 val dockerProjectNamespace = (System.getenv()["DOCKER_XRT_PROJECT_NAMESPACE"] ?: System.getenv()["CI_PROJECT_NAMESPACE"]) ?: "nft"
-val dockerProjectName = (System.getenv()["DOCKER_XRT_PROJECT_NAME"] ?: System.getenv()["CI_PROJECT_NAME"]) ?: "backend_document_processing_module"
+val dockerProjectName = (System.getenv()["DOCKER_XRT_PROJECT_NAME"] ?: System.getenv()["CI_PROJECT_NAME"]) ?: "nft-api-gateway"
 val dockerHubProject = System.getenv()["DOCKER_XRT_PROJECT"] ?: "$dockerProjectNamespace/$dockerProjectName/"
 val javaVersion = JavaVersion.VERSION_21
+
+
 
 val env = "RELEASE"
 
 group = "com.alcosi.nft"
 version = "15.0-$env"
+java.sourceCompatibility = javaVersion
+
 
 val imageVersion = project.version
 val dockerBuildDir = "build/docker/"
