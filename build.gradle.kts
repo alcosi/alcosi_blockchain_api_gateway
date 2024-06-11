@@ -122,22 +122,8 @@ publishing {
             }
         }
     }
-//    publications {
-//        create<MavenPublication>("ApiGateway") {
-//            from(components["java"])
-//            groupId = group.toString()
-//            artifactId = appName
-//            version = version
-//            pom {
-//                licenses {
-//                    license {
-//                        name.set("Apache 2.0")
-//                        url.set("http://www.apache.org/licenses/LICENSE-2.0")
-//                    }
-//                }
-//            }
-//        }
-//    }
+
+
 }
 val repo = "github.com/alcosi/alcosi_blockchain_api_gateway"
 
@@ -145,6 +131,13 @@ centralPortal {
     pom {
         packaging = "jar"
         name.set(project.name)
+        description.set("""
+The application is a ready API Gateway with implemented features, including:
+- Logging
+- Authorization
+- OpenAPI and Swagger distribution
+- Authentication and authorization with Ethereum wallets, including refresh tokens.           
+        """)
         val repository = "https://$repo"
         url.set(repository)
         licenses {
@@ -157,6 +150,14 @@ centralPortal {
             connection.set("scm:$repository.git")
             developerConnection.set("scm:git@$repo.git")
             url.set(repository)
+        }
+        developers {
+            developer {
+                id.set("Alcosi")
+                name.set("Alcosi Group")
+                email.set("info@alcosi.com")
+                url.set("alcosi.com")
+            }
         }
     }
 }
@@ -199,8 +200,6 @@ dependencies {
     annotationProcessor("org.apache.logging.log4j:log4j-core")
     kapt("org.springframework.boot:spring-boot-autoconfigure-processor")
     kapt("org.springframework.boot:spring-boot-configuration-processor")
-//    annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
-//    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 }
 
 configure<SourceSetContainer> {
