@@ -9,16 +9,6 @@ import org.jetbrains.kotlin.gradle.utils.extendsFrom
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 buildscript {
-    repositories {
-        maven {
-            name = "GitHub"
-            url = uri("https://maven.pkg.github.com/alcosi/gradle-dependency-license-page-generator")
-            credentials {
-                username = "${System.getenv()["GIHUB_PACKAGE_USERNAME"] ?: System.getenv()["GITHUB_PACKAGE_USERNAME"]}"
-                password = "${System.getenv()["GIHUB_PACKAGE_TOKEN"] ?: System.getenv()["GITHUB_PACKAGE_TOKEN"]}"
-            }
-        }
-    }
     dependencies {
         classpath("com.alcosi:dependency-license-page-generator:1.0.0")
     }
@@ -96,14 +86,6 @@ repositories {
     maven {
         url = uri("https://repo1.maven.org/maven2")
     }
-    maven {
-        name = "GitHub"
-        url = uri("https://maven.pkg.github.com/alcosi/alcosi_commons_library")
-        credentials {
-            username = gitUsername
-            password = gitToken
-        }
-    }
     maven { url = uri("https://jitpack.io") }
     maven {
         name = "sonatype"
@@ -111,20 +93,6 @@ repositories {
     }
 }
 
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/alcosi/alcosi_blockchain_api_gateway")
-            credentials {
-                username = gitUsername
-                password = gitToken
-            }
-        }
-    }
-
-
-}
 val repo = "github.com/alcosi/alcosi_blockchain_api_gateway"
 
 centralPortal {
@@ -282,7 +250,9 @@ java {
     withSourcesJar()
     withJavadocJar()
 }
-
+tasks.named("generateLicenseReport") {
+    outputs.upToDateWhen { false }
+}
 licenseReport {
     unionParentPomLicenses = false
     outputDir = "$projectDir/reports/license"
