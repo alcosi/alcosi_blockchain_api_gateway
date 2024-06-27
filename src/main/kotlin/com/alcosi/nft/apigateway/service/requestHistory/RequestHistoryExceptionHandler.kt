@@ -17,6 +17,7 @@
 package com.alcosi.nft.apigateway.service.requestHistory
 
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
+import com.alcosi.nft.apigateway.service.gateway.filter.LoggingFilter
 import io.github.breninsul.namedlimitedvirtualthreadexecutor.service.VirtualTreadExecutor
 import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingErrorWebExceptionHandler
 import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingUtils
@@ -57,12 +58,12 @@ open class RequestHistoryExceptionHandler(
     protected val dBService: RequestHistoryDBService,
     protected val requestHistoryInfoFiled: String = PathConfigurationComponent.ATTRIBUTES_REQUEST_HISTORY_INFO,
     addIdHeader: Boolean,
-    utils: SpringCloudGatewayLoggingUtils,
+    utils: LoggingFilter.Utils,
     errorAttributes: ErrorAttributes,
     resources: WebProperties.Resources,
     errorProperties: ErrorProperties,
     applicationContext: ApplicationContext,
-) : SpringCloudGatewayLoggingErrorWebExceptionHandler(addIdHeader, utils, errorAttributes, resources, errorProperties, applicationContext) {
+) : LoggingFilter.ErrorHandler(addIdHeader, utils, errorAttributes, resources, errorProperties, applicationContext) {
     /**
      * Renders an error response for the given ServerRequest.
      *

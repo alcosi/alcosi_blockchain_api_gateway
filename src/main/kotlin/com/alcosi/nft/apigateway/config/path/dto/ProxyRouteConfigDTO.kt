@@ -53,6 +53,9 @@ data class ProxyRouteConfigDTO
         val addBasePath: Boolean?,
         val encryptFields: List<String>?,
         val apiKey: String?,
+        val logBody:Boolean = true,
+        val logHeaders:Boolean = true,
+        val convertMultipartToJson:Boolean=true
     ) {
     /**
      * Returns a [RouteConfigGatewayPredicate] based on the current state of the ProxyRouteConfigDTO object.

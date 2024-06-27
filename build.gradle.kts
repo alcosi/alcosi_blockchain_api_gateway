@@ -19,8 +19,8 @@ plugins {
     id("idea")
     id("java-library")
     id("maven-publish")
-    id("org.springframework.boot") version "3.3.0"
-    id("io.spring.dependency-management") version "1.1.4"
+    id("org.springframework.boot") version "3.3.1"
+    id("io.spring.dependency-management") version "1.1.5"
     id("org.jetbrains.kotlin.jvm") version "2.0.0"
     id("org.jetbrains.kotlin.plugin.spring") version "2.0.0"
     id("com.github.jk1.dependency-license-report") version "2.8"
@@ -57,7 +57,7 @@ val javaVersion = JavaVersion.VERSION_21
 val env = "RELEASE"
 
 group = "com.alcosi.nft"
-version = "15.0-$env"
+version = "15.1-$env"
 java.sourceCompatibility = javaVersion
 
 
@@ -147,10 +147,11 @@ tasks.compileKotlin {
 }
 
 dependencies {
-    api("com.alcosi:commons-library-basic-dependency:3.3.0.4.0.5")
-    api("org.springframework.boot:spring-boot-starter-jdbc:3.3.0")
-    api("org.springframework.boot:spring-boot-starter-data-redis-reactive:3.3.0")
-    api("org.springframework.data:spring-data-r2dbc:3.3.0")
+    api("com.alcosi:commons-library-basic-dependency:3.3.1.4.0.11")
+    api("org.flywaydb:flyway-database-postgresql:10.15.0")
+    api("org.springframework.boot:spring-boot-starter-jdbc:3.3.1")
+    api("org.springframework.boot:spring-boot-starter-data-redis-reactive:3.3.1")
+    api("org.springframework.data:spring-data-r2dbc:3.3.1")
     api("org.springframework.cloud:spring-cloud-starter-gateway:4.1.4")
     api("io.grpc:grpc-netty:1.64.0")
     api("org.postgresql:r2dbc-postgresql:1.0.5.RELEASE")

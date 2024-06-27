@@ -1,5 +1,7 @@
 package com.alcosi.nft.apigateway.service.gateway.filter
 
+import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
+import com.alcosi.nft.apigateway.config.path.dto.ProxyRouteConfigDTO
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -58,7 +60,9 @@ open class MultipartToJsonGatewayFilter(private val order: Int = 0,protected val
     ): Mono<Void> {
         val contentType = exchange.request.headers.contentType
         val compatibleWith = contentType?.includes(MediaType.MULTIPART_FORM_DATA) ?: false
-        if (!compatibleWith) {
+        val proxyConfig = exchange.attributes[PathConfigurationComponent.ATTRIBUTE_PROXY_CONFIG_FIELD] as ProxyRouteConfigDTO?
+        val haveToConvert=compatibleWith && (proxyConfig?.convertMultipartToJson?:true);
+        if (!haveToConvert) {
             return chain.filter(exchange)
         } else {
             val changedHeadersRequest =

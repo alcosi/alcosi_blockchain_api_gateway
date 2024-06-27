@@ -26,11 +26,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.breninsul.webfluxlogging.CommonLoggingUtils
 import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingAutoConfig
 import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingFilter
-import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingUtils
+import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingProperties
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 
 /**
@@ -38,7 +39,37 @@ import org.springframework.context.annotation.Bean
  */
 @AutoConfiguration
 @AutoConfigureBefore(SpringCloudGatewayLoggingAutoConfig::class)
+@EnableConfigurationProperties(SpringCloudGatewayLoggingProperties::class)
 class GatewayFiltersConfig {
+    /**
+     * Retrieves an instance of CommonLoggingUtils if it is not already defined as a bean.
+     *
+     * @return The instance of CommonLoggingUtils.
+     */
+    @Bean
+    @ConditionalOnMissingBean(CommonLoggingUtils::class)
+    fun getCommonLoggingUtils(): CommonLoggingUtils {
+        return CommonLoggingUtils()
+    }
+    /**
+     * Retrieves the SpringCloudGatewayLoggingUtils instance used for logging in the Spring Cloud Gateway.
+     *
+     * @param props               The SpringCloudGatewayLoggingProperties instance containing the logging properties.
+     * @param commonLoggingUtils  The CommonLoggingUtils instance for performing common logging operations.
+     * @return The initialized LoggingFilter.Utils instance for logging in the Spring Cloud Gateway.
+     */
+    @Bean
+    @ConditionalOnMissingBean(LoggingFilter.Utils::class)
+    fun getSpringCloudGatewayLoggingUtils(
+        props: SpringCloudGatewayLoggingProperties,
+        commonLoggingUtils: CommonLoggingUtils,
+    ): LoggingFilter.Utils {
+        val logger =
+            java.util.logging.Logger
+                .getLogger(props.loggerClass)
+        return LoggingFilter.Utils(props.maxBodySize, logger, props.getLoggingLevelAsJavaLevel(), props.logTime, props.logHeaders, props.logBody, commonLoggingUtils)
+    }
+
     /**
      * Retrieves the SpringCloudGatewayLoggingFilter instance.
      *
@@ -48,14 +79,15 @@ class GatewayFiltersConfig {
      * @return The initialized SpringCloudGatewayLoggingFilter instance.
      */
     @Bean
+    @ConditionalOnMissingBean(SpringCloudGatewayLoggingFilter::class)
     fun getSpringCloudGatewayLoggingFilter(
-        springCloudGatewayLoggingUtils: SpringCloudGatewayLoggingUtils,
+        springCloudGatewayLoggingUtils: LoggingFilter.Utils,
         encryptFilters: List<EncryptGatewayFilter>,
         decryptFilters: List<DecryptGatewayFilter>,
     ): SpringCloudGatewayLoggingFilter {
         val maxFromEncryptFilters = (encryptFilters + decryptFilters).map { it.order + 1 } + listOf(Int.MIN_VALUE)
         val orderVal = maxFromEncryptFilters.max()
-        return SpringCloudGatewayLoggingFilter(true, springCloudGatewayLoggingUtils, orderVal, HeaderHelper.RQ_ID)
+        return LoggingFilter(true, springCloudGatewayLoggingUtils, orderVal, HeaderHelper.RQ_ID)
     }
 
     /**
@@ -65,9 +97,8 @@ class GatewayFiltersConfig {
      * @return An instance of the GatewayFilterResponseWriter.
      */
     @Bean
-    fun getGatewayFilterResponseWriter(mappingHelper: ObjectMapper): GatewayFilterResponseWriter {
-        return GatewayFilterResponseWriter(mappingHelper)
-    }
+    @ConditionalOnMissingBean(GatewayFilterResponseWriter::class)
+    fun getGatewayFilterResponseWriter(mappingHelper: ObjectMapper): GatewayFilterResponseWriter = GatewayFilterResponseWriter(mappingHelper)
 
     /**
      * Retrieves an instance of the StripBaseUriFilter.
@@ -76,11 +107,10 @@ class GatewayFiltersConfig {
      * @return An instance of the StripBaseUriFilter.
      */
     @Bean
+    @ConditionalOnMissingBean(StripBaseUriFilter::class)
     fun getStripBaseUriFilter(
         @Value("\${gateway.base.path:/api}") basePath: String,
-    ): StripBaseUriFilter {
-        return StripBaseUriFilter(basePath)
-    }
+    ): StripBaseUriFilter = StripBaseUriFilter(basePath)
 
     /**
      * Retrieves an instance of the MultipartToJsonGatewayFilter.
@@ -94,9 +124,7 @@ class GatewayFiltersConfig {
     fun getMultipartToJsonGatewayFilter(
         writer: GatewayFilterResponseWriter,
         objectMapper: ObjectMapper,
-    ): MultipartToJsonGatewayFilter {
-        return MultipartToJsonGatewayFilter(objectMapper = objectMapper)
-    }
+    ): MultipartToJsonGatewayFilter = MultipartToJsonGatewayFilter(objectMapper = objectMapper)
 
     /**
      * Retrieves an instance of the EncryptGatewayFilter.
@@ -112,9 +140,7 @@ class GatewayFiltersConfig {
         commonUtils: CommonLoggingUtils,
         keyProvider: KeyProvider,
         objectMapper: ObjectMapper,
-    ): EncryptGatewayFilter {
-        return EncryptGatewayFilter(commonUtils, keyProvider, objectMapper, PathConfigurationComponent.ATTRIBUTE_PROXY_CONFIG_FIELD)
-    }
+    ): EncryptGatewayFilter = EncryptGatewayFilter(commonUtils, keyProvider, objectMapper, PathConfigurationComponent.ATTRIBUTE_PROXY_CONFIG_FIELD)
 
     /**
      * Retrieves an instance of the DecryptGatewayFilter.
@@ -130,9 +156,7 @@ class GatewayFiltersConfig {
         commonUtils: CommonLoggingUtils,
         sensitiveComponent: SensitiveComponent,
         keyProvider: KeyProvider,
-    ): DecryptGatewayFilter {
-        return DecryptGatewayFilter(commonUtils, sensitiveComponent, keyProvider)
-    }
+    ): DecryptGatewayFilter = DecryptGatewayFilter(commonUtils, sensitiveComponent, keyProvider)
 
     /**
      * Retrieves an instance of the `ValidationGatewayFilter`.
@@ -148,9 +172,7 @@ class GatewayFiltersConfig {
         validationService: FilterValidationService,
         pathConfig: PathConfigurationComponent,
         @Value("\${gateway.base.path:/api}") basePath: String,
-    ): ValidationGatewayFilter {
-        return ValidationGatewayFilter(validationService, pathConfig.validationConfig.toPredicate())
-    }
+    ): ValidationGatewayFilter = ValidationGatewayFilter(validationService, pathConfig.validationConfig.toPredicate())
 
     /**
      * Retrieves the ContextHeadersGatewayFilter instance.
@@ -164,7 +186,5 @@ class GatewayFiltersConfig {
     fun getContextHeadersGatewayFilter(
         @Value("\${spring.application.name:API_GATEWAY}") serviceName: String,
         @Value("\${spring.application.environment:dev}") environment: String,
-    ): ContextHeadersGatewayFilter {
-        return ContextHeadersGatewayFilter(serviceName, environment)
-    }
+    ): ContextHeadersGatewayFilter = ContextHeadersGatewayFilter(serviceName, environment)
 }

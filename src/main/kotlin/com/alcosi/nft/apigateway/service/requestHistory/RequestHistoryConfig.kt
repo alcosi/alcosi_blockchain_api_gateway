@@ -18,6 +18,7 @@ package com.alcosi.nft.apigateway.service.requestHistory
 
 import com.alcosi.nft.apigateway.config.db.r2dbc.R2DBCConnectionFactoryOptionsProperties
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
+import com.alcosi.nft.apigateway.service.gateway.filter.LoggingFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.JwtGatewayFilter
 import com.alcosi.nft.apigateway.service.requestHistory.filter.RequestHistoryGatewayFilterRq
 import com.alcosi.nft.apigateway.service.requestHistory.filter.RequestHistoryGatewayFilterSecurity
@@ -207,7 +208,7 @@ open class RequestHistoryConfig() {
         serverCodecConfigurer: ServerCodecConfigurer,
         applicationContext: AnnotationConfigReactiveWebServerApplicationContext,
         serverProperties: ServerProperties,
-        utils: SpringCloudGatewayLoggingUtils,
+        utils: LoggingFilter.Utils,
     ): RequestHistoryExceptionHandler {
         val handler = RequestHistoryExceptionHandler(requestHistoryDBService, PathConfigurationComponent.ATTRIBUTES_REQUEST_HISTORY_INFO, props.addIdHeader, utils, errorAttributes, webProperties.resources, serverProperties.error, applicationContext)
         handler.setViewResolvers(viewResolvers.orderedStream().toList())
