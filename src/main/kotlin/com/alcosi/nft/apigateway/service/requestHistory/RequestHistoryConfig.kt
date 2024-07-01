@@ -210,7 +210,7 @@ open class RequestHistoryConfig() {
         serverProperties: ServerProperties,
         utils: LoggingFilter.Utils,
     ): RequestHistoryExceptionHandler {
-        val handler = RequestHistoryExceptionHandler(requestHistoryDBService, PathConfigurationComponent.ATTRIBUTES_REQUEST_HISTORY_INFO, props.addIdHeader, utils, errorAttributes, webProperties.resources, serverProperties.error, applicationContext)
+        val handler = RequestHistoryExceptionHandler(requestHistoryDBService, props.addIdHeader, utils, errorAttributes, webProperties.resources, serverProperties.error, applicationContext)
         handler.setViewResolvers(viewResolvers.orderedStream().toList())
         handler.setMessageWriters(serverCodecConfigurer.writers)
         handler.setMessageReaders(serverCodecConfigurer.readers)

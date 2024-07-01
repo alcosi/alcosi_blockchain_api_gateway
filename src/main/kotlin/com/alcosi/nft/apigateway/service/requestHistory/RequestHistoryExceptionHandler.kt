@@ -17,10 +17,12 @@
 package com.alcosi.nft.apigateway.service.requestHistory
 
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
+import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent.Companion.ATTRIBUTES_REQUEST_HISTORY_INFO
 import com.alcosi.nft.apigateway.service.gateway.filter.LoggingFilter
 import io.github.breninsul.namedlimitedvirtualthreadexecutor.service.VirtualTreadExecutor
 import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingErrorWebExceptionHandler
 import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingUtils
+import org.apache.logging.log4j.kotlin.logger
 import org.reactivestreams.Publisher
 import org.springframework.boot.autoconfigure.web.ErrorProperties
 import org.springframework.boot.autoconfigure.web.WebProperties
@@ -34,6 +36,7 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -56,7 +59,6 @@ import java.util.concurrent.atomic.AtomicLong
  */
 open class RequestHistoryExceptionHandler(
     protected val dBService: RequestHistoryDBService,
-    protected val requestHistoryInfoFiled: String = PathConfigurationComponent.ATTRIBUTES_REQUEST_HISTORY_INFO,
     addIdHeader: Boolean,
     utils: LoggingFilter.Utils,
     errorAttributes: ErrorAttributes,
@@ -72,7 +74,7 @@ open class RequestHistoryExceptionHandler(
      */
     override fun renderErrorResponse(request: ServerRequest): Mono<ServerResponse> {
         val rsMono = super.renderErrorResponse(request)
-        return rsMono.map { RequestHistoryResponse(dBService, requestHistoryInfoFiled, it) }
+        return rsMono.map { RequestHistoryResponse(dBService, it) }
     }
 
     /**
@@ -87,18 +89,20 @@ open class RequestHistoryExceptionHandler(
      */
     open class RequestHistoryResponse(
         protected val dBService: RequestHistoryDBService,
-        protected val requestHistoryInfoFiled: String = PathConfigurationComponent.ATTRIBUTES_REQUEST_HISTORY_INFO,
         protected val delegateRs: ServerResponse,
     ) : ServerResponse by delegateRs {
         override fun writeTo(
             exchange: ServerWebExchange,
             context: ServerResponse.Context,
         ): Mono<Void> {
-            val requestHistoryInfo = exchange.attributes[requestHistoryInfoFiled]!! as RequestHistoryDBService.HistoryRqInfo
-            val logged =
-                exchange.mutate().response(
-                    RequestHistoryResponseInterceptor(requestHistoryInfo, dBService, exchange.response),
-                ).build()
+            val time=System.currentTimeMillis()
+            val requestHistoryInfoFuture = exchange.attributes[ATTRIBUTES_REQUEST_HISTORY_INFO]!! as CompletableFuture<RequestHistoryDBService.HistoryRqInfo>
+            val requestHistoryInfo= requestHistoryInfoFuture.get()
+            val took=System.currentTimeMillis()-time
+            if (took>1) {
+                logger.info("DB RequestHistoryDBService waiting took $took ms")
+            }
+            val logged = exchange.mutate().response(RequestHistoryResponseInterceptor(requestHistoryInfo, dBService, exchange.response)).build()
             return delegateRs.writeTo(logged, context)
         }
     }

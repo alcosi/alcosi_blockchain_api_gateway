@@ -20,10 +20,12 @@ import com.alcosi.lib.security.AccountDetails
 import com.alcosi.lib.security.PrincipalDetails
 import com.alcosi.lib.security.UserDetails
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
+import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent.Companion.ATTRIBUTES_REQUEST_HISTORY_INFO
 import com.alcosi.nft.apigateway.config.path.dto.PathAuthorities
 import com.alcosi.nft.apigateway.config.path.dto.ProxyRouteConfigDTO
 import com.alcosi.nft.apigateway.config.path.dto.SecurityRouteConfigDTO
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
+import org.apache.logging.log4j.kotlin.logger
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.server.reactive.ServerHttpRequest
@@ -33,6 +35,7 @@ import org.springframework.web.server.ServerWebExchange
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 /**
  * This class represents a service for managing request history in a database.
@@ -93,41 +96,49 @@ open class RequestHistoryDBService(
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun saveRequest(exchange: ServerWebExchange): HistoryRqInfo {
-        val request = exchange.request
-        val rqHeaders = request.headers
-        val rqHeadersMap = request.headers
-            .toMap()
-            .mapValues { it.value?.joinToString("\n") }
-            .mapValues { if (maskHeaders.any { mh -> mh.equals(it.key, true) }) it.value?.let { _ -> "<masked>" } else it.value }
-        val securityConfig = exchange.attributes[PathConfigurationComponent.ATTRIBUTE_SECURITY_CONFIG_FIELD] as SecurityRouteConfigDTO?
-        val proxyConfig = exchange.attributes[PathConfigurationComponent.ATTRIBUTE_PROXY_CONFIG_FIELD] as ProxyRouteConfigDTO?
-        val requiredAuthorities = exchange.attributes[PathConfigurationComponent.ATTRIBUTE_REQ_AUTHORITIES_FIELD] as PathAuthorities?
-        val routeDetails =
-            RouteDetails(
-                proxyConfig?.copy(apiKey = proxyConfig.apiKey?.let { "<masked>" }),
-                securityConfig,
-                requiredAuthorities,
-            )
-        val rqSize = (rqHeaders[HttpHeaders.CONTENT_LENGTH] ?: rqHeaders["${HttpHeaders.CONTENT_LENGTH}_ORIGINAL"])?.first()?.toLongOrNull() ?: rqHeaders.contentLength
-        val rqTime = LocalDateTime.now()
-        exchange.attributes[PathConfigurationComponent.ATTRIBUTES_REQUEST_TIME] = rqTime
-        val historyIdMono =
-            component.saveRequest(
-                request.id,
-                rqHeadersMap,
-                request.getIp(),
-                request.getUri(),
-                request.method,
-                rqSize,
-                rqTime,
-                routeDetails.proxyConfig?.name ?: routeDetails.proxyConfig?.microserviceUri ?: "NONE",
-                routeDetails,
-            )
-                .cache()
-        historyIdMono.subscribe()
-        val historyRqInfo = HistoryRqInfo(historyIdMono, rqTime)
-        exchange.attributes[PathConfigurationComponent.ATTRIBUTES_REQUEST_HISTORY_INFO] = historyRqInfo
-        return historyRqInfo
+        val historyRqInfoCompletableFuture = CompletableFuture<HistoryRqInfo>()
+        try {
+            exchange.attributes[PathConfigurationComponent.ATTRIBUTES_REQUEST_HISTORY_INFO] = historyRqInfoCompletableFuture
+
+            val request = exchange.request
+            val rqHeaders = request.headers
+            val rqHeadersMap = request.headers
+                .toMap()
+                .mapValues { it.value?.joinToString("\n") }
+                .mapValues { if (maskHeaders.any { mh -> mh.equals(it.key, true) }) it.value?.let { _ -> "<masked>" } else it.value }
+            val securityConfig = exchange.attributes[PathConfigurationComponent.ATTRIBUTE_SECURITY_CONFIG_FIELD] as SecurityRouteConfigDTO?
+            val proxyConfig = exchange.attributes[PathConfigurationComponent.ATTRIBUTE_PROXY_CONFIG_FIELD] as ProxyRouteConfigDTO?
+            val requiredAuthorities = exchange.attributes[PathConfigurationComponent.ATTRIBUTE_REQ_AUTHORITIES_FIELD] as PathAuthorities?
+            val routeDetails =
+                RouteDetails(
+                    proxyConfig?.copy(apiKey = proxyConfig.apiKey?.let { "<masked>" }),
+                    securityConfig,
+                    requiredAuthorities,
+                )
+            val rqSize = (rqHeaders[HttpHeaders.CONTENT_LENGTH] ?: rqHeaders["${HttpHeaders.CONTENT_LENGTH}_ORIGINAL"])?.first()?.toLongOrNull() ?: rqHeaders.contentLength
+            val rqTime = LocalDateTime.now()
+            exchange.attributes[PathConfigurationComponent.ATTRIBUTES_REQUEST_TIME] = rqTime
+            val historyIdMono =
+                component.saveRequest(
+                    request.id,
+                    rqHeadersMap,
+                    request.getIp(),
+                    request.getUri(),
+                    request.method,
+                    rqSize,
+                    rqTime,
+                    routeDetails.proxyConfig?.name ?: routeDetails.proxyConfig?.microserviceUri ?: "NONE",
+                    routeDetails,
+                )
+                    .cache()
+            historyIdMono.subscribe()
+            val historyRqInfo = HistoryRqInfo(historyIdMono, rqTime)
+            historyRqInfoCompletableFuture.complete(historyRqInfo)
+            return historyRqInfo
+        }catch (t:Throwable){
+            historyRqInfoCompletableFuture.completeExceptionally(t)
+            throw t
+        }
     }
 
     /**
@@ -142,7 +153,14 @@ open class RequestHistoryDBService(
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun saveAuth(exchange: ServerWebExchange): HistoryRqInfo? {
         val client = exchange.attributes[SecurityGatewayFilter.SECURITY_CLIENT_ATTRIBUTE]
-        val requestHistoryInfo = exchange.attributes[PathConfigurationComponent.ATTRIBUTES_REQUEST_HISTORY_INFO] as HistoryRqInfo?
+        val time=System.currentTimeMillis()
+        val requestHistoryInfoFuture = exchange.attributes[ATTRIBUTES_REQUEST_HISTORY_INFO]!! as CompletableFuture<RequestHistoryDBService.HistoryRqInfo>
+
+        val requestHistoryInfo = requestHistoryInfoFuture.get()
+        val took=System.currentTimeMillis()-time
+        if (took>1) {
+            logger.info("DB RequestHistoryDBService waiting took $took ms")
+        }
         if (client != null && client is PrincipalDetails) {
             val userId = if (client is UserDetails) UUID.fromString(client.id) else null
             val accountId = if (client is AccountDetails) UUID.fromString(client.id) else null
