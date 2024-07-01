@@ -1,5 +1,6 @@
 package com.alcosi.nft.apigateway.service.gateway.filter
 
+import com.alcosi.nft.apigateway.config.VirtualWebFluxScheduler
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
 import com.alcosi.nft.apigateway.config.path.dto.ProxyRouteConfigDTO
 import com.fasterxml.jackson.databind.JsonNode
@@ -126,7 +127,9 @@ open class MultipartToJsonGatewayFilter(private val order: Int = 0,protected val
                     val bt =
                         parts.map { (name, part) ->
                             val bytes =
-                                part.content().publishOn(com.alcosi.nft.apigateway.config.VirtualWebFluxScheduler)
+                                part.content()
+                                    .publishOn(com.alcosi.nft.apigateway.config.VirtualWebFluxScheduler)
+                                    .publishOn(Schedulers.boundedElastic())
                                     .reduce(ByteArray(0)) { array, buffer ->
                                         try {
                                             val position = buffer.readPosition()

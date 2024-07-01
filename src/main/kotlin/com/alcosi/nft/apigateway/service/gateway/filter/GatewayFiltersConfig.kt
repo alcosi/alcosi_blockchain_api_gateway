@@ -156,7 +156,7 @@ class GatewayFiltersConfig {
         commonUtils: CommonLoggingUtils,
         sensitiveComponent: SensitiveComponent,
         keyProvider: KeyProvider,
-    ): DecryptGatewayFilter = DecryptGatewayFilter(commonUtils, sensitiveComponent, keyProvider)
+    ): DecryptGatewayFilter = DecryptGatewayFilter(commonUtils, sensitiveComponent, keyProvider, attrProxyConfigField =  PathConfigurationComponent.ATTRIBUTE_PROXY_CONFIG_FIELD)
 
     /**
      * Retrieves an instance of the `ValidationGatewayFilter`.

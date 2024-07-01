@@ -57,7 +57,7 @@ val javaVersion = JavaVersion.VERSION_21
 val env = "RELEASE"
 
 group = "com.alcosi.nft"
-version = "15.2-$env"
+version = "15.4-$env"
 java.sourceCompatibility = javaVersion
 
 

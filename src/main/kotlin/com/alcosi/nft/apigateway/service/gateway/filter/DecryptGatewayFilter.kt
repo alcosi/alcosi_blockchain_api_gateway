@@ -18,6 +18,7 @@ package com.alcosi.nft.apigateway.service.gateway.filter
 
 import com.alcosi.lib.secured.encrypt.SensitiveComponent
 import com.alcosi.lib.secured.encrypt.key.KeyProvider
+import com.alcosi.nft.apigateway.config.path.dto.ProxyRouteConfigDTO
 import io.github.breninsul.namedlimitedvirtualthreadexecutor.service.VirtualTreadExecutor
 import io.github.breninsul.webfluxlogging.CommonLoggingUtils
 import org.apache.logging.log4j.kotlin.Logging
@@ -63,7 +64,8 @@ open class DecryptGatewayFilter(
     val sensitiveComponent: SensitiveComponent,
     val keyProvider: KeyProvider,
     private val order: Int = Int.MIN_VALUE,
-) : MicroserviceGatewayFilter {
+    val attrProxyConfigField: String,
+    ) : MicroserviceGatewayFilter {
     /**
      * Applies the filter to the given server web exchange and gateway filter chain.
      *
@@ -75,7 +77,7 @@ open class DecryptGatewayFilter(
         exchange: ServerWebExchange,
         chain: GatewayFilterChain,
     ): Mono<Void> {
-        val decorated = exchange.mutate().response(DecryptResponseDecorator(exchange, utils, sensitiveComponent, keyProvider)).build()
+        val decorated = exchange.mutate().response(DecryptResponseDecorator(exchange, utils, sensitiveComponent, keyProvider,attrProxyConfigField)).build()
 
         return chain.filter(decorated)
     }
@@ -104,7 +106,8 @@ open class DecryptGatewayFilter(
         val utils: CommonLoggingUtils,
         val sensitiveComponent: SensitiveComponent,
         val keyProvider: KeyProvider,
-    ) : ServerHttpResponseDecorator(exchange.response), Logging {
+        val attrProxyConfigField: String,
+        ) : ServerHttpResponseDecorator(exchange.response), Logging {
         /**
          * Writes the given body to the response, performing decryption and other necessary operations.
          *
@@ -112,6 +115,10 @@ open class DecryptGatewayFilter(
          * @return A Mono representing the completion of the write operation.
          */
         override fun writeWith(body: Publisher<out DataBuffer>): Mono<Void> {
+            val decrypt = (exchange.attributes[attrProxyConfigField] as ProxyRouteConfigDTO?)?.decryptResponse?:false
+            if (!decrypt){
+                return super.writeWith(body)
+            }
             return DataBufferUtils.join(body)
                 .flatMap { dataBuffer ->
                     val content = utils.getContentBytes(dataBuffer)?.let { dt -> String(dt) }
@@ -146,15 +153,11 @@ open class DecryptGatewayFilter(
                     }
                     return@mapNotNull exchange.response.bufferFactory().wrap(decrypted!!)
                 }
+                .cache()
                 .flatMap { dataBuffer ->
-                    Mono.using(
-                        { dataBuffer },
-                        { buffer ->
-                            super.writeWith(Mono.just(buffer))
-                                .doFinally { DataBufferUtils.release(buffer) }
-                        },
-                        { buffer -> DataBufferUtils.release(buffer) })// Ensure buffer is released/
-                }.cache()
+                    super.writeWith(Mono.just(dataBuffer))
+                }
+
         }
     }
 
