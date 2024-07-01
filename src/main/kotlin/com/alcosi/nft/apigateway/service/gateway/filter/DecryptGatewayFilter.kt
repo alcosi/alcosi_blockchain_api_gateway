@@ -153,10 +153,10 @@ open class DecryptGatewayFilter(
                     }
                     return@mapNotNull exchange.response.bufferFactory().wrap(decrypted!!)
                 }
-                .cache()
                 .flatMap { dataBuffer ->
                     super.writeWith(Mono.just(dataBuffer))
                 }
+                .cache()
 
         }
     }
