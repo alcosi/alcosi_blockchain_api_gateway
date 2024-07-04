@@ -25,6 +25,7 @@ import com.alcosi.nft.apigateway.config.path.dto.PathAuthorities
 import com.alcosi.nft.apigateway.config.path.dto.ProxyRouteConfigDTO
 import com.alcosi.nft.apigateway.config.path.dto.SecurityRouteConfigDTO
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter
+import io.github.breninsul.namedlimitedvirtualthreadexecutor.service.VirtualTreadExecutor
 import org.apache.logging.log4j.kotlin.logger
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatusCode
@@ -140,21 +141,25 @@ open class RequestHistoryDBService(
     }
 
     /**
-     * Saves authentication information to the database and returns the associated history info.
-     *
-     * This method is annotated with @Transactional(propagation = Propagation.REQUIRES_NEW)
-     * to ensure that it is executed within a new transaction.
+     * Saves authentication information to the database.
      *
      * @param exchange The ServerWebExchange object representing the request and response.
-     * @return The HistoryRqInfo object containing the ID of the request history and the time of the request.
+     * @return A Boolean value indicating whether the authentication information was successfully saved.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    open fun saveAuth(exchange: ServerWebExchange): HistoryRqInfo? {
+    open fun saveAuth(exchange: ServerWebExchange) :Boolean{
         val client = exchange.attributes[SecurityGatewayFilter.SECURITY_CLIENT_ATTRIBUTE]
         val time=System.currentTimeMillis()
-        val requestHistoryInfoFuture = exchange.attributes[ATTRIBUTES_REQUEST_HISTORY_INFO]!! as CompletableFuture<RequestHistoryDBService.HistoryRqInfo>
-
-        val requestHistoryInfo = requestHistoryInfoFuture.get()
+        val requestHistoryInfoFuture = exchange.attributes[ATTRIBUTES_REQUEST_HISTORY_INFO] as CompletableFuture<RequestHistoryDBService.HistoryRqInfo>?
+        val requestHistoryInfoMono =if (requestHistoryInfoFuture==null){
+            val future=CompletableFuture<RequestHistoryDBService.HistoryRqInfo>()
+            logger.info("No RequestHistoryDBService set")
+            val requestInfoMono = Mono.fromFuture(CompletableFuture.supplyAsync({ saveRequest(exchange,future) }, executor))
+            logger.info("No RequestHistoryDBService set")
+            requestInfoMono
+        } else{
+            Mono.fromFuture(requestHistoryInfoFuture)
+        }.cache()
         val took=System.currentTimeMillis()-time
         if (took>1) {
             logger.info("DB RequestHistoryDBService waiting took $took ms")
@@ -162,11 +167,11 @@ open class RequestHistoryDBService(
         if (client != null && client is PrincipalDetails) {
             val userId = if (client is UserDetails) UUID.fromString(client.id) else null
             val accountId = if (client is AccountDetails) UUID.fromString(client.id) else null
-            val updatedHistoryIdMono = component.saveAuth(requestHistoryInfo!!.idMono, requestHistoryInfo.rqTime, userId, accountId, client).cache()
+            val updatedHistoryIdMono = requestHistoryInfoMono.flatMap { component.saveAuth(it.idMono, it.rqTime, userId, accountId, client)}.cache()
             updatedHistoryIdMono.subscribe()
-            return HistoryRqInfo(updatedHistoryIdMono, requestHistoryInfo.rqTime)
+            return  true
         }
-        return requestHistoryInfo
+        return false
     }
 
     /**
@@ -210,5 +215,12 @@ open class RequestHistoryDBService(
             queryParams
                 .entries.joinToString("&") { "${it.key}:${it.value.joinToString(",")}" }
         return path.toString() + (if (params.isBlank()) params else "?$params")
+    }
+    companion object {
+        /**
+         * An open protected property representing the executor for running tasks.
+         * By default, it creates a new `VirtualThreadPerTaskExecutor`.
+         */
+        protected open val executor = VirtualTreadExecutor
     }
 }

@@ -19,6 +19,8 @@ package com.alcosi.nft.apigateway.service.requestHistory
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent.Companion.ATTRIBUTES_REQUEST_HISTORY_INFO
 import com.alcosi.nft.apigateway.service.gateway.filter.LoggingFilter
+import com.alcosi.nft.apigateway.service.requestHistory.filter.RequestHistoryGatewayFilterRq
+import com.alcosi.nft.apigateway.service.requestHistory.filter.RequestHistoryGatewayFilterRq.Companion
 import io.github.breninsul.namedlimitedvirtualthreadexecutor.service.VirtualTreadExecutor
 import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingErrorWebExceptionHandler
 import io.github.breninsul.webfluxlogging.cloud.SpringCloudGatewayLoggingUtils
@@ -96,14 +98,24 @@ open class RequestHistoryExceptionHandler(
             context: ServerResponse.Context,
         ): Mono<Void> {
             val time=System.currentTimeMillis()
-            val requestHistoryInfoFuture = exchange.attributes[ATTRIBUTES_REQUEST_HISTORY_INFO]!! as CompletableFuture<RequestHistoryDBService.HistoryRqInfo>
-            val requestHistoryInfo= requestHistoryInfoFuture.get()
-            val took=System.currentTimeMillis()-time
-            if (took>1) {
-                logger.info("DB RequestHistoryDBService waiting took $took ms")
+            val requestHistoryInfoFuture = exchange.attributes[ATTRIBUTES_REQUEST_HISTORY_INFO] as CompletableFuture<RequestHistoryDBService.HistoryRqInfo>?
+            val requestHistoryInfoMono =if (requestHistoryInfoFuture==null){
+                val future=CompletableFuture<RequestHistoryDBService.HistoryRqInfo>()
+                logger.info("No RequestHistoryDBService set")
+                val requestInfoMono = Mono.fromFuture(CompletableFuture.supplyAsync({ dBService.saveRequest(exchange,future) }, executor))
+                logger.info("No RequestHistoryDBService set")
+                requestInfoMono
+            } else{
+                Mono.fromFuture(requestHistoryInfoFuture)
             }
-            val logged = exchange.mutate().response(RequestHistoryResponseInterceptor(requestHistoryInfo, dBService, exchange.response)).build()
-            return delegateRs.writeTo(logged, context)
+            val logged =  requestHistoryInfoMono.map {
+                val took=System.currentTimeMillis()-time
+                if (took>1) {
+                    logger.info("DB RequestHistoryDBService waiting took $took ms")
+                }
+                exchange.mutate().response(RequestHistoryResponseInterceptor(it, dBService, exchange.response)).build()
+            }
+            return logged.flatMap {  delegateRs.writeTo(it, context)}
         }
     }
 
