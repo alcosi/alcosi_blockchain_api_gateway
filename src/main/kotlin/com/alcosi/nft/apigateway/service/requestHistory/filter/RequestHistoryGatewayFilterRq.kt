@@ -16,8 +16,10 @@
 
 package com.alcosi.nft.apigateway.service.requestHistory.filter
 
+import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
 import com.alcosi.nft.apigateway.service.requestHistory.RequestHistoryDBService
+import com.alcosi.nft.apigateway.service.requestHistory.RequestHistoryDBService.HistoryRqInfo
 import io.github.breninsul.namedlimitedvirtualthreadexecutor.service.VirtualTreadExecutor
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.kotlin.Logging
@@ -57,7 +59,9 @@ open class RequestHistoryGatewayFilterRq(
         exchange: ServerWebExchange,
         chain: GatewayFilterChain,
     ): Mono<Void> {
-        val requestInfoMono = Mono.fromFuture(CompletableFuture.supplyAsync({ requestDBService.saveRequest(exchange) }, executor))
+        val historyRqInfoCompletableFuture = CompletableFuture<HistoryRqInfo>()
+        exchange.attributes[PathConfigurationComponent.ATTRIBUTES_REQUEST_HISTORY_INFO] = historyRqInfoCompletableFuture
+        val requestInfoMono = Mono.fromFuture(CompletableFuture.supplyAsync({ requestDBService.saveRequest(exchange,historyRqInfoCompletableFuture) }, executor))
         val serverWebExchangeMono =
             requestInfoMono.map {
                 exchange.mutate()

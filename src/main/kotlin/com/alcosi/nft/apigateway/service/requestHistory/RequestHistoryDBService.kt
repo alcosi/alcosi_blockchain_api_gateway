@@ -95,10 +95,8 @@ open class RequestHistoryDBService(
      * @return The HistoryRqInfo object containing the ID of the request history and the time of the request.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    open fun saveRequest(exchange: ServerWebExchange): HistoryRqInfo {
-        val historyRqInfoCompletableFuture = CompletableFuture<HistoryRqInfo>()
+    open fun saveRequest(exchange: ServerWebExchange,historyRqInfoCompletableFuture:CompletableFuture<HistoryRqInfo>): HistoryRqInfo {
         try {
-            exchange.attributes[PathConfigurationComponent.ATTRIBUTES_REQUEST_HISTORY_INFO] = historyRqInfoCompletableFuture
 
             val request = exchange.request
             val rqHeaders = request.headers
