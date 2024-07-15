@@ -57,7 +57,7 @@ val javaVersion = JavaVersion.VERSION_21
 val env = "RELEASE"
 
 group = "com.alcosi.nft"
-version = "15.8-$env"
+version = "15.9-$env"
 java.sourceCompatibility = javaVersion
 
 
@@ -147,7 +147,7 @@ tasks.compileKotlin {
 }
 
 dependencies {
-    api("com.alcosi:commons-library-basic-dependency:3.3.1.4.0.12")
+    api("com.alcosi:commons-library-basic-dependency:3.3.1.5.0.4")
     api("org.flywaydb:flyway-database-postgresql:10.15.0")
     api("org.springframework.boot:spring-boot-starter-jdbc:3.3.1")
     api("org.springframework.boot:spring-boot-starter-data-redis-reactive:3.3.1")
