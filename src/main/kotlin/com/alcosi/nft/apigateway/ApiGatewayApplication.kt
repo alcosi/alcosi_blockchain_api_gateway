@@ -81,6 +81,7 @@ fun main(args: Array<String>) {
     if (!"false".contentEquals(boundedElasticVirtual)) {
         System.setProperty("reactor.schedulers.defaultBoundedElasticOnVirtualThreads", "true")
     }
+    println("Test msg")
     val externalJarDir = System.getenv()["external.jar.directory.path"] ?: "/opt/external-jar"
     ExternalJarLoad().loadDependency(listOf(Path(externalJarDir)), true)
     SpringApplicationBuilder(ApiGatewayApplication::class.java)
