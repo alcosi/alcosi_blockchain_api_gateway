@@ -17,12 +17,14 @@
 package com.alcosi.nft.apigateway.service.predicate
 
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
+import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent.Companion.ATTRIBUTE_ALLOWED_HTTP_METHODS_SET
 import com.alcosi.nft.apigateway.config.path.dto.FilterMatchConfigDTO
 import com.alcosi.nft.apigateway.config.path.dto.PathAuthorities
 import com.alcosi.nft.apigateway.service.predicate.matcher.HttpFilterMatcher
 import com.alcosi.nft.apigateway.service.predicate.matcher.HttpFilterMatcherMVC
 import com.alcosi.nft.apigateway.service.predicate.matcher.HttpFilterMatcherRegex
 import org.apache.logging.log4j.kotlin.Logging
+import org.springframework.http.HttpMethod
 import org.springframework.web.server.ServerWebExchange
 import java.util.function.Predicate
 
@@ -62,8 +64,8 @@ open class FilterMatchPredicate(
      * @return The best matching HttpFilterMatcher or null if no match is found.
      */
     open fun findMatcher(exchange: ServerWebExchange): HttpFilterMatcher<*>? {
-        val uri = exchange.request.path.toString()
-        val matcher = matchers.find { it.checkRequest(uri, exchange.request.method) }
+        exchange.attributes[ATTRIBUTE_ALLOWED_HTTP_METHODS_SET]= mutableSetOf<HttpMethod>()
+        val matcher = matchers.find { it.checkRequest(exchange) }
         return matcher
     }
 
@@ -102,4 +104,5 @@ open class FilterMatchPredicate(
             PredicateMatcherType.MATCH_IF_NOT_CONTAINS_IN_LIST -> matcher == null
         }
     }
+
 }

@@ -16,11 +16,13 @@
 
 package com.alcosi.nft.apigateway.service.error
 
+import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent.Companion.ATTRIBUTE_ALLOWED_HTTP_METHODS_SET
 import com.alcosi.nft.apigateway.service.error.exceptions.ApiException
 import io.jsonwebtoken.ExpiredJwtException
 import org.apache.logging.log4j.kotlin.Logging
 import org.springframework.boot.web.error.ErrorAttributeOptions
 import org.springframework.boot.web.reactive.error.DefaultErrorAttributes
+import org.springframework.http.HttpMethod
 import org.springframework.web.reactive.function.server.ServerRequest
 
 /**
@@ -68,4 +70,5 @@ open class GlobalErrorAttributes : DefaultErrorAttributes(), Logging {
         map["errorClass"] = t.javaClass.name
         return map
     }
+
 }

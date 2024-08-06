@@ -17,8 +17,11 @@
 package com.alcosi.nft.apigateway.service.predicate.matcher
 
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
+import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent.Companion.ATTRIBUTE_ALLOWED_HTTP_METHODS_SET
 import com.alcosi.nft.apigateway.config.path.dto.FilterMatchConfigDTO
 import org.springframework.http.HttpMethod
+import org.springframework.http.server.reactive.ServerHttpRequest
+import org.springframework.web.server.ServerWebExchange
 
 /**
  * Provides an abstract base class for implementing HTTP filter matchers.
@@ -66,22 +69,25 @@ abstract class HttpFilterMatcher<T>(
     ): T
 
     /**
-     * Checks if the provided HTTP request matches the given URI and method.
+     * Checks if the given request matches the criteria for filtering HTTP requests.
      *
-     * @param uri The URI of the request.
-     * @param method The HTTP method of the request.
-     * @return true if the request matches the URI and method, false otherwise.
+     * @param requestExchange The ServerWebExchange object representing the request.
+     * @return true if the request matches the criteria, false otherwise.
      */
     open fun checkRequest(
-        uri: String,
-        method: HttpMethod,
+        requestExchange: ServerWebExchange,
     ): Boolean {
-        val methodMatches = checkMethod(method)
-        if (!methodMatches) {
+        val uri=requestExchange.request.path.toString()
+        val method=requestExchange.request.method
+        val pathMatches = checkUri(uri)
+        if (!pathMatches) {
             return false
         }
-        val pathMatches = checkUri(uri)
-        return pathMatches
+        if (pathMatches){
+            (requestExchange.attributes[ATTRIBUTE_ALLOWED_HTTP_METHODS_SET] as MutableSet<HttpMethod>).addAll(methods)
+        }
+        val methodMatches = checkMethod(method)
+        return methodMatches
     }
 
     /**

@@ -17,8 +17,10 @@
 package com.alcosi.nft.apigateway.service.predicate
 
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
+import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent.Companion.ATTRIBUTE_ALLOWED_HTTP_METHODS_SET
 import com.alcosi.nft.apigateway.config.path.dto.ProxyRouteConfigDTO
 import org.apache.logging.log4j.kotlin.Logging
+import org.springframework.http.HttpMethod
 import org.springframework.web.server.ServerWebExchange
 import java.util.function.Predicate
 
@@ -44,7 +46,6 @@ open class RouteConfigGatewayPredicate(
         setConfig(haveToPass, t)
         return haveToPass
     }
-
     /**
      * Sets the config attribute in the ServerWebExchange if haveToPass is true.
      *
