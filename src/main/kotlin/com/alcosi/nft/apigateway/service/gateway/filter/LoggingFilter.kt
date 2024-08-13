@@ -313,6 +313,7 @@ open class LoggingFilter(
             val headers = if (logHeaders) delegateRs.headers.asString() else "<MASKED>"
             if (!logBody) {
                 rawUtils.writeResponse(delegateRq, delegateRs, headers, "<MASKED>", startTime)
+                return super.writeWith(body)
             }
             val buffer = DataBufferUtils.join(body)
             val dataBufferFlux =
