@@ -19,6 +19,7 @@ package com.alcosi.nft.apigateway.service.gateway.filter.security
 import com.alcosi.nft.apigateway.config.WebfluxHeadersHelper
 import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
 import com.alcosi.nft.apigateway.config.path.dto.PathAuthorities
+import com.alcosi.nft.apigateway.service.error.exceptions.ApiException
 import com.alcosi.nft.apigateway.service.gateway.filter.MicroserviceGatewayFilter
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter.Companion.SECURITY_CLIENT_ATTRIBUTE
 import com.alcosi.nft.apigateway.service.gateway.filter.security.SecurityGatewayFilter.Companion.SECURITY_LOG_ORDER
@@ -75,7 +76,11 @@ abstract class JwtGatewayFilter(
         if (!isSecurityRequest) {
             return chain.filter(exchange)
         }
-        val token = getHeaderInternal(exchange.request, jwtHeader)?.substring(7)
+        val tokenHeader = getHeaderInternal(exchange.request, jwtHeader)
+        if (tokenHeader!=null&&!tokenHeader.startsWith("Bearer ",true)) {
+            throw ApiException(401,"Invalid token header format: $tokenHeader. Should be 'Bearer <token>'")
+        }
+        val token = tokenHeader?.substring(7)
         val clearedExchange = clearExchange(exchange)
         if (token == null) {
             return chain.filter(clearedExchange)
