@@ -165,12 +165,13 @@ open class MultipartToJsonGatewayFilter(private val order: Int = 0, protected va
                         Flux.fromIterable(bt).flatMap { it }
                             .publishOn(VirtualWebFluxScheduler)
                             .reduce(objectMapper.createObjectNode()!!) { acc, mono ->
-                                if (acc.size() == 0) {
+                                val size = mono.second.size
+                                if (size == 0) {
                                     setJsonNodeValue(
                                         NullNode.instance,
                                         acc, mono.first
                                     )
-                                } else if (acc.size() == 1) {
+                                } else if (size == 1) {
                                     setJsonNodeValue(
                                         mapAsNodeOrText(mono.second.first()),
                                         acc, mono.first
