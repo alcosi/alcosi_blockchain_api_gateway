@@ -19,13 +19,14 @@ plugins {
     id("idea")
     id("java-library")
     id("maven-publish")
-    id("org.springframework.boot") version "3.4.3"
-    id("io.spring.dependency-management") version "1.1.5"
+    id("org.springframework.boot") version "3.5.3"
+    id("io.spring.dependency-management") version "1.1.7"
     id("org.jetbrains.kotlin.jvm") version "2.0.0"
     id("org.jetbrains.kotlin.plugin.spring") version "2.0.0"
-    id("com.github.jk1.dependency-license-report") version "2.8"
+    id("com.github.jk1.dependency-license-report") version "2.9"
     id("net.thebugmc.gradle.sonatype-central-portal-publisher") version "1.2.3"
     id("org.jetbrains.dokka") version "1.9.20"
+    id("com.github.ben-manes.versions") version "0.52.0"
 
     id("com.bmuschko.docker-remote-api") version "9.4.0"
     id("org.jetbrains.kotlin.kapt") version "2.0.0"
@@ -34,8 +35,8 @@ plugins {
 
 
 
-val web3jVersion = "4.12.0"
-val jjwtVersion = "0.12.5"
+val web3jVersion = "4.14.0"
+val jjwtVersion = "0.12.6"
 val openApiJoinedFile = "openapi.yaml"
 val openApiFile = "MarketGatewayAPI.yaml"
 
@@ -57,7 +58,7 @@ val javaVersion = JavaVersion.VERSION_21
 val env = "RELEASE"
 
 group = "com.alcosi.nft"
-version = "15.13-$env"
+version = "15.14-$env"
 java.sourceCompatibility = javaVersion
 
 
@@ -147,21 +148,21 @@ tasks.compileKotlin {
 }
 
 dependencies {
-    api("com.alcosi:commons-library-basic-dependency:3.4.3.5.3.2")
+    api("com.alcosi:commons-library-basic-dependency:3.5.3.5.3.2")
     api("org.flywaydb:flyway-database-postgresql:11.3.4")
     api("org.springframework.boot:spring-boot-starter-jdbc")
     api("org.springframework.boot:spring-boot-starter-data-redis-reactive")
     api("org.springframework.data:spring-data-r2dbc")
     api("org.springframework.cloud:spring-cloud-starter-gateway:4.2.0")
-    api("io.grpc:grpc-netty:1.71.0")
+    api("io.grpc:grpc-netty:1.73.0")
     api("org.postgresql:r2dbc-postgresql:1.0.7.RELEASE")
     api("io.r2dbc:r2dbc-pool:1.0.2.RELEASE")
     api("io.github.breninsul:webflux-logging:1.1.0.6")
     api("io.projectreactor.kotlin:reactor-kotlin-extensions:1.2.2")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
     api("org.apache.commons:commons-pool2:2.12.0")
-    api("com.google.api-client:google-api-client:2.3.0")
-    api("jakarta.servlet:jakarta.servlet-api:5.0.0")
+    api("com.google.api-client:google-api-client:2.8.0")
+    api("jakarta.servlet:jakarta.servlet-api:6.1.0")
     api("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     api("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
     api("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")

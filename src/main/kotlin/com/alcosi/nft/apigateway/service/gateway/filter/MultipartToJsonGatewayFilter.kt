@@ -5,6 +5,7 @@ import com.alcosi.nft.apigateway.config.path.PathConfigurationComponent
 import com.alcosi.nft.apigateway.config.path.dto.ProxyRouteConfigDTO
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.apache.commons.codec.binary.Base64
@@ -23,36 +24,42 @@ import org.springframework.web.server.ServerWebExchangeDecorator
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+
 /**
- * Value indicating the "Transfer-Encoding" header field value for chunked transfer encoding.
+ * Value indicating the "Transfer-Encoding" header field value for chunked
+ * transfer encoding.
  *
- * The "Transfer-Encoding" header field specifies the form of encoding used to safely transfer the
- * payload body in a message. When the value is set to "chunked", the message body is sent in a series
- * of chunks where each chunk is preceded by its size in hexadecimal format followed by a carriage return
- * and line feed.
+ * The "Transfer-Encoding" header field specifies the form of encoding used
+ * to safely transfer the payload body in a message. When the value is
+ * set to "chunked", the message body is sent in a series of chunks where
+ * each chunk is preceded by its size in hexadecimal format followed by a
+ * carriage return and line feed.
  *
- * This value is used to set the "Transfer-Encoding" header field for the chunked transfer encoding in HTTP requests
- * or responses.
- *
+ * This value is used to set the "Transfer-Encoding" header field for the
+ * chunked transfer encoding in HTTP requests or responses.
  */
 private val TRANSFER_ENCODING_VALUE = "chunked"
 
 /**
- * The `MultipartToJsonGatewayFilter` class is a filter for the microservice gateway that converts multipart requests to JSON requests.
+ * The `MultipartToJsonGatewayFilter` class is a filter for the
+ * microservice gateway that converts multipart requests to JSON requests.
  *
+ * @constructor Creates an instance of `MultipartToJsonGatewayFilter`.
  * @property order The order of the filter.
  * @property objectMapper An instance of ObjectMapper for JSON conversion.
- * @constructor Creates an instance of `MultipartToJsonGatewayFilter`.
  */
-open class MultipartToJsonGatewayFilter(private val order: Int = 0,protected val objectMapper: ObjectMapper) : MicroserviceGatewayFilter {
+open class MultipartToJsonGatewayFilter(private val order: Int = 0, protected val objectMapper: ObjectMapper) : MicroserviceGatewayFilter {
     /**
-     * Filters the server web exchange based on the content type of the request.
-     * If the content type is not compatible with multipart form data, the filter does nothing and proceeds to the next filter in the chain.
-     * If the content type is compatible with multipart form data, the filter modifies the request headers and delegates the filtered request to a custom MultipartToJsonWebExchange
-     * .
+     * Filters the server web exchange based on the content type of the
+     * request. If the content type is not compatible with multipart form data,
+     * the filter does nothing and proceeds to the next filter in the chain.
+     * If the content type is compatible with multipart form data, the filter
+     * modifies the request headers and delegates the filtered request to a
+     * custom MultipartToJsonWebExchange .
      *
      * @param exchange the server web exchange to be filtered
-     * @param chain the gateway filter chain for processing the filtered exchange
+     * @param chain the gateway filter chain for processing the filtered
+     *    exchange
      * @return a Mono that represents the filtered exchange
      */
     override fun filter(
@@ -62,7 +69,7 @@ open class MultipartToJsonGatewayFilter(private val order: Int = 0,protected val
         val contentType = exchange.request.headers.contentType
         val compatibleWith = contentType?.includes(MediaType.MULTIPART_FORM_DATA) ?: false
         val proxyConfig = exchange.attributes[PathConfigurationComponent.ATTRIBUTE_PROXY_CONFIG_FIELD] as ProxyRouteConfigDTO?
-        val haveToConvert=compatibleWith && (proxyConfig?.convertMultipartToJson?:true);
+        val haveToConvert = compatibleWith && (proxyConfig?.convertMultipartToJson ?: true);
         if (!haveToConvert) {
             return chain.filter(exchange)
         } else {
@@ -72,7 +79,7 @@ open class MultipartToJsonGatewayFilter(private val order: Int = 0,protected val
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .header(HttpHeaders.CONTENT_LENGTH, null)
                     .build()
-            return chain.filter(MultipartToJsonWebExchange(exchange.mutate().request(changedHeadersRequest).build(),objectMapper))
+            return chain.filter(MultipartToJsonWebExchange(exchange.mutate().request(changedHeadersRequest).build(), objectMapper))
         }
     }
 
@@ -86,49 +93,52 @@ open class MultipartToJsonGatewayFilter(private val order: Int = 0,protected val
     }
 
     /**
-     * The `MultipartToJsonWebExchange` class is a subclass of `ServerWebExchangeDecorator` that converts a multipart request to JSON.
+     * The `MultipartToJsonWebExchange` class is a subclass of
+     * `ServerWebExchangeDecorator` that converts a multipart request to JSON.
      *
-     * @property delegate The decorated `ServerWebExchange`.
-     * @property objectMapper The `ObjectMapper` used for JSON serialization.
-     *
-     * @constructor Creates an instance of `MultipartToJsonWebExchange`.
      * @param delegate The `ServerWebExchange` to be decorated.
      * @param objectMapper The `ObjectMapper` used for JSON serialization.
+     * @constructor Creates an instance of `MultipartToJsonWebExchange`.
+     * @property delegate The decorated `ServerWebExchange`.
+     * @property objectMapper The `ObjectMapper` used for JSON serialization.
      */
-    open class MultipartToJsonWebExchange(delegate: ServerWebExchange,protected val objectMapper: ObjectMapper) : ServerWebExchangeDecorator(delegate) {
+    open class MultipartToJsonWebExchange(delegate: ServerWebExchange, protected val objectMapper: ObjectMapper) : ServerWebExchangeDecorator(delegate) {
         override fun getRequest(): ServerHttpRequest {
-            return MultipartToJsonRequestDecorator(delegate,objectMapper)
+            return MultipartToJsonRequestDecorator(delegate, objectMapper)
         }
     }
 
     /**
-     * This class is a decorator for `ServerHttpRequest` that provides additional functionality for handling multipart requests and converting them to JSON.
-     * It extends the `ServerHttpRequestDecorator` class and implements the `Logging` interface.
+     * This class is a decorator for `ServerHttpRequest` that provides
+     * additional functionality for handling multipart requests and converting
+     * them to JSON. It extends the `ServerHttpRequestDecorator` class and
+     * implements the `Logging` interface.
      *
-     * @param exchange The `ServerWebExchange` object representing the current server exchange.
-     * @param objectMapper The `ObjectMapper` object used for JSON serialization and deserialization.
+     * @param exchange The `ServerWebExchange` object representing the current
+     *    server exchange.
+     * @param objectMapper The `ObjectMapper` object used for JSON
+     *    serialization and deserialization.
      */
-    open class MultipartToJsonRequestDecorator(protected val exchange: ServerWebExchange,protected val objectMapper: ObjectMapper) : ServerHttpRequestDecorator(exchange.request), Logging {
+    open class MultipartToJsonRequestDecorator(protected val exchange: ServerWebExchange, protected val objectMapper: ObjectMapper) : ServerHttpRequestDecorator(exchange.request), Logging {
         /**
-         * Gets the body of the HTTP request as a Flux of DataBuffer objects.
-         * This method is used to retrieve the body of a multipart request,
-         * parse the parts, and create a JSON object from the part names and values.
-         * The resulting JSON object is then converted to a byte array and wrapped
-         * in a DataBuffer object.
+         * Gets the body of the HTTP request as a Flux of DataBuffer objects. This
+         * method is used to retrieve the body of a multipart request, parse the
+         * parts, and create a JSON object from the part names and values. The
+         * resulting JSON object is then converted to a byte array and wrapped in a
+         * DataBuffer object.
          *
          * @return Flux<DataBuffer> - A Flux of DataBuffer objects containing the
-         *         body of the HTTP request.
+         *    body of the HTTP request.
          */
         @Suppress("UNUSED_PARAMETER")
         override fun getBody(): Flux<DataBuffer> {
             val rs =
                 exchange.multipartData.flux().flatMap { multipartData ->
-                    val parts = multipartData.toSingleValueMap()
                     val bt =
-                        parts.map { (name, part) ->
-                            val bytes =
+                        multipartData.map { (name, parts) ->
+                            val bytesList = parts.map { part ->
                                 part.content()
-                                    .publishOn(com.alcosi.nft.apigateway.config.VirtualWebFluxScheduler)
+                                    .publishOn(VirtualWebFluxScheduler)
                                     .publishOn(Schedulers.boundedElastic())
                                     .reduce(ByteArray(0)) { array, buffer ->
                                         try {
@@ -140,24 +150,47 @@ open class MultipartToJsonGatewayFilter(private val order: Int = 0,protected val
                                             DataBufferUtils.release(buffer) // Ensure buffer is released
                                         }
                                     }
-                            bytes.publishOn(com.alcosi.nft.apigateway.config.VirtualWebFluxScheduler)
-                                .map { name to if (isFilePart(part)) Base64.encodeBase64String(it) else String(it) }
+                            }
+                            val bytesMono = Mono.zip(bytesList) { b -> b.toList() as List<ByteArray> }.publishOn(VirtualWebFluxScheduler)
+                            bytesMono.map {
+                                name to if (isFilePart(parts.first())) {
+                                    it.map { b -> Base64.encodeBase64String(b) }
+                                } else {
+                                    it.map { b -> String(b) }
+                                }
+                            }
+
                         }
                     val jsonMono =
                         Flux.fromIterable(bt).flatMap { it }
-                            .publishOn(com.alcosi.nft.apigateway.config.VirtualWebFluxScheduler)
+                            .publishOn(VirtualWebFluxScheduler)
                             .reduce(objectMapper.createObjectNode()!!) { acc, mono ->
-                                setJsonNodeValue(mapAsNodeOrText(mono.second), acc, mono.first)
-                                acc
+                                if (acc.size() == 0) {
+                                    setJsonNodeValue(
+                                        NullNode.instance,
+                                        acc, mono.first
+                                    )
+                                } else if (acc.size() == 1) {
+                                    setJsonNodeValue(
+                                        mapAsNodeOrText(mono.second.first()),
+                                        acc, mono.first
+                                    )
+                                } else {
+                                    val value = "[${mono.second.joinToString(",") { v -> "$v" }}]"
+                                    setJsonNodeValue(
+                                        mapAsNodeOrText(value),
+                                        acc, mono.first
+                                    )
+                                }
                             }
                     val dataBuffer =
                         jsonMono
-                            .publishOn(com.alcosi.nft.apigateway.config.VirtualWebFluxScheduler)
+                            .publishOn(VirtualWebFluxScheduler)
                             .map {
                                 val writeValueAsBytes = objectMapper.writeValueAsBytes(it)
                                 exchange.response.bufferFactory().wrap(writeValueAsBytes)
                             }
-                    dataBuffer.publishOn(com.alcosi.nft.apigateway.config.VirtualWebFluxScheduler).flux()
+                    dataBuffer.publishOn(VirtualWebFluxScheduler).flux()
                 }
             return rs.cache()
         }
@@ -166,7 +199,8 @@ open class MultipartToJsonGatewayFilter(private val order: Int = 0,protected val
          * Checks if the given part is a file part.
          *
          * @param part The part to be checked.
-         * @return True if the part is a file part and it is not marked as "IS_JSON", false otherwise.
+         * @return True if the part is a file part and it is not marked as
+         *    "IS_JSON", false otherwise.
          */
         protected open fun isFilePart(part: Part?): Boolean {
             val isFilePart = part is FilePart
@@ -183,7 +217,8 @@ open class MultipartToJsonGatewayFilter(private val order: Int = 0,protected val
          * @param value The value to be set for the key. Can be any object.
          * @param node The JSON object node where the value will be updated.
          * @param key The key for which the value will be updated.
-         * @return The updated JSON object node with the new value set for the specified key.
+         * @return The updated JSON object node with the new value set for the
+         *    specified key.
          */
         protected open fun setJsonNodeValue(
             value: Any?,
